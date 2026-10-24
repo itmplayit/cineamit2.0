@@ -1,0 +1,39 @@
+        <div id="tab-blogs" class="tab-content hidden animate-fade-in flex-col gap-6">
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 shadow-xl">
+                <h2 class="text-xl font-black text-white mb-2"><i class="fa-solid fa-pen-nib text-green-500 mr-2"></i> Write SEO Article</h2>
+                <form action="/admin/add_blog" method="POST" class="flex flex-col gap-4 bg-[#0a0a0c] p-5 rounded-xl border border-gray-800">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input aria-label="Article Title" type="text" name="title" required placeholder="Article Title (e.g. Top 10 Horror Movies)" class="w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-3 outline-none focus:border-green-500">
+                    <input aria-label="Cover Image URL" type="url" name="image_url" placeholder="Cover Image URL (e.g. https://.../image.jpg)" class="w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-3 outline-none focus:border-green-500">
+                    <input aria-label="SEO Meta Description" type="text" name="meta_description" placeholder="SEO Meta Description (Short Summary)" class="w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-3 outline-none focus:border-green-500">
+                    <textarea aria-label="Article Content" name="content" required rows="6" placeholder="Write article content here... (HTML tags like <b>, <h2>, <br> are supported)" class="w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-3 outline-none focus:border-green-500"></textarea>
+                    <button aria-label="Publish Article" type="submit" class="bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-6 rounded-lg self-end cursor-pointer">Publish Article</button>
+                </form>
+                <h3 class="text-white font-bold mt-8 mb-4">Published Articles</h3>
+                <div class="overflow-x-auto border border-gray-800 rounded-xl bg-[#0a0a0c] render-optimize">
+                    <table class="w-full text-left text-sm text-gray-400">
+                        <thead class="bg-gray-900 text-gray-300 uppercase text-[10px] border-b border-gray-800">
+                            <tr><th scope="col" class="px-4 py-3">Title</th><th scope="col" class="px-4 py-3 text-right">Action</th></tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800">
+                            {% for blog in blogs %}
+                            <tr class="hover:bg-gray-800/40">
+                                <td class="px-4 py-3 font-bold text-white">{{ blog.title }}</td>
+                                <td class="px-4 py-3 text-right">
+                                    <a href="/blog/{{ blog.slug }}" target="_blank" rel="noopener" title="Open live article" class="inline-flex items-center gap-1.5 text-gray-400 hover:text-green-400 px-3 py-1.5 rounded-md hover:bg-gray-800 transition-colors text-xs font-bold mr-1">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                    <form action="/admin/delete_blog/{{ blog.id }}" method="POST" class="inline" onsubmit="return confirm('Delete?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button aria-label="Delete Article" type="submit" class="text-red-500 hover:bg-red-500/10 px-3 py-1.5 rounded-md cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="2" class="px-4 py-6 text-center text-gray-500 text-xs italic">No articles published yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>

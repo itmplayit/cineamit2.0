@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
+
+    <FrameLayout
+        android:layout_width="96dp"
+        android:layout_height="96dp">
+
+        <TextView
+            android:id="@+id/avatar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fontFamily="@font/custom"
+            android:gravity="center"
+            android:textColor="#F4F1EA"
+            android:textSize="36sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/addIcon"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/ic_add"
+            android:visibility="gone" />
+
+        <View
+            android:id="@+id/lockDim"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#66000000"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/lockIcon"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/ic_lock"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/kidsBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="6dp"
+            android:background="#F4F1EA"
+            android:fontFamily="@font/custom"
+            android:paddingStart="5dp"
+            android:paddingTop="1dp"
+            android:paddingEnd="5dp"
+            android:paddingBottom="1dp"
+            android:text="KIDS"
+            android:textColor="#111111"
+            android:textSize="9sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/btnDelete"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="-6dp"
+            android:layout_marginEnd="-6dp"
+            android:background="@drawable/bg_profile_delete"
+            android:contentDescription="@string/app_name"
+            android:padding="5dp"
+            android:src="@drawable/ic_close_menu"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/profileName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/custom"
+        android:gravity="center"
+        android:maxLines="1"
+        android:textColor="#9CA3AF"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+</LinearLayout>

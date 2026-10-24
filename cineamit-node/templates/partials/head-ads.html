@@ -1,0 +1,90 @@
+    <!-- GA4: static load in <head> so that analytics never depends on lazy JS.
+         Measurement ID ab env.php se aati hai (GA_MEASUREMENT_ID). ID khaali/'off' hone par
+         GA + ga_blocked beacon dono bilkul load nahi hote — koi request, koi error nahi. -->
+    {% if ga_measurement_id %}
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_measurement_id|e('url') }}"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+        window.gtag('js', new Date());
+        window.gtag('config', '{{ ga_measurement_id|e('js') }}', { transport_type: 'beacon' });
+    </script>
+    {% endif %}
+{# CINE-SPLASH:CSS:START #}
+<style id="cineBootStyle">
+/* ===== Splash loading screen ===== */
+#cine-boot{position:fixed;top:0;left:0;right:0;bottom:0;z-index:10050;display:flex;flex-direction:column;align-items:center;justify-content:center;background-color:#0f1014;background-image:radial-gradient(circle at 50% 44%,#1a1b22 0%,#0f1014 58%,#0b0c10 100%);opacity:1;transition:opacity .28s ease;-webkit-tap-highlight-color:transparent}
+#cine-boot.cb-out{opacity:0;pointer-events:none}
+#cine-boot.cb-gone{display:none}
+.cb-stage{position:relative;display:flex;align-items:center;justify-content:center;width:180px;height:180px;transition:transform .28s ease}
+#cine-boot.cb-out .cb-stage{transform:scale(1.06)}
+.cb-glow{position:absolute;top:-38%;left:-38%;right:-38%;bottom:-38%;border-radius:50%;background:radial-gradient(circle,rgba(220,38,38,.40) 0%,rgba(162,28,175,.22) 42%,rgba(0,0,0,0) 70%);opacity:0;pointer-events:none;animation:csGlowIn .9s ease-out .18s forwards,csGlowPulse 2.6s ease-in-out 1.1s infinite}
+.cb-ring{position:absolute;top:0;left:0;right:0;bottom:0;border-radius:50%;border:1px solid rgba(244,63,94,.55);opacity:0;pointer-events:none;animation:csRing .95s cubic-bezier(.22,.7,.24,1) .12s forwards}
+.cb-logo{position:relative;display:block;width:180px;height:180px;border-radius:50%;opacity:0;transform:scale(.8);animation:csLogoIn .62s cubic-bezier(.2,.9,.25,1.06) forwards,csBreathe 3.4s ease-in-out 1.2s infinite}
+.cb-bar{position:relative;margin-top:28px;width:240px;max-width:58vw;height:3px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden}
+.cb-fill{position:absolute;top:0;left:0;bottom:0;width:8%;border-radius:99px;background:linear-gradient(90deg,#fe8706,#fe1a63 55%,#fe0476);transition:width .22s cubic-bezier(.3,.8,.35,1)}
+.cb-fill::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.5),rgba(255,255,255,0));transform:translateX(-100%);animation:csShimmer 1.15s linear infinite}
+@keyframes csLogoIn{to{opacity:1;transform:scale(1)}}
+@keyframes csBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.018)}}
+@keyframes csGlowIn{to{opacity:1}}
+@keyframes csGlowPulse{0%,100%{opacity:.72;transform:scale(.97)}50%{opacity:1;transform:scale(1.03)}}
+@keyframes csRing{0%{opacity:0;transform:scale(.86)}22%{opacity:.5}100%{opacity:0;transform:scale(1.55)}}
+@keyframes csShimmer{to{transform:translateX(100%)}}
+@media (prefers-reduced-motion:reduce){
+.cb-logo,.cb-glow,.cb-ring{animation:none}
+.cb-logo{opacity:1;transform:none}
+.cb-glow{opacity:.8}
+.cb-ring,.cb-fill::after{display:none}
+#cine-boot.cb-out .cb-stage{transform:none}
+}
+@media print{ #cine-boot{display:none} }
+/* ===== FIX: #cineProgressBar ka CSS hi missing tha (element + JS tha, bar invisible thi) ===== */
+#cineProgressBar{position:fixed;top:0;left:0;height:3px;width:0;z-index:10003;opacity:0;background:linear-gradient(90deg,#fe8706,#fe1a63 55%,#fe0476);box-shadow:0 0 12px rgba(254,26,99,.55);border-radius:0 99px 99px 0;pointer-events:none;will-change:width,opacity;transition:width .32s cubic-bezier(.3,.8,.35,1),opacity .26s ease}
+@media (prefers-reduced-motion:reduce){ #cineProgressBar{transition:width .12s linear,opacity .12s linear} }
+
+/* Fail-safe: agar JS kisi wajah se na chale (ya error aaye) to ye screen 1.2s baad khud hat jaye. */
+#cine-boot{animation:cbSafetyOut .3s ease 1.2s forwards}
+@keyframes cbSafetyOut{to{opacity:0;visibility:hidden}}
+</style>
+<noscript><style>#cine-boot{display:none!important}</style></noscript>
+
+{# CINE-SPLASH:CSS:END #}
+{# CINE-CURSOR:CSS:START #}
+<style id="cineCursorStyle">
+/* ===== Custom cursor: red dot + glow ring (CINEAMIT) =====
+   Sirf tab active: JS chale + device me fine pointer ho (html par .cc-on class).
+   JS fail/band ho to native cursor waisa hi rehta hai. */
+html.cc-on, html.cc-on body{cursor:none !important}
+html.cc-on *:not(select):not(option):not(input[type="color"]):not(iframe){cursor:none !important}
+#ccDot,#ccRing{position:fixed;top:0;left:0;pointer-events:none;will-change:transform;opacity:0;transition:opacity .16s ease}
+#ccRing{z-index:10060;width:38px;height:38px;margin:-19px 0 0 -19px}
+#ccDot{z-index:10061;width:9px;height:9px;margin:-4.5px 0 0 -4.5px}
+html.cc-live #ccDot, html.cc-live #ccRing{opacity:1}
+html.cc-live.cc-pause #ccDot, html.cc-live.cc-pause #ccRing{opacity:0}
+#ccDot .ccv{position:absolute;inset:0;border-radius:50%;background:#f43f5e;box-shadow:0 0 10px rgba(244,63,94,.9),0 0 22px rgba(220,38,38,.45);transform:scale(var(--sx,1),var(--sy,1));transition:transform .18s cubic-bezier(.22,.7,.25,1),opacity .18s ease,background-color .18s ease}
+#ccRing .ccv{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(244,63,94,.55);box-shadow:0 0 16px rgba(220,38,38,.28),inset 0 0 14px rgba(162,28,175,.18);transform:scale(var(--sx,1),var(--sy,1));transition:transform .24s cubic-bezier(.22,.7,.25,1),border-color .2s ease,border-style .2s ease,background-color .2s ease,opacity .18s ease}
+#ccRing .ccp{position:absolute;inset:-1.5px;border-radius:50%;border:1.5px solid rgba(244,63,94,.85);opacity:0}
+#ccRing.cc-pop .ccp{animation:ccRipple .42s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes ccRipple{0%{opacity:.9;transform:scale(.9)}100%{opacity:0;transform:scale(1.85)}}
+.cc-hover #ccRing .ccv{--sx:1.42;--sy:1.42;border-color:rgba(244,63,94,.95);box-shadow:0 0 22px rgba(220,38,38,.5)}
+.cc-hover #ccDot .ccv{--sx:.72;--sy:.72}
+.cc-text #ccRing .ccv{--sx:.1;--sy:.86;border-color:#f8fafc;background-color:rgba(248,250,252,.92);box-shadow:0 0 10px rgba(255,255,255,.35)}
+.cc-text #ccDot .ccv{opacity:0}
+.cc-no #ccRing .ccv{--sx:1.15;--sy:1.15;border-style:dashed;border-color:#ef4444;background-color:rgba(239,68,68,.12);box-shadow:0 0 18px rgba(239,68,68,.4)}
+.cc-no #ccDot .ccv{--sx:1.3;--sy:1.3;background-color:#ef4444}
+/* state: seek bar / range (DPlayer bar, input[type=range]) — patli horizontal bar */
+.cc-range #ccRing .ccv{--sx:.62;--sy:.07;border-color:#f43f5e;background-color:rgba(244,63,94,.85);box-shadow:0 0 12px rgba(220,38,38,.5)}
+.cc-range #ccDot .ccv{opacity:0}
+/* state: in-page video player (DPlayer/livetv/pre-roll) — bada glow ring */
+.cc-player #ccRing .ccv{--sx:1.55;--sy:1.55;border-color:rgba(244,63,94,.9);box-shadow:0 0 30px rgba(220,38,38,.55),inset 0 0 18px rgba(162,28,175,.25)}
+.cc-player #ccDot .ccv{--sx:1.12;--sy:1.12}
+/* magnetic snap — ring element ke center ki taraf khinchti hai */
+.cc-magnet #ccRing .ccv{--sx:1.3;--sy:1.3;border-color:rgba(244,63,94,.95);background-color:rgba(244,63,94,.06)}
+/* typing — custom cursor fade ho jata hai taaki blinking caret saaf dikhe */
+.cc-typing #ccDot .ccv,.cc-typing #ccRing .ccv{opacity:0}
+@media (prefers-reduced-motion:reduce){ #ccDot .ccv,#ccRing .ccv{transition:none} #ccRing.cc-pop .ccp{animation:none;display:none} }
+@media print{ #ccDot,#ccRing{display:none} }
+</style>
+{# CINE-CURSOR:CSS:END #}
+    <link rel="stylesheet" href="/static/access-check.css?v=1">
+    <script src="/static/access-check.js?v=1" defer></script>

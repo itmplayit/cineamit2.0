@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% block title %}Search results for "{{ query }}" - CINEAMIT{% endblock %}
+{% block meta_desc %}Find movies, TV shows, albums, studios, and actors related to "{{ query }}" on CINEAMIT.{% endblock %}
+{% block content %}
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px) scale(0.95); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .animate-fade-in { 
+        animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+        will-change: transform, opacity;
+    }
+</style>
+<div class="p-4 sm:p-6 md:p-8 min-h-screen bg-[#0f1014]">
+    <div class="mb-6 md:mb-8 border-b border-gray-800 pb-6">
+        <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center">
+            <i class="fa-solid fa-magnifying-glass mr-3 text-red-600" aria-hidden="true"></i> Search Results
+        </h1>
+        <p class="text-gray-400 mt-2 text-sm sm:text-base md:text-lg mb-6">
+            Showing results for: <span class="text-red-500 font-bold" id="currentQuery">"{{ query }}"</span>
+        </p>
+        <div class="mb-8 w-full max-w-[1800px] mx-auto">
+        <form id="filterForm" method="GET" action="{{ url_for('routes.filter_page') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="mb-3">
+                <input aria-label="Search Filter Input" type="text" name="q" value="{{ query ?: '' }}" placeholder="Search..." autocomplete="off" class="w-full bg-[#141519] border border-gray-800 text-gray-300 text-sm rounded-md px-4 py-3 outline-none focus:border-gray-600 shadow-inner">
+            </div>
+            <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 md:gap-3 items-center">
+                <select aria-label="Media Type" name="type" class="bg-[#24252b] text-gray-300 text-sm rounded-md px-3 py-2.5 outline-none cursor-pointer border border-transparent hover:border-gray-700 min-w-[110px]">
+                    <option value="multi" {% if filter_type == 'multi' or not filter_type %}selected{% endif %}>All</option>
+                    <option value="movie" {% if filter_type == 'movie' %}selected{% endif %}>Movies</option>
+                    <option value="tv" {% if filter_type == 'tv' %}selected{% endif %}>TV Shows</option>
+                    <option value="person" {% if filter_type == 'person' %}selected{% endif %}>Actors</option>
+                    <option value="collection" {% if filter_type == 'collection' %}selected{% endif %}>Albums</option>
+                    <option value="company" {% if filter_type == 'company' %}selected{% endif %}>Studios</option>
+                </select>
+                <select aria-label="Genre" name="genre" class="bg-[#24252b] text-gray-300 text-sm rounded-md px-3 py-2.5 outline-none cursor-pointer border border-transparent hover:border-gray-700 min-w-[110px]">
+                    <option value="">Genre</option>
+                    <option value="28" {% if genre == '28' %}selected{% endif %}>Action</option>
+                    <option value="12" {% if genre == '12' %}selected{% endif %}>Adventure</option>
+                    <option value="16" {% if genre == '16' %}selected{% endif %}>Animation</option>
+                    <option value="35" {% if genre == '35' %}selected{% endif %}>Comedy</option>
+                    <option value="80" {% if genre == '80' %}selected{% endif %}>Crime</option>
+                    <option value="18" {% if genre == '18' %}selected{% endif %}>Drama</option>
+                    <option value="27" {% if genre == '27' %}selected{% endif %}>Horror</option>
+                    <option value="10749" {% if genre == '10749' %}selected{% endif %}>Romance</option>
+                    <option value="878" {% if genre == '878' %}selected{% endif %}>Sci-Fi</option>
+                </select>
+                <select aria-label="Sort Order" name="sort" class="bg-[#24252b] text-gray-300 text-sm rounded-md px-3 py-2.5 outline-none cursor-pointer border border-transparent hover:border-gray-700 min-w-[110px]">
+                    <option value="popularity.desc" {% if sort == 'popularity.desc' %}selected{% endif %}>Popular</option>
+                    <option value="vote_average.desc" {% if sort == 'vote_average.desc' %}selected{% endif %}>Top Rated</option>
+                    <option value="primary_release_date.desc" {% if sort == 'primary_release_date.desc' %}selected{% endif %}>Newest</option>
+                </select>
+                <select aria-label="Year" name="year" class="bg-[#24252b] text-gray-300 text-sm rounded-md px-3 py-2.5 outline-none cursor-pointer border border-transparent hover:border-gray-700 min-w-[110px]">
+                    <option value="">Year</option>
+                    {% for y in range(2025, 1990, -1) %}
+                    <option value="{{ y }}" {% if year == (y ~ "") %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+                <div class="col-span-2 sm:ml-auto flex gap-2 w-full sm:w-auto mt-1 sm:mt-0">
+                    <button aria-label="Apply Filters" type="submit" class="flex-1 sm:flex-none bg-gray-700 hover:bg-gray-600 text-white text-sm px-6 py-2.5 rounded-md transition font-bold cursor-pointer">Apply</button>
+                    <a aria-label="Reset Filters" href="{{ request.path }}" class="flex-1 sm:flex-none bg-[#ff4d4d] hover:bg-red-600 text-white text-sm px-5 py-2.5 rounded-md transition flex items-center justify-center font-bold cursor-pointer">
+                        <i class="fa-solid fa-arrow-rotate-left mr-2 text-xs" aria-hidden="true"></i> Reset
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+    {% if results %}
+    <div id="contentGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6">
+        {% for item in results %}
+            {% set item_img = item.poster_path ?: item.profile_path ?: item.logo_path %}
+            {% set c_media_type = item.media_type ?: media_type %}
+            
+            {% if (item_img or c_media_type == 'company') and c_media_type in ['movie', 'tv', 'person', 'collection', 'company'] %}
+            
+            {% set item_title = item.title ?: item.name %}
+            {% if c_media_type == 'person' %}
+                {% set item_url = '/actor/' ~ (item_title|lower|replace({' ': '-'})|replace({'[^a-z0-9-]+': ''}) ~ '-' ~ item.id) %}
+                {% set icon_class = 'fa-user' %}
+                {% set display_type = 'Actor' %}
+            {% elseif c_media_type == 'collection' %}
+                {% set item_url = '/album/' ~ item.id %}
+                {% set icon_class = 'fa-layer-group' %}
+                {% set display_type = 'Album' %}
+            {% elseif c_media_type == 'company' %}
+                {% set item_url = '/studio/' ~ item.id ~ '?name=' ~ (item_title|url_encode) %}
+                {% set icon_class = 'fa-building' %}
+                {% set display_type = 'Studio' %}
+            {% else %}
+                {% set item_url = url_for('routes.details', media_type=c_media_type, tmdb_id=item.id, title=item_title) %}
+                {% set icon_class = 'fa-play' %}
+                {% set display_type = c_media_type %}
+            {% endif %}
+
+            <div class="relative transition-all duration-300 hover:z-[100] animate-fade-in movie-preview-card" 
+                 data-id="{{ item.id }}" 
+                 data-type="{{ c_media_type }}">
+                <a aria-label="View {{ item_title }}" href="{{ item_url }}" class="block relative rounded-lg overflow-hidden shadow-lg border border-gray-800 aspect-[2/3] transition-transform duration-300 hover:scale-105 group">
+                    
+                    {% if c_media_type == 'company' %}
+                        <div class="w-full h-full bg-gradient-to-br from-gray-900 to-black flex items-center justify-center border-2 border-gray-700 group-hover:border-red-500 transition-all">
+                            <span class="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 group-hover:from-red-400 group-hover:to-red-600 drop-shadow-md">
+                                {{ item_title|first|upper }}
+                            </span>
+                        </div>
+                    {% else %}
+                        {% if loop.index0 < 4 %}
+                        <img src="{{ image_base_url|default("https://image.tmdb.org/t/p/w500") }}{{ item_img }}" 
+                             alt="{{ item_title }} Image" 
+                             width="300" height="450"
+                             {% if loop.index0 < 2 %} loading="eager" fetchpriority="high" {% else %} loading="eager" decoding="async" {% endif %}
+                             class="w-full h-full object-cover">
+                        {% else %}
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 3'%3E%3C/svg%3E"
+                             data-src="{{ image_base_url|default("https://image.tmdb.org/t/p/w500") }}{{ item_img }}" 
+                             alt="{{ item_title }} Image" 
+                             width="300" height="450"
+                             decoding="async"
+                             class="w-full h-full object-cover">
+                        {% endif %}
+                    {% endif %}
+
+                    <div class="absolute top-2 left-2 bg-red-600/90 px-2 py-1 rounded text-[10px] text-white font-bold backdrop-blur-md shadow-lg uppercase tracking-wider z-20">
+                        {{ display_type }}
+                    </div>
+                    
+                    {% if item.vote_average and c_media_type not in ['person', 'collection', 'company'] %}
+                    <div class="absolute top-2 right-2 bg-black bg-opacity-80 px-2 py-1 rounded text-[11px] text-green-400 font-bold border border-green-500/30 backdrop-blur-md shadow-lg z-20">
+                        <i class="fa-solid fa-star text-[10px] mr-1" aria-hidden="true"></i>{{ item.vote_average | round(1) }}
+                    </div>
+                    {% endif %}
+
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 rounded-lg flex flex-col justify-end p-4 text-left border-2 border-transparent group-hover:border-gray-500/50">
+                        <i class="fa-solid {{ icon_class }} text-white text-4xl mb-auto self-center mt-auto text-red-600 shadow-xl drop-shadow-[0_0_15px_rgba(220,38,38,0.8)] rounded-full bg-black/50 scale-75 group-hover:scale-100 transition-transform duration-300"></i>
+                        <p class="text-white font-bold text-sm truncate w-full">{{ item_title }}</p>
+                        {% if c_media_type not in ['person', 'collection', 'company'] %}
+                        <p class="text-xs text-gray-300 mt-1">{{ ((item.release_date ?: item.first_air_date)) ? ((item.release_date ?: item.first_air_date)[:4]) : ('N/A') }}</p>
+                        {% endif %}
+                    </div>
+                </a>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    
+    <div class="w-full max-w-5xl mx-auto my-6 bg-gray-900 border border-gray-800 rounded-lg flex items-center justify-center min-h-[100px] overflow-hidden relative">
+        <span data-adsterra-smartlink class="text-[10px] text-gray-400 uppercase tracking-widest absolute top-2 right-4 z-10">Sponsored</span>
+        <div class="ad-slot-728 text-gray-400 text-sm py-2 z-20"></div>
+    </div>
+    
+    {% set cur_page = current_page | default(1) %}
+    {% if cur_page < 1 %}
+        {% set cur_page = 1 %}
+    {% endif %}
+    {% set max_page = total_pages | default(20) %}
+    {% if max_page < 2 or max_page > 40 %}
+        {% set max_page = 20 %}
+    {% endif %}
+    {% if cur_page >= max_page %}
+        {% set max_page = cur_page + 5 %}
+    {% endif %}
+    {% set p_qs = pagination_qs | default('') %}
+    {% if not p_qs and query %}
+        {% set enc_q = query | url_encode %}
+        {% set raw_t = filter_type | default('multi') %}
+        {% set enc_t = raw_t | url_encode %}
+        {% set p_qs = 'q=' ~ enc_q ~ '&type=' ~ enc_t %}
+    {% endif %}
+    {% set page_base = '/search?' %}
+    {% if p_qs %}
+        {% set page_base = '/search?' ~ p_qs ~ '&' %}
+    {% endif %}
+    {% set max_minus_1 = max_page - 1 %}
+    {% set start_p = cur_page - 2 %}
+    {% if start_p < 2 %}
+        {% set start_p = 2 %}
+    {% endif %}
+    {% set end_p = cur_page + 2 %}
+    {% if cur_page <= 3 and max_page > 5 %}
+        {% set end_p = 5 %}
+    {% endif %}
+    {% if end_p > max_minus_1 %}
+        {% set end_p = max_minus_1 %}
+    {% endif %}
+    <nav aria-label="Search Pagination" class="w-full flex flex-col items-center justify-center py-10 gap-3 select-none">
+        <div class="flex flex-wrap items-center justify-center gap-2">
+            {% if cur_page > 1 %}
+            <a href="{{ page_base }}page={{ cur_page - 1 }}" class="px-4 py-2.5 rounded-xl bg-[#141519] hover:bg-gray-800 text-gray-200 hover:text-white border border-gray-800 hover:border-gray-600 text-xs md:text-sm font-bold transition-all flex items-center gap-1.5 shadow-md">
+                <i class="fa-solid fa-chevron-left text-[11px]"></i> Prev
+            </a>
+            {% else %}
+            <span class="px-4 py-2.5 rounded-xl bg-[#141519]/50 text-gray-600 border border-gray-800/50 text-xs md:text-sm font-bold flex items-center gap-1.5 cursor-not-allowed">
+                <i class="fa-solid fa-chevron-left text-[11px]"></i> Prev
+            </span>
+            {% endif %}
+
+            <a href="{{ page_base }}page=1" class="min-w-[40px] h-10 px-3 rounded-xl flex items-center justify-center text-xs md:text-sm font-extrabold transition-all border {% if cur_page == 1 %}bg-red-600 text-white border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.45)]{% else %}bg-[#141519] text-gray-300 border-gray-800 hover:bg-gray-800 hover:text-white hover:border-gray-600{% endif %}">
+                1
+            </a>
+
+            {% if start_p > 2 %}
+            <span class="px-1.5 text-gray-500 font-bold text-sm">…</span>
+            {% endif %}
+
+            {% if end_p >= start_p %}
+                {% for p in range(start_p, end_p) %}
+                <a href="{{ page_base }}page={{ p }}" class="min-w-[40px] h-10 px-3 rounded-xl flex items-center justify-center text-xs md:text-sm font-extrabold transition-all border {% if p == cur_page %}bg-red-600 text-white border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.45)]{% else %}bg-[#141519] text-gray-300 border-gray-800 hover:bg-gray-800 hover:text-white hover:border-gray-600{% endif %}">
+                    {{ p }}
+                </a>
+                {% endfor %}
+            {% endif %}
+
+            {% if end_p < max_minus_1 %}
+            <span class="px-1.5 text-gray-500 font-bold text-sm">…</span>
+            {% endif %}
+
+            {% if max_page > 1 %}
+            <a href="{{ page_base }}page={{ max_page }}" class="min-w-[40px] h-10 px-3 rounded-xl flex items-center justify-center text-xs md:text-sm font-extrabold transition-all border {% if cur_page == max_page %}bg-red-600 text-white border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.45)]{% else %}bg-[#141519] text-gray-300 border-gray-800 hover:bg-gray-800 hover:text-white hover:border-gray-600{% endif %}">
+                {{ max_page }}
+            </a>
+            {% endif %}
+
+            {% if cur_page < max_page %}
+            <a href="{{ page_base }}page={{ cur_page + 1 }}" class="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white border border-red-500 text-xs md:text-sm font-bold transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(220,38,38,0.35)]">
+                Next <i class="fa-solid fa-chevron-right text-[11px]"></i>
+            </a>
+            {% else %}
+            <span class="px-4 py-2.5 rounded-xl bg-[#141519]/50 text-gray-600 border border-gray-800/50 text-xs md:text-sm font-bold flex items-center gap-1.5 cursor-not-allowed">
+                Next <i class="fa-solid fa-chevron-right text-[11px]"></i>
+            </span>
+            {% endif %}
+        </div>
+        <p class="text-[11px] text-gray-500 font-bold uppercase tracking-widest">
+            Page <span class="text-gray-300">{{ cur_page }}</span> of <span class="text-gray-300">{{ max_page }}</span>
+        </p>
+    </nav>
+    {% else %}
+    <div class="flex flex-col items-center justify-center h-[50vh] text-center max-w-md mx-auto">
+        <div class="w-24 h-24 bg-gray-900 rounded-full flex items-center justify-center mb-6 border border-gray-800 shadow-2xl">
+            <i class="fa-solid fa-magnifying-glass-minus text-4xl text-gray-600" aria-hidden="true"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-white mb-2">No results found</h2>
+        <p class="text-gray-400 mb-8 leading-relaxed">We couldn't find any results matching <span class="text-white font-bold">"{{ query }}"</span> with the current filter.</p>
+        <a aria-label="Go Home" href="{{ url_for('routes.home') }}" class="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-bold transition-colors shadow-lg shadow-red-600/20 flex items-center hover:scale-105 duration-300">
+            <i class="fa-solid fa-house mr-2" aria-hidden="true"></i> Return Home
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

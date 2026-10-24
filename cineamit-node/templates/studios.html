@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}All Production Studios - CINEAMIT{% endblock %}
+{% block meta_desc %}Browse movies from top production studios globally.{% endblock %}
+{% block content %}
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.4s ease-out forwards;
+        will-change: transform, opacity;
+    }
+</style>
+<div class="pt-6 md:pt-8 pb-12 px-4 sm:px-6 md:px-12 max-w-[1800px] mx-auto min-h-screen animate-fade-in">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 border-b border-gray-800 pb-4 gap-4">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-white border-l-4 border-red-600 pl-4 tracking-wide">
+                All Production Studios
+            </h1>
+            <p class="text-gray-400 mt-2 pl-5 text-sm">Select a studio to browse its movie catalog.</p>
+        </div>
+        <a aria-label="Go Back to Home" href="/" class="flex items-center text-sm font-bold text-gray-400 hover:text-white transition-colors bg-gray-900 px-4 py-2 rounded-lg border border-gray-800 hover:border-gray-600">
+            <i class="fa-solid fa-arrow-left mr-2" aria-hidden="true"></i> Back to Home
+        </a>
+    </div>
+    <div class="mb-8 max-w-sm">
+        <div class="relative group">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                <i class="fa-solid fa-magnifying-glass text-gray-500 group-focus-within:text-red-500 transition-colors" aria-hidden="true"></i>
+            </div>
+            <input aria-label="Search for a studio" type="text" id="studioSearch" 
+                   class="bg-[#141519] border border-gray-700 text-white text-sm rounded-xl focus:ring-1 focus:ring-red-600 focus:border-red-600 block w-full pl-10 p-3 transition-all placeholder-gray-400 shadow-inner" 
+                   placeholder="Search for a studio...">
+        </div>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6" id="studiosContainer">
+        {% for studio in studios %}
+            <a aria-label="{{ studio.name }}" href="/studio/{{ studio.id }}?name={{ studio.slug|default(studio.name)|url_encode }}" 
+               class="studio-card flex flex-col items-center justify-center p-6 bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl hover:border-red-600 hover:shadow-[0_0_25px_rgba(220,38,38,0.25)] hover:-translate-y-2 transition-transform duration-300 group relative overflow-hidden">
+                <div class="absolute inset-0 bg-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="w-16 h-16 md:w-20 md:h-20 rounded-full shadow-inner border-2 border-gray-700 bg-gradient-to-br from-gray-800 to-black flex items-center justify-center group-hover:scale-110 group-hover:border-red-500 transition-all z-10 overflow-hidden">
+                    <span class="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 group-hover:from-red-400 group-hover:to-red-600 drop-shadow-md">
+                        {{ studio.name|first|upper }}
+                    </span>
+                    {% if studio.thumbnail_url %}
+                    {# TMDB company logo server-side proxy se (pehle hardcoded paths 404 dete the) — fail ho to letter avatar rehta hai #}
+                    <img data-studio-logo src="{{ studio.thumbnail_url }}" alt="{{ studio.name }} logo"
+                         loading="lazy" decoding="async" referrerpolicy="no-referrer"
+                         class="hidden w-full h-full object-contain p-2"
+                         onload="this.classList.remove('hidden'); if (this.previousElementSibling) this.previousElementSibling.classList.add('hidden');"
+                         onerror="this.remove();">
+                    {% endif %}
+                </div>
+                <span class="studio-name text-xs md:text-sm font-bold text-gray-500 group-hover:text-gray-200 mt-4 text-center truncate w-full uppercase tracking-widest transition-colors z-10">
+                    {{ studio.name }}
+                </span>
+            </a>
+        {% endfor %}
+        <div id="noResultsMsg" class="hidden col-span-full py-16 text-center animate-fade-in">
+            <i class="fa-solid fa-satellite-dish text-4xl text-gray-600 mb-4 animate-pulse" aria-hidden="true"></i>
+            <h2 class="text-lg text-white font-bold mb-1">No studios found</h2>
+            <p class="text-gray-400 text-sm">Try searching with a different name.</p>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('studioSearch');
+        const cards = document.querySelectorAll('.studio-card');
+        const noResultsMsg = document.getElementById('noResultsMsg');
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            let hasVisibleCards = false;
+            cards.forEach(card => {
+                const name = card.querySelector('.studio-name').textContent.toLowerCase();
+                if (name.includes(searchTerm)) {
+                    card.style.display = 'flex';
+                    hasVisibleCards = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            if (!hasVisibleCards) {
+                noResultsMsg.style.display = 'block';
+            } else {
+                noResultsMsg.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

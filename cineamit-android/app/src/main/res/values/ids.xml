@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="tag_motion_anim" type="id" />
+    <item name="tag_motion_press" type="id" />
+    <item name="tag_motion_entered" type="id" />
+    <item name="tag_pad_inset" type="id" />
+    <item name="tag_pad_island" type="id" />
+    <item name="tag_load_more" type="id" />
+    <item name="cineAdBanner" type="id" />
+    <item name="cineAdBannerTop" type="id" />
+</resources>

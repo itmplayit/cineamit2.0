@@ -1,0 +1,340 @@
+        <div id="tab-settings" class="tab-content hidden animate-fade-in">
+            {% if current_user.role in ['owner', 'super_admin'] %}
+            <div class="bg-gray-900 border border-amber-800/40 rounded-2xl shadow-xl overflow-hidden p-6 mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b border-gray-800 pb-4">
+                    <div>
+                        <h2 class="text-lg font-black text-white flex items-center gap-2">
+                            <i class="fa-solid fa-hourglass-end text-amber-400"></i> Website watch limit
+                        </h2>
+                        <p class="text-xs text-gray-400 mt-1">Daily content unlocks, not measured video plays. Access is counted when secure-play admits the provider redirect, even if playback later fails. Same-day replay/server switch is free. Reset: 12 AM IST. Android unchanged. Legacy rolling-month/IP limits are no longer applied.</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0 {% if watch_limit.enabled %}bg-amber-500/15 text-amber-300 border border-amber-500/30{% else %}bg-gray-700 text-gray-400 border border-gray-600{% endif %}">
+                        {% if watch_limit.enabled %}ON{% else %}OFF{% endif %}
+                    </span>
+                </div>
+                <form action="/admin/update_watch_limit" method="POST" class="space-y-4">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="revision" value="{{ watch_limit.revision|default('') }}">
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <label class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-4 flex items-center justify-between gap-3 cursor-pointer">
+                            <span><span class="block text-sm font-bold text-white">Limit ON</span><span class="block text-[10px] text-gray-500 mt-0.5">Website /watch only</span></span>
+                            <input type="checkbox" name="enabled" value="1" class="w-5 h-5 accent-amber-500" {% if watch_limit.enabled %}checked{% endif %}>
+                        </label>
+                        <label class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-4 flex items-center justify-between gap-3 cursor-pointer">
+                            <span><span class="block text-sm font-bold text-white">Guests</span><span class="block text-[10px] text-gray-500 mt-0.5">Signed cookie soft limit; not bypass-proof</span></span>
+                            <input type="checkbox" name="guests" value="1" class="w-5 h-5 accent-amber-500" {% if watch_limit.guests %}checked{% endif %}>
+                        </label>
+                        <label class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-4 flex items-center justify-between gap-3 cursor-pointer">
+                            <span><span class="block text-sm font-bold text-white">Staff exempt</span><span class="block text-[10px] text-gray-500 mt-0.5">Owner / admin / editor</span></span>
+                            <input type="checkbox" name="exempt_staff" value="1" class="w-5 h-5 accent-amber-500" {% if watch_limit.exempt_staff %}checked{% endif %}>
+                        </label>
+                        <label class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-4 flex items-center justify-between gap-3 cursor-pointer sm:col-span-2">
+                            <span><span class="block text-sm font-bold text-white">Kids exempt</span><span class="block text-[10px] text-gray-500 mt-0.5">Default ON — kids profiles skip the quota</span></span>
+                            <input type="checkbox" name="exempt_kids" value="1" class="w-5 h-5 accent-amber-500" {% if watch_limit.exempt_kids %}checked{% endif %}>
+                        </label>
+                    </div>
+                    <div>
+                        <label for="daily_max" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">New titles / IST day (0 = unlimited)</label>
+                        <input id="daily_max" type="number" name="daily_max" min="0" max="100" required value="{{ watch_limit.daily_max is defined ? watch_limit.daily_max : 10 }}" class="mt-1 w-full bg-[#141519] border border-gray-700 rounded-lg px-4 py-2.5 text-sm">
+                        <p class="text-xs text-gray-400 mt-2">Guest quota uses a signed browser cookie: clearing cookies/incognito can reset it. Guests OFF means unlimited, not login required. Accounts have a shared quota across profiles/devices. Staff/Kids exemptions below are explicit exceptions.</p>
+                        {% if watch_limit.available is defined and not watch_limit.available %}<p class="text-red-400">Settings unavailable. Reload after database recovery; saves will not proceed.</p>{% endif %}
+                    </div>
+                    <div>
+                        <label for="watch_limit_message" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Lock message (optional)</label>
+                        <input id="watch_limit_message" type="text" name="message" maxlength="400" value="{{ watch_limit.message }}" placeholder="Empty = default copy" class="mt-1 w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm outline-none focus:border-amber-500">
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-2.5 rounded-lg text-sm cursor-pointer">
+                            <i class="fa-solid fa-floppy-disk mr-2"></i>Save daily limit
+                        </button>
+                        <button type="submit" name="preset" value="daily10" class="border border-amber-500 text-amber-300 px-4 py-2 rounded-lg text-sm" onclick="return confirm('Enable 10 unlocks/day + guest soft quota; clear legacy monthly/IP rules and custom lock text? Staff/Kids exemptions stay as selected.');">Apply recommended 10/day</button>
+                    </div>
+                </form>
+                <form action="/admin/reset_watch_limit" method="POST" class="mt-4" onsubmit="return confirm('Saare website watch counters reset?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" class="text-xs font-bold text-red-400 hover:text-red-300 border border-red-500/30 bg-red-500/10 px-4 py-2 rounded-lg cursor-pointer">
+                        <i class="fa-solid fa-rotate-left mr-1"></i>Reset all counters
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl shadow-xl overflow-hidden p-6">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2 mb-2">
+                    <i class="fa-solid fa-cloud-arrow-down text-blue-500"></i> Multiple Download Links
+                </h2>
+                <p class="text-gray-500 text-xs mb-6">Manage global redirection strings for download dropdowns across the site.</p>
+                <form action="/admin/add_download" method="POST" class="flex flex-col md:flex-row gap-4 bg-[#0a0a0c] p-5 rounded-xl border border-gray-800/60 shadow-inner mb-6">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="flex-1 flex flex-col gap-2">
+                        <label for="dl_name" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Button Name</label>
+                        <input id="dl_name" type="text" name="name" required placeholder="e.g. 1080p Download" class="w-full bg-[#141519] border border-gray-700 text-white text-sm rounded-lg px-4 py-3 outline-none focus:border-blue-500 transition-colors">
+                    </div>
+                    <div class="flex-1 flex flex-col gap-2">
+                        <label for="media_type_filter" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Target Content</label>
+                        <select id="media_type_filter" name="media_type_filter" class="w-full bg-[#141519] border border-gray-700 text-white text-sm rounded-lg px-4 py-3 outline-none focus:border-blue-500 transition-colors cursor-pointer appearance-none">
+                            <option value="all">Both (Movies & TV)</option>
+                            <option value="movie">Movies Only</option>
+                            <option value="tv">TV Shows Only</option>
+                        </select>
+                    </div>
+                    <div class="flex-[2] flex flex-col gap-2">
+                        <label for="dl_pattern" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">URL Pattern</label>
+                             <!-- {tmdb_id} placeholders (browser URL validation) — now type=text,
+                             server-side validates http(s):// prefix. -->
+                        <input id="dl_pattern" type="text" name="pattern_url" required placeholder="https://domain.com/dl?id={tmdb_id}&s={s}&e={e}" pattern="https?://.*" title="Must start with http:// or https://" class="w-full bg-[#141519] border border-gray-700 text-white text-sm rounded-lg px-4 py-3 outline-none focus:border-blue-500 transition-colors">
+                    </div>
+                    <button aria-label="Add Download Link" type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg shadow-[0_0_15px_rgba(37,99,235,0.3)] self-end mb-[1px] cursor-pointer">
+                        <i class="fa-solid fa-plus"></i> Add
+                    </button>
+                </form>
+                <div class="overflow-x-auto border border-gray-800 rounded-xl bg-[#0a0a0c] render-optimize">
+                    <table class="w-full text-left text-sm text-gray-400 min-w-[500px]">
+                        <thead class="bg-gray-900/60 text-gray-300 uppercase font-bold text-[10px] tracking-wider border-b border-gray-800">
+                            <tr>
+                                <th scope="col" class="px-4 py-3">Button Name</th>
+                                <th scope="col" class="px-4 py-3">URL Pattern</th>
+                                <th scope="col" class="px-4 py-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800/60">
+                            {% for dl in download_links %}
+                            <tr class="hover:bg-gray-800/40 transition-all duration-300 {% if dl.is_active is defined and dl.is_active == 0 %}opacity-50 grayscale{% endif %}">
+                                <td class="px-4 py-3 font-bold text-white text-xs whitespace-nowrap">
+                                    {{ dl.name }}
+                                    {% if dl.is_active is defined and dl.is_active == 0 %}
+                                    <span class="ml-1 bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded text-[9px] uppercase border border-gray-600">Off</span>
+                                    {% endif %}
+                                    <span class="ml-1 bg-blue-900/30 text-blue-400 px-1.5 py-0.5 rounded text-[9px] uppercase border border-blue-500/20">
+                                        {{ dl.media_type_filter | default('all') }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 font-mono text-[10px] text-gray-500 truncate max-w-[200px]">{{ dl.pattern_url }}</td>
+                                <td class="px-4 py-3 text-right flex items-center justify-end gap-1">
+                                    <form action="/admin/toggle_download/{{ dl.id }}" method="POST" class="m-0 inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        {% if dl.is_active is defined and dl.is_active == 0 %}
+                                        <button aria-label="Enable Download Link" type="submit" class="text-green-500 hover:text-green-400 bg-green-500/10 px-3 py-1.5 rounded-md text-[10px] font-bold border border-green-500/20 cursor-pointer">
+                                            <i class="fa-solid fa-play mr-1"></i>
+                                        </button>
+                                        {% else %}
+                                        <button aria-label="Disable Download Link" type="submit" class="text-yellow-500 hover:text-yellow-400 bg-yellow-500/10 px-3 py-1.5 rounded-md text-[10px] font-bold border border-yellow-500/20 cursor-pointer">
+                                            <i class="fa-solid fa-pause mr-1"></i>
+                                        </button>
+                                        {% endif %}
+                                    </form>
+                                    <form action="/admin/delete_download/{{ dl.id }}" method="POST" class="m-0 inline" onsubmit="return confirm('Delete this download link?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button aria-label="Delete Download Link" type="submit" class="text-red-500 hover:text-red-400 bg-red-500/10 px-3 py-1.5 rounded-md text-[10px] font-bold border border-red-500/20 cursor-pointer">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="3" class="px-4 py-6 text-center text-gray-500 text-xs italic">No custom download links added.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl mb-6 mt-6 shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b border-gray-800 pb-4">
+                    <div>
+                        <h3 class="text-white font-black text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-clapperboard text-amber-500"></i> Ad Monetization Manager
+                        </h3>
+                        <p class="text-xs text-gray-400 mt-1">Website ads (HilltopAds / Adsterra). Android app ads + points are controlled in the <b>App Ads &amp; Points</b> tab. Kids profiles always ad-free.</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0 {% if site_ads_enabled %}bg-green-500/15 text-green-400 border border-green-500/30{% else %}bg-red-500/15 text-red-400 border border-red-500/30{% endif %}">
+                        {% if site_ads_enabled %}Ads Enabled{% else %}Ads Disabled{% endif %}
+                    </span>
+                </div>
+                <div class="space-y-5">
+                    <div class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <div class="text-sm font-bold text-white">Website Ad Switch</div>
+                            <p class="text-[11px] text-gray-500 mt-0.5">Site banners / VAST / Adsterra. Owner/Super Admin toggle. Does not affect the Android app.</p>
+                        </div>
+                        {% if current_user.role in ['owner', 'super_admin'] %}
+                        <form action="/admin/update_site_ads" method="POST" class="m-0 shrink-0">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            {% if not site_ads_enabled %}<input type="hidden" name="site_ads_enabled" value="on">{% endif %}
+                            <button type="submit" class="relative w-14 h-7 rounded-full transition-colors cursor-pointer {% if site_ads_enabled %}bg-green-600{% else %}bg-gray-700{% endif %}" title="Toggle website ads">
+                                <span class="absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full transition-transform {% if site_ads_enabled %}translate-x-7{% endif %}"></span>
+                            </button>
+                        </form>
+                        {% else %}
+                        <code class="px-3 py-1 rounded-lg bg-[#141519] border border-gray-800 text-xs text-gray-200">ADS = {% if site_ads_enabled %}ON{% else %}OFF{% endif %}</code>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <div class="text-xs font-black uppercase tracking-widest text-amber-400 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-video"></i> Video Pre-roll — Primary then Fallback
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="bg-[#0a0a0c] border border-amber-500/30 rounded-xl p-4">
+                                <div class="text-xs font-black uppercase tracking-wider text-amber-300 mb-2">1. HilltopAds VAST — Primary (HILLTOPADS_VAST_URL)</div>
+                                <p class="text-[11px] text-gray-500 mb-2">Tried first. Adsterra VAST is used only if this tag times out, fails, or has no usable safe video.</p>
+                                <pre class="max-h-36 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-[#141519] border border-gray-800 p-3 text-[11px] text-gray-200">{% if ad_settings.hilltopads_vast_url is not empty %}{{ ad_settings.hilltopads_vast_url|e }}{% else %}Not configured{% endif %}</pre>
+                            </div>
+                            <div class="bg-[#0a0a0c] border border-purple-500/30 rounded-xl p-4">
+                                <div class="text-xs font-black uppercase tracking-wider text-purple-300 mb-2">2. Second VAST tag — Fallback (VAST_FALLBACK_URL)</div>
+                                <p class="text-[11px] text-gray-500 mb-2">Optional. A second VAST tag from any network (e.g. another HilltopAds zone). Used only when the primary returns no usable safe video; playback continues without an ad if both fail. <b>Adsterra has no publisher VAST tag</b> — Adsterra runs from the banner / social bar / popunder placements below.</p>
+                                <pre class="max-h-36 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-[#141519] border border-gray-800 p-3 text-[11px] text-gray-200">{% if ad_settings.vast_fallback_url is not empty %}{{ ad_settings.vast_fallback_url|e }}{% else %}Not configured{% endif %}</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="text-xs font-black uppercase tracking-widest text-blue-400 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-rectangle-ad"></i> Adsterra Placements — read-only .env values (this is all Adsterra monetization besides VAST)
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            {% for placement in ad_settings.adsterra %}
+                            <div class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-4 {% if loop.last %}md:col-span-2{% endif %}">
+                                <div class="text-xs font-black uppercase tracking-wider text-blue-300 mb-2">{{ placement.label|e }}</div>
+                                <pre class="max-h-36 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-[#141519] border border-gray-800 p-3 text-[11px] text-gray-200">{% if placement.value is not empty %}{{ placement.value|e }}{% else %}Not configured{% endif %}</pre>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-gray-500 border-t border-gray-800 pt-4">HilltopAds / Adsterra zone IDs still live in .env (secrets). Website ON/OFF is here. For Android ads + points use the <b>App Ads &amp; Points</b> tab.</p>
+                </div>
+            </div>
+            <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl mb-6 mt-6 shadow-xl">
+                <h3 class="text-white font-black mb-2"><i class="fa-solid fa-globe text-sky-400"></i> Official domain list</h3>
+                <p class="text-xs text-gray-400 mb-4">Globe tap in the header = this list. One domain per line. The V2 button was removed.</p>
+                <form action="/admin/update_domains" method="POST" class="space-y-3">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <textarea aria-label="Official domains" name="domains" rows="6" placeholder="https://example.com&#10;https://mirror.example.com" class="w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-3 outline-none focus:border-sky-500 text-sm font-mono leading-relaxed">{{ site_domains_text | default('') }}</textarea>
+                    <button aria-label="Save domain list" type="submit" class="bg-sky-600 hover:bg-sky-500 text-white px-6 py-2 rounded-lg font-bold cursor-pointer transition-colors shadow-md">Save domains</button>
+                </form>
+            </div>
+            <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl mb-6 mt-6 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-white font-black mb-1"><i class="fa-solid fa-broom text-red-500 mr-2"></i> Force Clear Cache</h3>
+                    <p class="text-gray-500 text-xs">Instantly wipe Twig HTML & TMDB API JSON cache to free up storage or fix data glitches.</p>
+                </div>
+                <form action="/admin/clear_cache" method="POST" class="m-0 shrink-0" onsubmit="return confirm('Are you sure you want to delete all cached files? Site might load slightly slower on the very next request.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" class="bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white border border-red-500/50 px-6 py-2.5 rounded-lg text-sm font-bold transition-all shadow-md cursor-pointer whitespace-nowrap">
+                        <i class="fa-solid fa-trash-can mr-2"></i> Clear Now
+                    </button>
+                </form>
+            </div>
+            {% if current_user.role in ['owner', 'super_admin'] %}
+            <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl mb-6 mt-6 shadow-xl">
+                <h3 class="text-white font-black mb-4"><i class="fa-solid fa-triangle-exclamation text-yellow-500 mr-2"></i>Site Status</h3>
+                {% if not site_status_available %}
+                <p class="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-200" role="alert">Site status is unavailable. Reload to retry; the switches are disabled until the saved state can be read.</p>
+                {% endif %}
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="bg-[#0a0a0c] border {% if maintenance_mode %}border-red-700/50{% else %}border-gray-800{% endif %} rounded-xl p-4 flex items-center justify-between gap-3">
+                        <div>
+                            <div class="text-sm font-bold text-white">Maintenance Mode <span class="ml-2 text-xs text-gray-400">{% if not site_status_available %}Unavailable{% elseif maintenance_mode %}ON{% else %}OFF{% endif %}</span></div>
+                            <p class="text-[10px] text-gray-500 mt-1">ON = the whole site shows the maintenance page (login stays available). Owner/Super Admin always get through.</p>
+                        </div>
+                        <form action="/admin/update_maintenance" method="POST" class="m-0 shrink-0">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <input type="hidden" name="maintenance_mode" value="{{ maintenance_mode ? 'false' : 'true' }}">
+                            <button type="submit" class="relative w-14 h-7 rounded-full transition-colors cursor-pointer {% if maintenance_mode %}bg-red-600{% else %}bg-gray-700{% endif %}" title="Toggle maintenance mode" aria-label="Toggle maintenance mode" role="switch" {% if site_status_available %}aria-checked="{{ maintenance_mode ? 'true' : 'false' }}"{% else %}disabled aria-disabled="true"{% endif %}>
+                                <span class="absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full transition-transform {% if maintenance_mode %}translate-x-7{% endif %}"></span>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="bg-[#0a0a0c] border {% if registration_enabled %}border-green-700/50{% else %}border-gray-800{% endif %} rounded-xl p-4 flex items-center justify-between gap-3">
+                        <div>
+                            <div class="text-sm font-bold text-white">New Registration <span class="ml-2 text-xs text-gray-400">{% if not site_status_available %}Unavailable{% elseif registration_enabled %}ON{% else %}OFF{% endif %}</span></div>
+                            <p class="text-[10px] text-gray-500 mt-1">OFF = new users cannot create accounts. Existing logins are unaffected.</p>
+                        </div>
+                        <form action="/admin/update_registration" method="POST" class="m-0 shrink-0">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <input type="hidden" name="registration_enabled" value="{{ registration_enabled ? 'false' : 'true' }}">
+                            <button type="submit" class="relative w-14 h-7 rounded-full transition-colors cursor-pointer {% if registration_enabled %}bg-green-600{% else %}bg-gray-700{% endif %}" title="Toggle registration" aria-label="Toggle registration" role="switch" {% if site_status_available %}aria-checked="{{ registration_enabled ? 'true' : 'false' }}"{% else %}disabled aria-disabled="true"{% endif %}>
+                                <span class="absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full transition-transform {% if registration_enabled %}translate-x-7{% endif %}"></span>
+                            </button>
+                        </form>
+                    </div>
+                    {% if current_user.role == 'owner' %}
+                    <div class="bg-[#0a0a0c] border border-sky-800/50 rounded-xl p-4 flex items-center justify-between gap-3">
+                        <div>
+                            <div class="text-sm font-bold text-white"><i class="fa-solid fa-database text-sky-400 mr-1"></i>Database Backup</div>
+                            <p class="text-[10px] text-gray-500 mt-1">Full DB .sql dump — downloads. Restore by importing in phpMyAdmin. (Owner only)</p>
+                        </div>
+                        <form action="{{ url_for('routes.admin_backup') }}" method="POST" class="m-0 shrink-0">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit" class="bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-colors cursor-pointer" title="Download full SQL backup"><i class="fa-solid fa-download mr-1"></i>Download .sql</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl mb-6 mt-6 shadow-xl">
+                <h3 class="text-white font-black mb-1"><i class="fa-solid fa-ban text-red-500 mr-2"></i>Content Blacklist</h3>
+                <p class="text-gray-500 text-xs mb-4">TMDB IDs blocked here disappear from every listing, search, details page, and stream (piracy/legal).</p>
+                <form action="/admin/add_blacklist" method="POST" class="flex flex-col md:flex-row gap-3 mb-5">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="md:w-36 flex flex-col gap-1.5">
+                        <label for="bl_id" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">TMDB ID <span class="text-red-400">*</span></label>
+                        <input id="bl_id" type="number" min="1" step="1" name="tmdb_id" required placeholder="e.g. 550" class="w-full bg-[#141519] border border-gray-700 text-white text-sm rounded-lg px-4 py-2.5 outline-none focus:border-red-500">
+                    </div>
+                    <div class="flex-1 flex flex-col gap-1.5">
+                        <label for="bl_title" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Title (for reference)</label>
+                        <input id="bl_title" type="text" name="title" maxlength="200" placeholder="e.g. That Movie (2019)" class="w-full bg-[#141519] border border-gray-700 text-white text-sm rounded-lg px-4 py-2.5 outline-none focus:border-red-500">
+                    </div>
+                    <div class="flex-1 flex flex-col gap-1.5">
+                        <label for="bl_reason" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Reason (optional)</label>
+                        <input id="bl_reason" type="text" name="reason" maxlength="200" placeholder="e.g. Legal takedown request" class="w-full bg-[#141519] border border-gray-700 text-white text-sm rounded-lg px-4 py-2.5 outline-none focus:border-red-500">
+                    </div>
+                    <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 px-6 rounded-lg self-end shrink-0 cursor-pointer whitespace-nowrap md:self-auto md:mb-[1px]"><i class="fa-solid fa-ban mr-1.5"></i>Block</button>
+                </form>
+                <div class="overflow-x-auto border border-gray-800 rounded-xl bg-[#0a0a0c]">
+                    <table class="w-full text-left text-xs text-gray-400 min-w-[500px]">
+                        <thead class="bg-gray-900/60 text-gray-300 uppercase font-bold text-[10px] tracking-wider border-b border-gray-800">
+                            <tr>
+                                <th scope="col" class="px-4 py-2.5">TMDB ID</th>
+                                <th scope="col" class="px-4 py-2.5">Title</th>
+                                <th scope="col" class="px-4 py-2.5">Reason</th>
+                                <th scope="col" class="px-4 py-2.5">Blocked Since</th>
+                                <th scope="col" class="px-4 py-2.5 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800/60">
+                            {% for bl in blacklist %}
+                            <tr class="hover:bg-gray-800/40">
+                                <td class="px-4 py-2.5 font-mono text-white font-bold">{{ bl.tmdb_id }}</td>
+                                <td class="px-4 py-2.5">{{ bl.title }}</td>
+                                <td class="px-4 py-2.5 text-gray-500">{{ bl.reason | default('—') }}</td>
+                                <td class="px-4 py-2.5 text-gray-500">{{ (bl.created_at) ? (bl.created_at|date('d M Y H:i')) : ('—') }}</td>
+                                <td class="px-4 py-2.5 text-right">
+                                    <form action="/admin/delete_blacklist/{{ bl.id }}" method="POST" class="m-0 inline" onsubmit="return confirm('Unblock TMDB {{ bl.tmdb_id }}? The title will return on the site.');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button type="submit" class="text-green-500 hover:text-green-400 bg-green-500/10 px-3 py-1.5 rounded-md text-[10px] font-bold border border-green-500/20 cursor-pointer"><i class="fa-solid fa-unlock mr-1"></i>Unblock</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="px-4 py-6 text-center text-gray-500 text-xs italic">No titles are blacklisted.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% if current_user.role in ['owner', 'super_admin'] %}
+            <div class="bg-gray-900 border border-gray-800 p-6 rounded-2xl mb-6 mt-6 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-white font-black mb-1"><i class="fa-solid fa-database text-purple-500 mr-2"></i>Full Database Backup</h3>
+                    <p class="text-gray-500 text-xs">Download all tables (structure + data) as one <code class="bg-black px-1.5 py-0.5 rounded text-purple-300">.sql</code> file. Needed before migration/restore.</p>
+                </div>
+                <form action="/admin/export_backup" method="POST" class="inline-flex">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 px-6 rounded-lg shadow-md cursor-pointer whitespace-nowrap text-sm transition-colors">
+                        <i class="fa-solid fa-file-arrow-down mr-2"></i>Download .sql
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+

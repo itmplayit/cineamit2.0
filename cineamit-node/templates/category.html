@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+{% block title %}{{ seo.title }}{% endblock %}
+{% block meta_desc %}{{ seo.description }}{% endblock %}
+{% block content %}
+<div class="p-4 sm:p-6 md:p-8 min-h-screen">
+    {% include "seo_breadcrumbs.html" %}
+    <div class="mb-6 md:mb-8 border-b border-gray-800 pb-4">
+        <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center">
+            <i class="fa-solid {{ icon }} mr-3 text-red-600"></i> 
+            {{ title }}
+        </h1>
+        <p class="text-gray-400 mt-2 text-xs sm:text-sm md:text-base">{{ seo.intro }}</p>
+    </div>
+    {% if items %}
+    <div class="mb-8 w-full max-w-[1800px] mx-auto">
+        <form id="filterForm" method="GET" action="{{ url_for('routes.filter_page') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            {% if provider_id %}
+            <input type="hidden" name="provider_id" value="{{ provider_id }}">
+            {% endif %}
+            <div class="mb-3">
+                <input aria-label="Search content in category" type="text" name="q" value="{{ query ?: '' }}" placeholder="Search movies or shows..." class="w-full bg-[#141519] border border-gray-800 text-gray-300 text-sm rounded-md px-4 py-3 outline-none focus:border-gray-600 shadow-inner">
+            </div>
+            <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 md:gap-3 items-center">
+                <select aria-label="Select Media Type" title="Media Type" name="type" class="bg-[#24252b] text-gray-300 text-sm rounded-md px-3 py-2.5 outline-none cursor-pointer border border-transparent hover:border-gray-700 min-w-[110px]">
+                    <option value="movie" {% if media_type == 'movie' %}selected{% endif %}>Movies</option>
+                    <option value="tv" {% if media_type == 'tv' %}selected{% endif %}>TV Shows/Anime</option>
+                </select>
+                <select aria-label="Select Genre" title="Genre" name="genre" class="bg-[#24252b] text-gray-300 text-sm rounded-md px-3 py-2.5 outline-none cursor-pointer border border-transparent hover:border-gray-700 min-w-[110px] max-h-60 overflow-y-auto">
+    <option value="">All Genres</option>
+    
+    <option value="28" {% if genre == '28' %}selected{% endif %}>Action</option>
+    <option value="12" {% if genre == '12' %}selected{% endif %}>Adventure</option>
+    <option value="16" {% if genre == '16' %}selected{% endif %}>Animation</option>
+    <option value="35" {% if genre == '35' %}selected{% endif %}>Comedy</option>
+    <option value="80" {% if genre == '80' %}selected{% endif %}>Crime</option>
+    <option value="99" {% if genre == '99' %}selected{% endif %}>Documentary</option>
+    <option value="18" {% if genre == '18' %}selected{% endif %}>Drama</option>
+    <option value="10751" {% if genre == '10751' %}selected{% endif %}>Family</option>
+    <option value="14" {% if genre == '14' %}selected{% endif %}>Fantasy</option>
+    <option value="36" {% if genre == '36' %}selected{% endif %}>History</option>
+    <option value="27" {% if genre == '27' %}selected{% endif %}>Horror</option>
+    <option value="10402" {% if genre == '10402' %}selected{% endif %}>Music</option>
+    <option value="9648" {% if genre == '9648' %}selected{% endif %}>Mystery</option>
+    <option value="10749" {% if genre == '10749' %}selected{% endif %}>Romance</option>
+    <option value="878" {% if genre == '878' %}selected{% endif %}>Sci-Fi</option>
+    <option value="53" {% if genre == '53' %}selected{% endif %}>Thriller</option>
+    <option value="10770" {% if genre == '10770' %}selected{% endif %}>TV Movie</option>
+    <option value="10752" {% if genre == '10752' %}selected{% endif %}>War</option>
+    <option value="37" {% if genre == '37' %}selected{% endif %}>Western</option>
+
+    <option disabled class="text-gray-500 bg-gray-900 font-bold">-- TV Exclusive --</option>
+    <option value="10759" {% if genre == '10759' %}selected{% endif %}>Action & Adventure</option>
+    <option value="10762" {% if genre == '10762' %}selected{% endif %}>Kids</option>
+    <option value="10763" {% if genre == '10763' %}selected{% endif %}>News</option>
+    <option value="10764" {% if genre == '10764' %}selected{% endif %}>Reality</option>
+    <option value="10765" {% if genre == '10765' %}selected{% endif %}>Sci-Fi & Fantasy</option>
+    <option value="10766" {% if genre == '10766' %}selected{% endif %}>Soap</option>
+    <option value="10767" {% if genre == '10767' %}selected{% endif %}>Talk</option>
+    <option value="10768" {% if genre == '10768' %}selected{% endif %}>War & Politics</option>
+</select>
+    <select aria-label="Sort Results" title="Sort By" name="sort" class="bg-[#24252b] text-gray-300 text-sm rounded-md px-3 py-2.5 outline-none cursor-pointer border border-transparent hover:border-gray-700 min-w-[110px] max-h-60 overflow-y-auto">
+    <option value="popularity.desc" {% if sort == 'popularity.desc' or sort == '' %}selected{% endif %}>🔥 Most Popular</option>
+    <option value="popularity.asc" {% if sort == 'popularity.asc' %}selected{% endif %}>Least Popular</option>
+    
+    <option value="vote_average.desc" {% if sort == 'vote_average.desc' %}selected{% endif %}>⭐ Highest Rated</option>
+    <option value="vote_average.asc" {% if sort == 'vote_average.asc' %}selected{% endif %}>Lowest Rated</option>
+    
+    <option value="primary_release_date.desc" {% if sort == 'primary_release_date.desc' %}selected{% endif %}>📅 Newest First</option>
+    <option value="primary_release_date.asc" {% if sort == 'primary_release_date.asc' %}selected{% endif %}>Oldest First</option>
+    
+    <option value="revenue.desc" {% if sort == 'revenue.desc' %}selected{% endif %}>💰 Highest Grossing</option>
+    <option value="vote_count.desc" {% if sort == 'vote_count.desc' %}selected{% endif %}>📈 Most Voted</option>
+</select>
+                <select aria-label="Select Release Year" title="Year" name="year" class="bg-[#24252b] text-gray-300 text-sm rounded-md px-3 py-2.5 outline-none cursor-pointer border border-transparent hover:border-gray-700 min-w-[110px] max-h-60 overflow-y-auto">
+    <option value="">All Years</option>
+    {% for y in range(2027, 1900, -1) %}
+    <option value="{{ y }}" {% if year == (y ~ "") %}selected{% endif %}>{{ y }}</option>
+    {% endfor %}
+</select>
+                <select aria-label="Select Network" title="Network" name="network" class="bg-[#24252b] text-gray-300 text-sm rounded-md px-3 py-2.5 outline-none cursor-pointer border border-transparent hover:border-gray-700 hidden md:block min-w-[110px] max-h-60 overflow-y-auto">
+    <option value="">All Networks</option>
+    
+    <option disabled class="text-gray-500 bg-gray-900 font-bold">-- Streaming --</option>
+    <option value="213" {% if network == '213' %}selected{% endif %}>Netflix</option>
+    <option value="1024" {% if network == '1024' %}selected{% endif %}>Amazon</option>
+    <option value="2739" {% if network == '2739' %}selected{% endif %}>Disney+</option>
+    <option value="2552" {% if network == '2552' %}selected{% endif %}>Apple TV+</option>
+    <option value="453" {% if network == '453' %}selected{% endif %}>Hulu</option>
+    <option value="3186" {% if network == '3186' %}selected{% endif %}>Max</option>
+    <option value="3353" {% if network == '3353' %}selected{% endif %}>Peacock</option>
+    <option value="4330" {% if network == '4330' %}selected{% endif %}>Paramount+</option>
+    <option value="1112" {% if network == '1112' %}selected{% endif %}>Crunchyroll</option>
+    
+    <option disabled class="text-gray-500 bg-gray-900 font-bold">-- Premium TV --</option>
+    <option value="49" {% if network == '49' %}selected{% endif %}>HBO</option>
+    <option value="67" {% if network == '67' %}selected{% endif %}>Showtime</option>
+    <option value="318" {% if network == '318' %}selected{% endif %}>Starz</option>
+    <option value="174" {% if network == '174' %}selected{% endif %}>AMC</option>
+    <option value="17" {% if network == '17' %}selected{% endif %}>FX</option>
+    
+    <option disabled class="text-gray-500 bg-gray-900 font-bold">-- Broadcast --</option>
+    <option value="2" {% if network == '2' %}selected{% endif %}>ABC</option>
+    <option value="16" {% if network == '16' %}selected{% endif %}>CBS</option>
+    <option value="9" {% if network == '9' %}selected{% endif %}>NBC</option>
+    <option value="19" {% if network == '19' %}selected{% endif %}>FOX</option>
+    <option value="71" {% if network == '71' %}selected{% endif %}>The CW</option>
+    <option value="4" {% if network == '4' %}selected{% endif %}>BBC One</option>
+    
+    <option disabled class="text-gray-500 bg-gray-900 font-bold">-- Cable / Others --</option>
+    <option value="77" {% if network == '77' %}selected{% endif %}>Syfy</option>
+    <option value="66" {% if network == '66' %}selected{% endif %}>TNT</option>
+    <option value="68" {% if network == '68' %}selected{% endif %}>TBS</option>
+    <option value="433" {% if network == '433' %}selected{% endif %}>Bravo</option>
+    <option value="65" {% if network == '65' %}selected{% endif %}>Comedy Central</option>
+    <option value="56" {% if network == '56' %}selected{% endif %}>Cartoon Network</option>
+    <option value="13" {% if network == '13' %}selected{% endif %}>Nickelodeon</option>
+</select>
+<select aria-label="Select Country" title="Country" name="country" class="bg-[#24252b] text-gray-300 text-sm rounded-md px-3 py-2.5 outline-none cursor-pointer border border-transparent hover:border-gray-700 hidden lg:block min-w-[110px] max-h-60 overflow-y-auto">
+    <option value="">All Countries</option>
+    <option value="AF" {% if country == 'AF' %}selected{% endif %}>Afghanistan</option>
+    <option value="AL" {% if country == 'AL' %}selected{% endif %}>Albania</option>
+    <option value="DZ" {% if country == 'DZ' %}selected{% endif %}>Algeria</option>
+    <option value="AR" {% if country == 'AR' %}selected{% endif %}>Argentina</option>
+    <option value="AM" {% if country == 'AM' %}selected{% endif %}>Armenia</option>
+    <option value="AU" {% if country == 'AU' %}selected{% endif %}>Australia</option>
+    <option value="AT" {% if country == 'AT' %}selected{% endif %}>Austria</option>
+    <option value="AZ" {% if country == 'AZ' %}selected{% endif %}>Azerbaijan</option>
+    <option value="BS" {% if country == 'BS' %}selected{% endif %}>Bahamas</option>
+    <option value="BH" {% if country == 'BH' %}selected{% endif %}>Bahrain</option>
+    <option value="BD" {% if country == 'BD' %}selected{% endif %}>Bangladesh</option>
+    <option value="BY" {% if country == 'BY' %}selected{% endif %}>Belarus</option>
+    <option value="BE" {% if country == 'BE' %}selected{% endif %}>Belgium</option>
+    <option value="BO" {% if country == 'BO' %}selected{% endif %}>Bolivia</option>
+    <option value="BA" {% if country == 'BA' %}selected{% endif %}>Bosnia & Herzegovina</option>
+    <option value="BR" {% if country == 'BR' %}selected{% endif %}>Brazil</option>
+    <option value="BG" {% if country == 'BG' %}selected{% endif %}>Bulgaria</option>
+    <option value="KH" {% if country == 'KH' %}selected{% endif %}>Cambodia</option>
+    <option value="CM" {% if country == 'CM' %}selected{% endif %}>Cameroon</option>
+    <option value="CA" {% if country == 'CA' %}selected{% endif %}>Canada</option>
+    <option value="CL" {% if country == 'CL' %}selected{% endif %}>Chile</option>
+    <option value="CN" {% if country == 'CN' %}selected{% endif %}>China</option>
+    <option value="CO" {% if country == 'CO' %}selected{% endif %}>Colombia</option>
+    <option value="CR" {% if country == 'CR' %}selected{% endif %}>Costa Rica</option>
+    <option value="HR" {% if country == 'HR' %}selected{% endif %}>Croatia</option>
+    <option value="CU" {% if country == 'CU' %}selected{% endif %}>Cuba</option>
+    <option value="CY" {% if country == 'CY' %}selected{% endif %}>Cyprus</option>
+    <option value="CZ" {% if country == 'CZ' %}selected{% endif %}>Czech Republic</option>
+    <option value="DK" {% if country == 'DK' %}selected{% endif %}>Denmark</option>
+    <option value="DO" {% if country == 'DO' %}selected{% endif %}>Dominican Republic</option>
+    <option value="EC" {% if country == 'EC' %}selected{% endif %}>Ecuador</option>
+    <option value="EG" {% if country == 'EG' %}selected{% endif %}>Egypt</option>
+    <option value="SV" {% if country == 'SV' %}selected{% endif %}>El Salvador</option>
+    <option value="EE" {% if country == 'EE' %}selected{% endif %}>Estonia</option>
+    <option value="FI" {% if country == 'FI' %}selected{% endif %}>Finland</option>
+    <option value="FR" {% if country == 'FR' %}selected{% endif %}>France</option>
+    <option value="GE" {% if country == 'GE' %}selected{% endif %}>Georgia</option>
+    <option value="DE" {% if country == 'DE' %}selected{% endif %}>Germany</option>
+    <option value="GH" {% if country == 'GH' %}selected{% endif %}>Ghana</option>
+    <option value="GR" {% if country == 'GR' %}selected{% endif %}>Greece</option>
+    <option value="GT" {% if country == 'GT' %}selected{% endif %}>Guatemala</option>
+    <option value="HK" {% if country == 'HK' %}selected{% endif %}>Hong Kong</option>
+    <option value="HU" {% if country == 'HU' %}selected{% endif %}>Hungary</option>
+    <option value="IS" {% if country == 'IS' %}selected{% endif %}>Iceland</option>
+    <option value="IN" {% if country == 'IN' %}selected{% endif %}>India</option>
+    <option value="ID" {% if country == 'ID' %}selected{% endif %}>Indonesia</option>
+    <option value="IR" {% if country == 'IR' %}selected{% endif %}>Iran</option>
+    <option value="IQ" {% if country == 'IQ' %}selected{% endif %}>Iraq</option>
+    <option value="IE" {% if country == 'IE' %}selected{% endif %}>Ireland</option>
+    <option value="IL" {% if country == 'IL' %}selected{% endif %}>Israel</option>
+    <option value="IT" {% if country == 'IT' %}selected{% endif %}>Italy</option>
+    <option value="JM" {% if country == 'JM' %}selected{% endif %}>Jamaica</option>
+    <option value="JP" {% if country == 'JP' %}selected{% endif %}>Japan</option>
+    <option value="JO" {% if country == 'JO' %}selected{% endif %}>Jordan</option>
+    <option value="KZ" {% if country == 'KZ' %}selected{% endif %}>Kazakhstan</option>
+    <option value="KE" {% if country == 'KE' %}selected{% endif %}>Kenya</option>
+    <option value="KW" {% if country == 'KW' %}selected{% endif %}>Kuwait</option>
+    <option value="LB" {% if country == 'LB' %}selected{% endif %}>Lebanon</option>
+    <option value="LY" {% if country == 'LY' %}selected{% endif %}>Libya</option>
+    <option value="MY" {% if country == 'MY' %}selected{% endif %}>Malaysia</option>
+    <option value="MX" {% if country == 'MX' %}selected{% endif %}>Mexico</option>
+    <option value="MA" {% if country == 'MA' %}selected{% endif %}>Morocco</option>
+    <option value="NP" {% if country == 'NP' %}selected{% endif %}>Nepal</option>
+    <option value="NL" {% if country == 'NL' %}selected{% endif %}>Netherlands</option>
+    <option value="NZ" {% if country == 'NZ' %}selected{% endif %}>New Zealand</option>
+    <option value="NG" {% if country == 'NG' %}selected{% endif %}>Nigeria</option>
+    <option value="NO" {% if country == 'NO' %}selected{% endif %}>Norway</option>
+    <option value="OM" {% if country == 'OM' %}selected{% endif %}>Oman</option>
+    <option value="PK" {% if country == 'PK' %}selected{% endif %}>Pakistan</option>
+    <option value="PS" {% if country == 'PS' %}selected{% endif %}>Palestine</option>
+    <option value="PA" {% if country == 'PA' %}selected{% endif %}>Panama</option>
+    <option value="PY" {% if country == 'PY' %}selected{% endif %}>Paraguay</option>
+    <option value="PE" {% if country == 'PE' %}selected{% endif %}>Peru</option>
+    <option value="PH" {% if country == 'PH' %}selected{% endif %}>Philippines</option>
+    <option value="PL" {% if country == 'PL' %}selected{% endif %}>Poland</option>
+    <option value="PT" {% if country == 'PT' %}selected{% endif %}>Portugal</option>
+    <option value="PR" {% if country == 'PR' %}selected{% endif %}>Puerto Rico</option>
+    <option value="QA" {% if country == 'QA' %}selected{% endif %}>Qatar</option>
+    <option value="RO" {% if country == 'RO' %}selected{% endif %}>Romania</option>
+    <option value="RU" {% if country == 'RU' %}selected{% endif %}>Russia</option>
+    <option value="SA" {% if country == 'SA' %}selected{% endif %}>Saudi Arabia</option>
+    <option value="SN" {% if country == 'SN' %}selected{% endif %}>Senegal</option>
+    <option value="RS" {% if country == 'RS' %}selected{% endif %}>Serbia</option>
+    <option value="SG" {% if country == 'SG' %}selected{% endif %}>Singapore</option>
+    <option value="SK" {% if country == 'SK' %}selected{% endif %}>Slovakia</option>
+    <option value="SI" {% if country == 'SI' %}selected{% endif %}>Slovenia</option>
+    <option value="ZA" {% if country == 'ZA' %}selected{% endif %}>South Africa</option>
+    <option value="KR" {% if country == 'KR' %}selected{% endif %}>South Korea</option>
+    <option value="ES" {% if country == 'ES' %}selected{% endif %}>Spain</option>
+    <option value="LK" {% if country == 'LK' %}selected{% endif %}>Sri Lanka</option>
+    <option value="SE" {% if country == 'SE' %}selected{% endif %}>Sweden</option>
+    <option value="CH" {% if country == 'CH' %}selected{% endif %}>Switzerland</option>
+    <option value="SY" {% if country == 'SY' %}selected{% endif %}>Syria</option>
+    <option value="TW" {% if country == 'TW' %}selected{% endif %}>Taiwan</option>
+    <option value="TH" {% if country == 'TH' %}selected{% endif %}>Thailand</option>
+    <option value="TR" {% if country == 'TR' %}selected{% endif %}>Turkey</option>
+    <option value="UG" {% if country == 'UG' %}selected{% endif %}>Uganda</option>
+    <option value="UA" {% if country == 'UA' %}selected{% endif %}>Ukraine</option>
+    <option value="AE" {% if country == 'AE' %}selected{% endif %}>United Arab Emirates</option>
+    <option value="GB" {% if country == 'GB' %}selected{% endif %}>United Kingdom</option>
+    <option value="US" {% if country == 'US' %}selected{% endif %}>United States</option>
+    <option value="UY" {% if country == 'UY' %}selected{% endif %}>Uruguay</option>
+    <option value="UZ" {% if country == 'UZ' %}selected{% endif %}>Uzbekistan</option>
+    <option value="VE" {% if country == 'VE' %}selected{% endif %}>Venezuela</option>
+    <option value="VN" {% if country == 'VN' %}selected{% endif %}>Vietnam</option>
+    <option value="ZW" {% if country == 'ZW' %}selected{% endif %}>Zimbabwe</option>
+</select>
+<select aria-label="Select Rating" title="Rating" name="rating" class="bg-[#24252b] text-gray-300 text-sm rounded-md px-3 py-2.5 outline-none cursor-pointer border border-transparent hover:border-gray-700 hidden lg:block min-w-[110px]">
+    <option value="">Ratings</option>
+    <option value="9" {% if rating == '9' %}selected{% endif %}>9+ Stars</option>
+    <option value="8" {% if rating == '8' %}selected{% endif %}>8+ Stars</option>
+    <option value="7" {% if rating == '7' %}selected{% endif %}>7+ Stars</option>
+    <option value="6" {% if rating == '6' %}selected{% endif %}>6+ Stars</option>
+    <option value="5" {% if rating == '5' %}selected{% endif %}>5+ Stars</option>
+</select>
+                <div class="col-span-2 sm:ml-auto flex gap-2 w-full sm:w-auto mt-1 sm:mt-0">
+                    <button aria-label="Apply Selected Filters" type="submit" class="flex-1 sm:flex-none bg-gray-700 hover:bg-gray-600 text-white text-sm px-6 py-2.5 rounded-md transition font-bold cursor-pointer">Apply</button>
+                    <a aria-label="Reset All Filters" href="{{ request.path }}" class="flex-1 sm:flex-none bg-[#ff4d4d] hover:bg-red-600 text-white text-sm px-5 py-2.5 rounded-md transition flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-arrow-rotate-left mr-2 text-xs"></i> Reset
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+   <div id="contentGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6">
+        {% for item in items %}
+            {% set item_img = item.poster_path ?: item.profile_path %}
+            {% if item_img %}
+                {% set raw_media = item.media_type ?: media_type %}
+                {% set item_title = item.title ?: item.name %}
+
+                <div class="relative transition-all duration-300 hover:z-[100] animate-fade-in {% if raw_media != 'person' %}movie-preview-card{% endif %}" 
+                     data-id="{{ item.id }}" 
+                     data-type="{{ raw_media }}"
+                     {% if raw_media != 'person' %}
+                     data-title="{{ item_title }}"
+                     data-backdrop="{{ image_base|default("https://image.tmdb.org/t/p") }}/w500{{ item.backdrop_path ?: item_img }}"
+                     data-watch="{{ url_for('player.watch', media_type=raw_media, tmdb_id=item.id, title=item_title) }}"
+                     data-rating="{{ (item.vote_average) ? ((item.vote_average | round(1))) : ('NR') }}"
+                     data-year="{{ ((item.release_date ?: item.first_air_date)) ? ((item.release_date ?: item.first_air_date)[:4]) : ('N/A') }}"
+                     {% endif %}>
+                    
+                    {% if raw_media == 'person' %}
+                        {% set target_url = url_for('routes.actor', slug=(item_title|lower|replace({' ': '-'}) ~ '-' ~ item.id)) %}
+                    {% else %}
+                        {% set target_url = url_for('routes.details', media_type=raw_media, tmdb_id=item.id, title=item_title) %}
+                    {% endif %}
+
+                    <a aria-label="View Details for {{ item_title }}" href="{{ target_url }}" class="block relative rounded-lg overflow-hidden shadow-lg border border-gray-800 aspect-[2/3] transition-all duration-500 hover:scale-105 hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(220,38,38,0.4)] hover:border-red-500/50 group bg-gray-900">
+                        {% if loop.index0 < 4 %}
+                        <img src="{{ image_base|default("https://image.tmdb.org/t/p") }}/w500{{ item_img }}" 
+                             alt="Poster of {{ item_title }}" 
+                             width="300" height="450"
+                             {% if loop.index0 < 2 %}loading="eager" fetchpriority="high"{% else %}loading="eager" decoding="async"{% endif %}
+                             class="w-full h-full object-cover">
+                        {% else %}
+                        <img src="{{ image_base|default("https://image.tmdb.org/t/p") }}/w500{{ item_img }}" loading="lazy" alt="Poster of {{ item_title }}" 
+                             width="300" height="450"
+                             decoding="async"
+                             class="w-full h-full object-cover">
+                        {% endif %}
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-100 group-hover:opacity-0 transition-opacity duration-500"></div>
+
+                        {% set badge_text = 'Movie' %}
+                        {% set badge_color = 'bg-red-600' %}
+                        {% if raw_media == 'tv' %}
+                            {% set badge_text = 'TV Show' %}
+                            {% set badge_color = 'bg-blue-600' %}
+                            {% if item.original_language == 'ja' and (item.genre_ids and 16 in item.genre_ids) %}
+                                {% set badge_text = 'Anime' %}
+                                {% set badge_color = 'bg-purple-600' %}
+                            {% endif %}
+                        {% elseif raw_media == 'movie' %}
+                            {% set badge_text = 'Movie' %}
+                            {% set badge_color = 'bg-red-600' %}
+                        {% elseif raw_media == 'person' %}
+                            {% set badge_text = 'Actor' %}
+                            {% set badge_color = 'bg-amber-600' %}
+                        {% endif %}
+                        
+                        <div class="absolute top-2 left-2 {{ badge_color }}/90 px-2 py-1 rounded text-[10px] text-white font-bold backdrop-blur-md shadow-lg uppercase tracking-wider z-20">
+                            {{ badge_text }}
+                        </div>
+
+                        {% if item.vote_average and raw_media != 'person' %}
+                        <div class="absolute top-2 right-2 bg-black bg-opacity-80 px-2 py-1 rounded text-[11px] text-green-400 font-bold border border-green-500/30 backdrop-blur-md shadow-lg z-20">
+                            <i class="fa-solid fa-star text-[10px] mr-1"></i>{{ item.vote_average | round(1) }}
+                        </div>
+                        {% endif %}
+                    </a>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% set cur_page = seo.page %}
+    {% set max_page = seo.total_pages %}
+    {% set page_base = seo.pagination_base %}
+    {% set max_minus_1 = max_page - 1 %}
+    {% set start_p = cur_page - 2 %}
+    {% if start_p < 2 %}
+        {% set start_p = 2 %}
+    {% endif %}
+    {% set end_p = cur_page + 2 %}
+    {% if cur_page <= 3 and max_page > 5 %}
+        {% set end_p = 5 %}
+    {% endif %}
+    {% if end_p > max_minus_1 %}
+        {% set end_p = max_minus_1 %}
+    {% endif %}
+    <nav aria-label="Pagination" class="w-full flex flex-col items-center justify-center py-10 gap-3 select-none">
+        <div class="flex flex-wrap items-center justify-center gap-2">
+            {% if cur_page > 1 %}
+            <a href="{{ page_base }}page={{ cur_page - 1 }}" class="px-4 py-2.5 rounded-xl bg-[#141519] hover:bg-gray-800 text-gray-200 hover:text-white border border-gray-800 hover:border-gray-600 text-xs md:text-sm font-bold transition-all flex items-center gap-1.5 shadow-md">
+                <i class="fa-solid fa-chevron-left text-[11px]"></i> Prev
+            </a>
+            {% else %}
+            <span class="px-4 py-2.5 rounded-xl bg-[#141519]/50 text-gray-600 border border-gray-800/50 text-xs md:text-sm font-bold flex items-center gap-1.5 cursor-not-allowed">
+                <i class="fa-solid fa-chevron-left text-[11px]"></i> Prev
+            </span>
+            {% endif %}
+
+            <a href="{{ page_base }}page=1" class="min-w-[40px] h-10 px-3 rounded-xl flex items-center justify-center text-xs md:text-sm font-extrabold transition-all border {% if cur_page == 1 %}bg-red-600 text-white border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.45)]{% else %}bg-[#141519] text-gray-300 border-gray-800 hover:bg-gray-800 hover:text-white hover:border-gray-600{% endif %}">
+                1
+            </a>
+
+            {% if start_p > 2 %}
+            <span class="px-1.5 text-gray-500 font-bold text-sm">…</span>
+            {% endif %}
+
+            {% if end_p >= start_p %}
+                {% for p in range(start_p, end_p) %}
+                <a href="{{ page_base }}page={{ p }}" class="min-w-[40px] h-10 px-3 rounded-xl flex items-center justify-center text-xs md:text-sm font-extrabold transition-all border {% if p == cur_page %}bg-red-600 text-white border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.45)]{% else %}bg-[#141519] text-gray-300 border-gray-800 hover:bg-gray-800 hover:text-white hover:border-gray-600{% endif %}">
+                    {{ p }}
+                </a>
+                {% endfor %}
+            {% endif %}
+
+            {% if end_p < max_minus_1 %}
+            <span class="px-1.5 text-gray-500 font-bold text-sm">…</span>
+            {% endif %}
+
+            {% if max_page > 1 %}
+            <a href="{{ page_base }}page={{ max_page }}" class="min-w-[40px] h-10 px-3 rounded-xl flex items-center justify-center text-xs md:text-sm font-extrabold transition-all border {% if cur_page == max_page %}bg-red-600 text-white border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.45)]{% else %}bg-[#141519] text-gray-300 border-gray-800 hover:bg-gray-800 hover:text-white hover:border-gray-600{% endif %}">
+                {{ max_page }}
+            </a>
+            {% endif %}
+
+            {% if cur_page < max_page %}
+            <a href="{{ page_base }}page={{ cur_page + 1 }}" class="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white border border-red-500 text-xs md:text-sm font-bold transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(220,38,38,0.35)]">
+                Next <i class="fa-solid fa-chevron-right text-[11px]"></i>
+            </a>
+            {% else %}
+            <span class="px-4 py-2.5 rounded-xl bg-[#141519]/50 text-gray-600 border border-gray-800/50 text-xs md:text-sm font-bold flex items-center gap-1.5 cursor-not-allowed">
+                Next <i class="fa-solid fa-chevron-right text-[11px]"></i>
+            </span>
+            {% endif %}
+        </div>
+        <p class="text-[11px] text-gray-500 font-bold uppercase tracking-widest">
+            Page <span class="text-gray-300">{{ cur_page }}</span> of <span class="text-gray-300">{{ max_page }}</span>
+        </p>
+    </nav>
+    {% else %}
+    <div class="flex flex-col items-center justify-center h-64 text-center">
+        <i class="fa-solid fa-satellite-dish text-6xl text-gray-700 mb-4"></i>
+        <h2 class="text-2xl font-bold text-gray-400">No content available right now.</h2>
+        <p class="text-gray-500 mt-2">Please check your filters or try again later.</p>
+    </div>
+    {% endif %}
+ </div>
+<footer class="bg-[#0f1014] border-t border-gray-800/60 pt-16 pb-10 mt-16 relative z-50">
+    <div class="w-full max-w-5xl mx-auto my-6 bg-gray-900 border border-gray-800 rounded-lg flex items-center justify-center min-h-[100px] overflow-hidden relative">
+            <span data-adsterra-smartlink class="text-[10px] text-gray-400 uppercase tracking-widest absolute top-2 right-4">Sponsored</span>
+            <div class="ad-slot-728 text-gray-400 text-sm py-2"></div>
+        </div>
+    <div class="max-w-[1800px] mx-auto px-6 md:px-12">
+        <div class="flex gap-6 mb-8 text-2xl text-gray-400">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-facebook-f" aria-hidden="true"></i></a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-instagram" aria-hidden="true"></i></a>
+            <a href="https://twitter.com/CineAmit" target="_blank" rel="noopener noreferrer" aria-label="Twitter" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-twitter" aria-hidden="true"></i></a>
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-youtube" aria-hidden="true"></i></a>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10 text-sm text-gray-400 font-medium tracking-wide">
+            <div class="flex flex-col gap-3">
+                <a href="/faq" class="hover:underline hover:text-gray-300 transition-colors">FAQ</a>
+                <a href="/about" class="hover:underline hover:text-gray-300 transition-colors">About Us</a>
+                <a href="/livetv" class="hover:underline hover:text-gray-300 transition-colors">Live TV Channels</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <a href="/help" class="hover:underline hover:text-gray-300 transition-colors">Help Center</a>
+                <a href="/movies/popular" class="hover:underline hover:text-gray-300 transition-colors">Popular Movies</a>
+                <a href="/terms" class="hover:underline hover:text-gray-300 transition-colors">Terms of Use</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <a href="/profile" class="hover:underline hover:text-gray-300 transition-colors">Account</a>
+                <a href="/privacy" class="hover:underline hover:text-gray-300 transition-colors">Privacy Policy</a>
+                <a href="/dmca" class="hover:underline hover:text-gray-300 transition-colors">DMCA / Copyright</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <a href="/blog" class="hover:underline hover:text-gray-300 transition-colors">Media Center & Blog</a>
+                <a href="/contact" class="hover:underline hover:text-gray-300 transition-colors">Contact Us</a>
+                <a href="/legal" class="hover:underline hover:text-gray-300 transition-colors">Legal Notices</a>
+            </div>
+        </div>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <button class="border border-gray-600 text-gray-400 hover:text-white hover:border-white transition-colors px-3 py-1.5 text-xs font-bold tracking-widest uppercase">
+                Service Code
+            </button>
+            <div class="text-gray-500 text-xs text-left md:text-right">
+                <p>&copy; 2026 CINEAMIT. All Rights Reserved.</p>
+                <p class="mt-1">Designed for a premium cinematic experience.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+{% endblock %}

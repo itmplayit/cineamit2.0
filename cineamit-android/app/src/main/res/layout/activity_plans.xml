@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0A0612"
+    android:orientation="vertical">
+
+    <include layout="@layout/include_cine_header" />
+
+    <ScrollView
+        android:id="@+id/plansScroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="18dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="28dp">
+
+            <TextView
+                android:id="@+id/plansPoints"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/custom"
+                android:text="0 pts"
+                android:textColor="#F4F1EA"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/plansStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/custom"
+                android:textColor="#C4B5FD"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/providerAdsNotice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/provider_ads_notice"
+                android:textColor="#9C9C9C"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/btnEarn"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/chip_on"
+                android:fontFamily="@font/custom"
+                android:gravity="center"
+                android:text="Watch ad  ·  +50 pts"
+                android:textColor="#C4B5FD"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/cardTrial"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/glass_panel_purple"
+                android:clickable="true"
+                android:focusable="true"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/txtTrialTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/custom"
+                    android:text="FREE TRIAL"
+                    android:textColor="#E8C36A"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txtTrialDays"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:fontFamily="@font/custom"
+                    android:text="14 days  ·  0 pts"
+                    android:textColor="#F4F1EA"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txtTrialBlurb"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="No app ads. Ek baar per account."
+                    android:textColor="#C4B5FD"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/cardFree"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/glass_panel"
+                android:clickable="true"
+                android:focusable="true"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/custom"
+                    android:text="FREE"
+                    android:textColor="#A78BFA"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:fontFamily="@font/custom"
+                    android:text="0 pts"
+                    android:textColor="#F4F1EA"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Movies, series, anime, Live TV.\nWatch ads to collect points."
+                    android:textColor="#9C9C9C"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/cardMonthly"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/glass_panel_purple"
+                android:clickable="true"
+                android:focusable="true"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/txtMonthlyTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/custom"
+                    android:text="PREMIUM MONTHLY"
+                    android:textColor="#C4B5FD"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txtMonthlyCost"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:fontFamily="@font/custom"
+                    android:text="500 pts  ·  30 days"
+                    android:textColor="#F4F1EA"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txtMonthlyBlurb"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="No app ads. VIP servers are free for everyone."
+                    android:textColor="#C4B5FD"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/cardYearly"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/glass_panel_purple"
+                android:clickable="true"
+                android:focusable="true"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/txtYearlyTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/custom"
+                    android:text="PREMIUM YEARLY  ·  BEST VALUE"
+                    android:textColor="#E8C36A"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txtYearlyCost"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:fontFamily="@font/custom"
+                    android:text="4500 pts  ·  365 days"
+                    android:textColor="#F4F1EA"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txtYearlyBlurb"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Best yearly value. No app ads."
+                    android:textColor="#C4B5FD"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/btnChoose"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="22dp"
+                android:background="@drawable/gradient_btn"
+                android:fontFamily="@font/custom"
+                android:gravity="center"
+                android:text="Continue"
+                android:textColor="#F4F1EA"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btnCancelSub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text="Back to Free"
+                android:textColor="#88C4B5FD"
+                android:textSize="13sp"
+                android:visibility="gone" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

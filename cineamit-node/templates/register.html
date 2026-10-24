@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+{% block title %}Sign Up - CINEAMIT{% endblock %}
+{% block meta_desc %}Create a free CINEAMIT account to track your watch history, create playlists, and enjoy unlimited HD streaming.{% endblock %}
+{% block content %}
+<style>
+    @keyframes fadeInUp {
+        from { transform: translateY(15px); }
+        to { transform: translateY(0); }
+    }
+    .animate-fade-in-up {
+        animation: fadeInUp 0.4s ease-out forwards;
+    }
+    @keyframes pulseSlow {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 0.6; }
+    }
+    .animate-pulse-slow {
+        animation: pulseSlow 8s ease-in-out infinite;
+        will-change: opacity;
+    }
+    .pw-toggle {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        border: 0;
+        border-radius: 0.5rem;
+        background: transparent;
+        color: #9ca3af;
+        cursor: pointer;
+        transition: color .15s, background-color .15s;
+        z-index: 2;
+    }
+    .pw-toggle:hover { color: #f3f4f6; background: rgba(255,255,255,.07); }
+    .pw-toggle:focus-visible { outline: 2px solid #dc2626; outline-offset: 2px; }
+    .pw-toggle svg { width: 20px; height: 20px; display: block; pointer-events: none; }
+    .pw-toggle .icon-hide { display: none; }
+    .pw-toggle.is-visible .icon-show { display: none; }
+    .pw-toggle.is-visible .icon-hide { display: block; }
+    .social-btn { text-decoration: none; }
+    .social-btn:focus-visible { outline: 2px solid #dc2626; outline-offset: 2px; }
+    .social-btn svg { flex-shrink: 0; }
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear { display: none; }
+
+    .pw-hint { min-height: 1rem; font-size: .75rem; margin-top: .35rem; padding-left: .25rem; }
+    .pw-hint.is-ok { color: #22c55e; }
+    .pw-hint.is-bad { color: #ef4444; }
+    /* Register background ab pure CSS — pehle external (Netflix) image hotlink thi. */
+    .cine-auth-bg {
+        background:
+            radial-gradient(1100px 560px at 88% 10%, rgba(220, 38, 38, 0.32), transparent 62%),
+            radial-gradient(900px 520px at 10% 22%, rgba(147, 51, 234, 0.28), transparent 62%),
+            radial-gradient(760px 760px at 50% 108%, rgba(220, 38, 38, 0.16), transparent 66%),
+            linear-gradient(200deg, #0b0d12 0%, #12141b 46%, #05060a 100%);
+    }
+    .cine-auth-bg::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+        background-size: 54px 54px;
+        mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 78%);
+        -webkit-mask-image: radial-gradient(circle at 50% 40%, #000 0%, transparent 78%);
+    }
+</style>
+<div class="relative w-full min-h-[calc(100vh-80px)] flex items-center justify-center bg-black overflow-hidden py-10">
+    <div class="absolute inset-0 z-0">
+        <div class="cine-auth-bg w-full h-full opacity-95 scale-105 animate-pulse-slow" role="img" aria-label="Movies Background"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black/90"></div>
+    </div>
+    <div class="relative z-10 w-full max-w-md mx-4 p-6 sm:p-8 md:p-12 bg-black/70 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-800 transform transition-all animate-fade-in-up">
+        <h1 class="text-3xl font-bold text-white mb-8">Sign Up</h1>
+        {% if registration_unavailable %}
+        <div class="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-200" role="alert">
+            Registration is temporarily unavailable. Please try again in a moment.
+            <a href="{{ url_for('auth.register') }}" class="block mt-3 font-bold underline">Retry registration</a>
+        </div>
+        {% else %}
+        <form method="POST" action="{{ url_for('auth.register') }}" class="space-y-5">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            {% if owner_bootstrap_required %}
+            <div class="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-200">
+                This is the first account on this database. An administrator must configure <code>OWNER_BOOTSTRAP_KEY</code> in <code>.env</code> before an owner can be created.
+            </div>
+            <div class="relative group">
+                <input type="password" name="owner_bootstrap_key" id="owner_bootstrap_key" required autocomplete="off" aria-label="Owner setup key"
+                       class="w-full px-4 py-4 bg-gray-900/80 rounded-lg border border-gray-700 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
+                       placeholder="Owner setup key">
+                <label for="owner_bootstrap_key" class="absolute left-4 top-1 text-xs text-gray-400">Owner setup key</label>
+            </div>
+            {% endif %}
+            <div class="relative group">
+                <input type="text" name="username" id="username" required aria-label="Username" autocomplete="username"
+                       class="w-full px-4 py-4 bg-gray-900/80 rounded-lg border border-gray-700 text-white placeholder-transparent focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 peer transition-colors" 
+                       placeholder="Username">
+                <label for="username" 
+                       class="absolute left-4 top-1 text-xs text-gray-400 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-placeholder-shown:text-gray-500 peer-focus:top-1 peer-focus:text-xs peer-focus:text-gray-400 cursor-text">
+                    Username
+                </label>
+            </div>
+            <div class="relative group">
+                <input type="email" name="email" id="email" required aria-label="Email Address" autocomplete="email"
+                       class="w-full px-4 py-4 bg-gray-900/80 rounded-lg border border-gray-700 text-white placeholder-transparent focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 peer transition-colors" 
+                       placeholder="Email Address">
+                <label for="email" 
+                       class="absolute left-4 top-1 text-xs text-gray-400 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-placeholder-shown:text-gray-500 peer-focus:top-1 peer-focus:text-xs peer-focus:text-gray-400 cursor-text">
+                    Email Address
+                </label>
+            </div>
+            <div class="relative group">
+                <input type="password" name="password" id="password" required minlength="8" aria-label="Password" autocomplete="new-password"
+                       class="w-full px-4 py-4 pr-14 bg-gray-900/80 rounded-lg border border-gray-700 text-white placeholder-transparent focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 peer transition-colors" 
+                       placeholder="Password">
+                <label for="password" 
+                       class="absolute left-4 top-1 text-xs text-gray-400 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-placeholder-shown:text-gray-500 peer-focus:top-1 peer-focus:text-xs peer-focus:text-gray-400 cursor-text">
+                    Password (min. 8 chars, letters &amp; numbers)
+                </label>
+                <button type="button" class="pw-toggle" data-pw-toggle="password"
+                        aria-label="Show password" aria-pressed="false" title="Show password" tabindex="0">
+                    <svg class="icon-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <svg class="icon-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c6.4 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19"></path>
+                        <path d="M6.61 6.61A18.4 18.4 0 0 0 2 12s3.6 7 10 7a9 9 0 0 0 5.39-1.61"></path>
+                        <path d="M14.12 14.12A3 3 0 1 1 9.88 9.88"></path>
+                        <line x1="2" y1="2" x2="22" y2="22"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="relative group">
+                <input type="password" name="confirm_password" id="confirm_password" required minlength="8" aria-label="Confirm Password" autocomplete="new-password"
+                       class="w-full px-4 py-4 pr-14 bg-gray-900/80 rounded-lg border border-gray-700 text-white placeholder-transparent focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 peer transition-colors" 
+                       placeholder="Confirm Password">
+                <label for="confirm_password" 
+                       class="absolute left-4 top-1 text-xs text-gray-400 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-4 peer-placeholder-shown:text-gray-500 peer-focus:top-1 peer-focus:text-xs peer-focus:text-gray-400 cursor-text">
+                    Confirm Password
+                </label>
+                <button type="button" class="pw-toggle" data-pw-toggle="confirm_password"
+                        aria-label="Show password" aria-pressed="false" title="Show password" tabindex="0">
+                    <svg class="icon-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <svg class="icon-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c6.4 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19"></path>
+                        <path d="M6.61 6.61A18.4 18.4 0 0 0 2 12s3.6 7 10 7a9 9 0 0 0 5.39-1.61"></path>
+                        <path d="M14.12 14.12A3 3 0 1 1 9.88 9.88"></path>
+                        <line x1="2" y1="2" x2="22" y2="22"></line>
+                    </svg>
+                </button>
+            </div>
+            <p id="pwHint" class="pw-hint" aria-live="polite"></p>
+            <button aria-label="Create New Account" type="submit" 
+                    class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-lg transition-all duration-300 shadow-[0_0_15px_rgba(220,38,38,0.4)] hover:shadow-[0_0_25px_rgba(220,38,38,0.6)] mt-8 flex items-center justify-center cursor-pointer">
+                Create Account
+            </button>
+        </form>
+        {% endif %}
+
+{% if google_login_enabled or github_login_enabled %}
+        <div class="flex items-center gap-3 my-6">
+            <span class="h-px bg-gray-700 flex-1"></span>
+            <span class="text-xs text-gray-500 uppercase tracking-wider">or</span>
+            <span class="h-px bg-gray-700 flex-1"></span>
+        </div>
+        <div class="flex flex-col gap-3">
+            {% if google_login_enabled %}
+            <a href="{{ url_for('auth.google') }}" aria-label="Continue with Google"
+               class="social-btn flex items-center justify-center gap-3 w-full py-3 rounded-lg font-semibold bg-white text-gray-800 hover:bg-gray-100 transition-colors">
+                <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                    <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/>
+                    <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+                    <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+                    <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 40.2 44 35 44 24c0-1.3-.1-2.6-.4-3.9z"/>
+                </svg>
+                Continue with Google
+            </a>
+            {% endif %}
+            {% if github_login_enabled %}
+            <a href="{{ url_for('auth.github') }}" aria-label="Continue with GitHub"
+               class="social-btn flex items-center justify-center gap-3 w-full py-3 rounded-lg font-semibold bg-[#24292f] text-white border border-gray-600 hover:bg-[#32383f] transition-colors">
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" focusable="false">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                Continue with GitHub
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="mt-8 text-gray-400 text-sm">
+            <p>Already have an account? 
+                <a aria-label="Sign In" href="{{ url_for('auth.login') }}" class="text-white font-semibold hover:underline transition-colors ml-1">Sign In.</a>
+            </p>
+            <p class="mt-4 text-xs text-gray-500 leading-relaxed">
+                By creating an account, you agree to our Terms of Service and Privacy Policy.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    document.querySelectorAll('[data-pw-toggle]').forEach(function (btn) {
+        var input = document.getElementById(btn.getAttribute('data-pw-toggle'));
+        if (!input) return;
+
+        btn.addEventListener('click', function () {
+            var show = input.type === 'password';
+            var start = input.selectionStart, end = input.selectionEnd;
+
+            input.type = show ? 'text' : 'password';
+            btn.classList.toggle('is-visible', show);
+            btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+            btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+            btn.setAttribute('title', show ? 'Hide password' : 'Show password');
+
+            input.focus();
+            try { input.setSelectionRange(start, end); } catch (e) {}
+        });
+    });
+
+    var p1 = document.getElementById('password');
+    var p2 = document.getElementById('confirm_password');
+    var hint = document.getElementById('pwHint');
+    if (!p1 || !p2 || !hint) return;
+
+    function check() {
+        if (!p2.value) {
+            hint.textContent = '';
+            hint.className = 'pw-hint';
+            p2.setCustomValidity('');
+            return;
+        }
+        if (p1.value === p2.value) {
+            hint.textContent = 'Passwords match';
+            hint.className = 'pw-hint is-ok';
+            p2.setCustomValidity('');
+        } else {
+            hint.textContent = 'Passwords do not match';
+            hint.className = 'pw-hint is-bad';
+            p2.setCustomValidity('Passwords do not match');
+        }
+    }
+
+    p1.addEventListener('input', check);
+    p2.addEventListener('input', check);
+})();
+</script>
+{% endblock %}

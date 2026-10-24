@@ -1,0 +1,58 @@
+<resources>
+    <declare-styleable name="SmoothCheckBox">
+        <attr name="duration" format="integer" />
+        <attr name="stroke_width" format="dimension" />
+        <attr name="color_tick" format="color" />
+        <attr name="color_checked" format="color" />
+        <attr name="color_unchecked" format="color" />
+        <attr name="color_unchecked_stroke" format="color" />
+    </declare-styleable>
+
+    <declare-styleable name="RoundImageView">
+        <attr name="riv_corner_radius" format="dimension" />
+        <attr name="riv_corner_radius_top_left" format="dimension" />
+        <attr name="riv_corner_radius_top_right" format="dimension" />
+        <attr name="riv_corner_radius_bottom_left" format="dimension" />
+        <attr name="riv_corner_radius_bottom_right" format="dimension" />
+        <attr name="riv_border_width" format="dimension" />
+        <attr name="riv_border_color" format="color" />
+        <attr name="riv_mutate_background" format="boolean" />
+        <attr name="riv_oval" format="boolean" />
+        <attr name="riv_tile_mode" format="enum">
+            <enum name="clamp" value="0" />
+            <enum name="repeat" value="1" />
+            <enum name="mirror" value="2" />
+        </attr>
+    </declare-styleable>
+
+    <declare-styleable name="ShaderImageView">
+        <attr name="siBorderAlpha" format="float" />
+        <attr name="siBorderColor" format="color" />
+        <attr name="siBorderWidth" format="dimension" />
+        <attr name="siSquare" format="boolean" />
+        <attr name="siBorderType" format="enum">
+            <enum name="stroke" value="0" />
+            <enum name="fill" value="1" />
+        </attr>
+    </declare-styleable>
+
+    <declare-styleable name="GradientTextView">
+        <attr name="isVertical" format="boolean" />
+        <attr name="startColor" format="color" />
+        <attr name="endColor" format="color" />
+    </declare-styleable>
+
+    <declare-styleable name="RippleBackground">
+        <attr name="rb_color" format="color" />
+        <attr name="rb_strokeWidth" format="dimension" />
+        <attr name="rb_radius" format="dimension" />
+        <attr name="rb_duration" format="integer" />
+        <attr name="rb_rippleAmount" format="integer" />
+        <attr name="rb_scale" format="float" />
+        <attr name="rb_type" format="enum">
+            <enum name="fillRipple" value="0" />
+            <enum name="strokeRipple" value="1" />
+        </attr>
+    </declare-styleable>
+</resources>
+

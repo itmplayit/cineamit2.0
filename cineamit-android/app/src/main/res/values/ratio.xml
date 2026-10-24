@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="movie_ratio">0.72</string>
+    <string name="show_ratio">1.96</string>
+    <string name="tv_ratio">1.96</string>
+    <string name="sport_ratio">1.96</string>
+    <string name="language_genre_ratio">1.88</string>
+    <string name="actor_ratio">1</string>
+    <string name="episode_ratio">1.88</string>
+
+</resources>

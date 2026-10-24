@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}About Us - CINEAMIT{% endblock %}
+{% block meta_desc %}Learn more about CINEAMIT — your destination for free HD movies, TV shows, anime and Live TV. Our mission, features, values and how we keep streaming free for everyone.{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-16 min-h-screen animate-fade-in will-change-transform">
+    <div class="text-center mb-16">
+        <h1 class="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight">About <span class="text-red-600 italic">CINE</span><span class="text-white italic">AMIT</span></h1>
+        <p class="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
+            Your ultimate destination for unlimited, high-definition entertainment. We believe that premium streaming should be accessible to everyone, everywhere, absolutely free.
+        </p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
+        <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 text-center">
+            <p class="text-3xl md:text-4xl font-black text-red-600">100K+</p>
+            <p class="text-gray-500 text-sm mt-1">Movies &amp; Shows Indexed</p>
+        </div>
+        <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 text-center">
+            <p class="text-3xl md:text-4xl font-black text-red-600">HD / FHD</p>
+            <p class="text-gray-500 text-sm mt-1">Up to Full HD Quality</p>
+        </div>
+        <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 text-center">
+            <p class="text-3xl md:text-4xl font-black text-red-600">24/7</p>
+            <p class="text-gray-500 text-sm mt-1">Live TV &amp; Updates</p>
+        </div>
+        <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 text-center">
+            <p class="text-3xl md:text-4xl font-black text-red-600">0&#8209;&#8209;</p>
+            <p class="text-gray-500 text-sm mt-1">Fees. Ever.</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+        <div class="bg-[#141519] p-8 rounded-2xl border border-gray-800 shadow-xl hover:border-red-600/50 transition-colors group">
+            <i class="fa-solid fa-film text-4xl text-red-600 mb-4 group-hover:scale-110 transition-transform" aria-hidden="true"></i>
+            <h2 class="text-2xl font-bold text-white mb-3">Vast Library</h2>
+            <p class="text-gray-400 leading-relaxed text-sm md:text-base">From the latest Hollywood blockbusters and Bollywood hits to trending anime and timeless TV series, our catalog is updated daily to bring you the best content from around the globe.</p>
+        </div>
+        <div class="bg-[#141519] p-8 rounded-2xl border border-gray-800 shadow-xl hover:border-purple-600/50 transition-colors group">
+            <i class="fa-solid fa-users text-4xl text-purple-600 mb-4 group-hover:scale-110 transition-transform" aria-hidden="true"></i>
+            <h2 class="text-2xl font-bold text-white mb-3">Watch Together</h2>
+            <p class="text-gray-400 leading-relaxed text-sm md:text-base">Distance doesn't matter anymore. With our built-in Watch Party feature, you can sync streams, create private rooms, and chat with your friends in real-time.</p>
+        </div>
+        <div class="bg-[#141519] p-8 rounded-2xl border border-gray-800 shadow-xl hover:border-blue-600/50 transition-colors group">
+            <i class="fa-solid fa-bolt text-4xl text-blue-600 mb-4 group-hover:scale-110 transition-transform" aria-hidden="true"></i>
+            <h2 class="text-2xl font-bold text-white mb-3">Lightning Fast</h2>
+            <p class="text-gray-400 leading-relaxed text-sm md:text-base">Say goodbye to endless loading screens. We utilize multiple high-speed servers to ensure your movies and shows play in crisp HD quality without annoying buffering interruptions.</p>
+        </div>
+        <div class="bg-[#141519] p-8 rounded-2xl border border-gray-800 shadow-xl hover:border-green-600/50 transition-colors group">
+            <i class="fa-solid fa-shield-halved text-4xl text-green-600 mb-4 group-hover:scale-110 transition-transform" aria-hidden="true"></i>
+            <h2 class="text-2xl font-bold text-white mb-3">Safe &amp; Secure</h2>
+            <p class="text-gray-400 leading-relaxed text-sm md:text-base">No credit cards, no mandatory sign-ups, and a clean interface. Passwords are stored encrypted, sessions are protected, and optional two-factor authentication keeps your account in your hands.</p>
+        </div>
+    </div>
+
+    <div class="mb-16">
+        <h2 class="text-2xl md:text-3xl font-black text-white mb-8 text-center">What CINEAMIT Is — and Isn't</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-8">
+                <h3 class="text-lg font-bold text-green-500 mb-4 flex items-center gap-2"><i class="fa-solid fa-circle-check"></i> What We Are</h3>
+                <ul class="space-y-3 text-gray-400 text-sm leading-relaxed">
+                    <li class="flex gap-3"><i class="fa-solid fa-search text-green-600 mt-1"></i><span>A <b class="text-gray-300">search engine and index</b> for publicly available video links — we point you to content, like a directory.</span></li>
+                    <li class="flex gap-3"><i class="fa-solid fa-server text-green-600 mt-1"></i><span>A fast, clean <b class="text-gray-300">streaming interface</b> with multiple server options so playback keeps moving.</span></li>
+                    <li class="flex gap-3"><i class="fa-solid fa-users text-green-600 mt-1"></i><span>A <b class="text-gray-300">community platform</b> — watch parties, requests, reviews, watchlists and profiles.</span></li>
+                    <li class="flex gap-3"><i class="fa-solid fa-satellite-dish text-green-600 mt-1"></i><span>A <b class="text-gray-300">free Live TV guide</b> with channel listings and EPG information.</span></li>
+                </ul>
+            </div>
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-8">
+                <h3 class="text-lg font-bold text-red-500 mb-4 flex items-center gap-2"><i class="fa-solid fa-circle-xmark"></i> What We Are Not</h3>
+                <ul class="space-y-3 text-gray-400 text-sm leading-relaxed">
+                    <li class="flex gap-3"><i class="fa-solid fa-database text-red-600 mt-1"></i><span>We do <b class="text-gray-300">not host</b> any movies, shows or files on our own servers. All media is hosted by third parties.</span></li>
+                    <li class="flex gap-3"><i class="fa-solid fa-copyright text-red-600 mt-1"></i><span>We do <b class="text-gray-300">not own</b> any of the films or shows we index. All copyrights remain with their respective owners.</span></li>
+                    <li class="flex gap-3"><i class="fa-solid fa-money-bill-wave-slash text-red-600 mt-1"></i><span>We do <b class="text-gray-300">not sell accounts, card billing or user data</b>. Optional Android Premium is <b class="text-gray-300">ad-points only</b> — no rupees, no Play Store checkout.</span></li>
+                    <li class="flex gap-3"><i class="fa-solid fa-handshake-slash text-red-600 mt-1"></i><span>We are <b class="text-gray-300">not affiliated</b> with any studio, network or streaming brand, and movie titles, posters and artwork belong to their owners.</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-16">
+        <h2 class="text-2xl md:text-3xl font-black text-white mb-8 text-center">Our Values</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 text-center">
+                <i class="fa-solid fa-gauge-high text-3xl text-blue-600 mb-4" aria-hidden="true"></i>
+                <h3 class="text-lg font-bold text-white mb-2">Speed First</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Every page, every player, every click should feel instant. We tune the platform so the barrier between you and the play button is zero.</p>
+            </div>
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 text-center">
+                <i class="fa-solid fa-user-secret text-3xl text-purple-600 mb-4" aria-hidden="true"></i>
+                <h3 class="text-lg font-bold text-white mb-2">Privacy Respects</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">We collect only what the service needs, never sell personal data, and let you delete your account — and everything in it — any time.</p>
+            </div>
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 text-center">
+                <i class="fa-solid fa-people-group text-3xl text-green-600 mb-4" aria-hidden="true"></i>
+                <h3 class="text-lg font-bold text-white mb-2">Community Driven</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Your requests shape our catalog. Your reviews help others choose. Your watch parties make it a social place, not just a player.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-red-900/20 to-black border border-red-900/30 rounded-3xl p-10 text-center relative overflow-hidden shadow-2xl">
+        <!-- pehle yahan external Unsplash photo hotlink thi (block hone par gayab ho jaati thi) — ab pure CSS pattern -->
+        <div class="absolute inset-0 opacity-[0.14]" style="background-image: radial-gradient(circle at 20% 25%, rgba(220,38,38,0.65), transparent 45%), radial-gradient(circle at 78% 70%, rgba(147,51,234,0.55), transparent 48%), repeating-linear-gradient(45deg, rgba(255,255,255,0.07) 0 2px, transparent 2px 14px);"></div>
+        <div class="absolute inset-0 bg-black/50 z-0"></div>
+        <div class="relative z-10">
+            <h2 class="text-3xl md:text-4xl font-black text-white mb-6">Our Mission</h2>
+            <p class="text-gray-300 text-lg leading-relaxed max-w-3xl mx-auto mb-8">
+                Entertainment is a universal right, not a luxury. We built CINEAMIT to break down the barriers of expensive subscriptions. Whether you're watching on a massive Smart TV or a mobile phone on the go, our goal is to deliver pure cinematic joy directly to your screen.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="/" aria-label="Start Watching Now on Home Page" class="inline-block bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:scale-105 cursor-pointer">
+                    Start Watching Now
+                </a>
+                <a href="/help" aria-label="Visit the Help Center" class="inline-block bg-white/10 hover:bg-white/20 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 border border-white/20 cursor-pointer">
+                    Visit Help Center
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+{% block title %}{{ seo.title }}{% endblock %}
+{% block meta_desc %}{{ seo.description }}{% endblock %}
+{% block content %}
+<style>
+    @keyframes fadeInUp {
+        from { transform: translateY(12px); }
+        to { transform: translateY(0); }
+    }
+    .animate-fade-in-up {
+        animation: fadeInUp 0.4s ease-out forwards;
+    }
+    @keyframes slowPan {
+        0% { transform: scale(1.05) translate(0, 0); }
+        50% { transform: scale(1.1) translate(-1.5%, 1.5%); }
+        100% { transform: scale(1.05) translate(0, 0); }
+    }
+    .animate-slow-pan {
+        animation: slowPan 25s ease-in-out infinite;
+    }
+    @keyframes float3D {
+        0% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
+        50% { transform: translateY(-15px) rotateX(4deg) rotateY(-4deg); }
+        100% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
+    }
+    .animate-float-3d {
+        animation: float3D 6s ease-in-out infinite;
+        transform-style: preserve-3d;
+    }
+    .tilt-card {
+        transform-style: preserve-3d;
+        transform: perspective(1000px);
+        transition: transform 0.1s ease-out;
+    }
+    .tilt-content {
+        transform: translateZ(50px);
+    }
+    .tilt-bg {
+        transform: translateZ(-20px);
+    }
+</style>
+<div class="relative w-full min-h-[100vh] -mt-16 md:-mt-20 pt-20 md:pt-24 pb-12 bg-black flex flex-col items-center justify-center overflow-hidden perspective-[1000px]">
+    <div class="absolute inset-0 z-0 bg-[#0f1014]" style="background-image: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(220,38,38,0.22), rgba(88,28,135,0.12) 45%, rgba(15,16,20,0.98) 80%);">
+        <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-[#0f1014]"></div>
+    </div>
+    <div class="relative z-10 w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between px-4 sm:px-6 md:px-10 gap-10 lg:gap-12">
+        <div class="flex-1 text-center lg:text-left flex flex-col items-center lg:items-start">
+            <span class="bg-red-600/20 text-red-400 border border-red-600/30 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-6 shadow-[0_0_15px_rgba(220,38,38,0.3)] tilt-card">
+                <i class="fa-solid fa-bolt mr-2" aria-hidden="true"></i> The Future of Streaming
+            </span>
+            <h1 class="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-tight drop-shadow-2xl leading-tight">
+                CINEAMIT <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-purple-600">Movies,</span><br> TV & Anime.
+            </h1>
+            <p class="text-lg md:text-xl text-gray-300 font-medium mb-10 max-w-2xl leading-relaxed">
+                Explore movies, TV series and anime with title details, trailers, profiles and Watch Parties. Choose a title to see the available playback options.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 w-full justify-center lg:justify-start max-w-xl">
+                <a aria-label="Explore the Catalog" href="/home" class="flex-1 bg-gradient-to-r from-red-600 to-red-700 text-white text-lg font-bold px-8 py-4 rounded-2xl transition-all duration-300 shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:shadow-[0_0_40px_rgba(220,38,38,0.6)] hover:-translate-y-1 flex items-center justify-center cursor-pointer tilt-card">
+                    Start Exploring <i class="fa-solid fa-rocket ml-3" aria-hidden="true"></i>
+                </a>
+                <a aria-label="Sign In to your account" href="/login" class="flex-1 bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/30 text-lg font-bold px-8 py-4 rounded-2xl transition-all duration-300 backdrop-blur-md flex items-center justify-center hover:-translate-y-1 cursor-pointer tilt-card">
+                    Sign In
+                </a>
+                <a aria-label="Download Android App" href="/app" class="flex-1 bg-emerald-600/90 hover:bg-emerald-500 text-white text-lg font-bold px-8 py-4 rounded-2xl transition-all duration-300 shadow-[0_0_20px_rgba(16,185,129,0.35)] hover:-translate-y-1 flex items-center justify-center cursor-pointer tilt-card">
+                    Get App <i class="fa-brands fa-android ml-3" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+        <div class="flex-1 hidden lg:flex justify-center items-center relative">
+            <div class="relative w-80 h-[450px]">
+                <img src="{{ image_base|default("https://image.tmdb.org/t/p") }}/w342/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg" loading="lazy" alt="Featured Action Movie Poster" width="300" height="450" decoding="async" class="absolute w-48 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-gray-700 transform -rotate-6 -left-10 top-10 z-10 transition-transform hover:scale-105 hover:z-40">
+                <img src="{{ image_base|default("https://image.tmdb.org/t/p") }}/w342/1X7vow16X7CnCoexXh4H4F2yDJv.jpg" loading="eager" fetchpriority="high" alt="Featured Blockbuster Movie Poster" width="300" height="450" decoding="async" class="absolute w-56 rounded-2xl shadow-[0_20px_50px_rgba(220,38,38,0.4)] border border-red-500/50 transform z-30 left-12 top-0 transition-transform hover:scale-105 hover:z-40">
+                <img src="{{ image_base|default("https://image.tmdb.org/t/p") }}/w342/A4j8S6moJS2zNtRR8oWF08gRnL5.jpg" loading="lazy" alt="Featured Sci-Fi Movie Poster" width="300" height="450" decoding="async" class="absolute w-48 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-gray-700 transform rotate-6 -right-10 top-16 z-20 transition-transform hover:scale-105 hover:z-40">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="bg-[#0f1014] py-20 relative z-20">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-5xl font-black text-white mb-4">How CINEAMIT Works</h2>
+            <p class="text-gray-400 text-lg">Your ultimate entertainment journey in three simple steps.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="tilt-card bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-red-600/10 rounded-full blur-3xl group-hover:bg-red-600/20 transition-colors tilt-bg"></div>
+                <div class="tilt-content flex flex-col items-start text-left relative z-10">
+                    <div class="w-14 h-14 bg-red-600 text-white rounded-2xl flex items-center justify-center text-2xl font-black mb-6 shadow-lg shadow-red-600/30">1</div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Choose Content</h3>
+                    <p class="text-gray-400 leading-relaxed">Browse through thousands of HD Movies, Anime, and TV Series updated daily with fast streaming servers.</p>
+                </div>
+            </div>
+            <div class="tilt-card bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-purple-600/10 rounded-full blur-3xl group-hover:bg-purple-600/20 transition-colors tilt-bg"></div>
+                <div class="tilt-content flex flex-col items-start text-left relative z-10">
+                    <div class="w-14 h-14 bg-purple-600 text-white rounded-2xl flex items-center justify-center text-2xl font-black mb-6 shadow-lg shadow-purple-600/30">2</div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Invite Friends</h3>
+                    <p class="text-gray-400 leading-relaxed">Generate a secure room code and invite your friends to a synchronized Watch Party with live chat.</p>
+                </div>
+            </div>
+            <div class="tilt-card bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-blue-600/10 rounded-full blur-3xl group-hover:bg-blue-600/20 transition-colors tilt-bg"></div>
+                <div class="tilt-content flex flex-col items-start text-left relative z-10">
+                    <div class="w-14 h-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-2xl font-black mb-6 shadow-lg shadow-blue-600/30">3</div>
+                    <h3 class="text-2xl font-bold text-white mb-3">Enjoy The Show</h3>
+                    <p class="text-gray-400 leading-relaxed">Sit back, grab popcorn, and stream on any device from smart TVs to mobile phones in perfect sync.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="bg-black py-20 border-t-[1px] border-gray-900 overflow-hidden relative">
+    <div class="absolute left-0 w-1/3 h-full bg-red-600/5 blur-[100px] pointer-events-none"></div>
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+        <div class="text-center md:text-left z-10 tilt-card">
+            <h2 class="text-4xl md:text-5xl font-black text-white mb-6 tracking-wide leading-tight tilt-content">Enjoy on your TV.</h2>
+            <p class="text-lg md:text-xl text-gray-400 leading-relaxed tilt-content">Stream seamlessly on Smart TVs, PlayStation, Xbox, Chromecast, Apple TV, Blu-ray players, and more devices in gorgeous HD.</p>
+        </div>
+        <div class="relative flex justify-center z-0 tilt-card">
+            <svg viewBox="0 0 512 384" width="512" height="384" role="img" aria-label="Watch CINEAMIT on Smart TV" class="relative z-10 w-full max-w-lg drop-shadow-[0_30px_50px_rgba(0,0,0,0.9)] tilt-content">
+                <defs>
+                    <linearGradient id="cineTvBezel" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#2b3440"/><stop offset="55%" stop-color="#151a21"/><stop offset="100%" stop-color="#070a0e"/>
+                    </linearGradient>
+                    <mask id="cineTvMask">
+                        <rect x="0" y="0" width="512" height="384" fill="#fff"/>
+                        <rect x="67" y="77" width="373" height="207" rx="7" fill="#000"/>
+                    </mask>
+                </defs>
+                <g mask="url(#cineTvMask)">
+                    <rect x="44" y="54" width="420" height="243" rx="22" fill="url(#cineTvBezel)" stroke="#3f4a58" stroke-width="3"/>
+                </g>
+                <rect x="223" y="296" width="62" height="18" fill="#0c1015"/>
+                <rect x="176" y="313" width="156" height="13" rx="6.5" fill="#1b222c"/>
+                <circle cx="80" cy="70" r="4" fill="#dc2626"/>
+            </svg>
+            <div class="absolute top-[20%] left-[13%] w-[73%] h-[54%] bg-black z-0 overflow-hidden tilt-bg">
+                <svg viewBox="0 0 800 450" width="800" height="450" preserveAspectRatio="xMidYMid slice" role="img" aria-label="TV Screen Preview" class="w-full h-full opacity-90">
+                    <defs>
+                        <linearGradient id="cineScreen" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#1b0d12"/><stop offset="45%" stop-color="#3b0f1c"/><stop offset="100%" stop-color="#0b0710"/>
+                        </linearGradient>
+                        <radialGradient id="cineGlow" cx="50%" cy="45%" r="60%">
+                            <stop offset="0%" stop-color="#ef4444" stop-opacity="0.55"/><stop offset="100%" stop-color="#ef4444" stop-opacity="0"/>
+                        </radialGradient>
+                    </defs>
+                    <rect width="800" height="450" fill="url(#cineScreen)"/>
+                    <rect width="800" height="450" fill="url(#cineGlow)"/>
+                    <g fill="#000" opacity="0.35">
+                        <rect x="60" y="330" width="150" height="10" rx="5"/>
+                        <rect x="60" y="352" width="95" height="10" rx="5"/>
+                        <rect x="60" y="374" width="120" height="8" rx="4"/>
+                    </g>
+                    <circle cx="400" cy="205" r="52" fill="#000" opacity="0.45"/>
+                    <path d="M385 178 L432 205 L385 232 Z" fill="#f87171"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="bg-[#0f1014] py-20 border-t-[1px] border-gray-900 overflow-hidden relative cv-auto">
+    <div class="absolute right-0 w-1/3 h-full bg-purple-600/5 blur-[100px] pointer-events-none"></div>
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+        <div class="order-2 md:order-1 relative flex justify-center tilt-card">
+            <div class="relative w-full max-w-md bg-[#141519]/80 backdrop-blur-xl border border-purple-500/30 rounded-3xl p-6 shadow-[0_20px_50px_rgba(147,51,234,0.2)] tilt-content">
+                <div class="flex items-center gap-4 border-b border-gray-800 pb-4 mb-4">
+                    <div class="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center text-xl text-white font-black shadow-[0_0_15px_rgba(147,51,234,0.5)]"><i class="fa-solid fa-users" aria-hidden="true"></i></div>
+                    <div>
+                        <h3 class="text-white font-bold text-lg">Live Watch Party</h3>
+                        <p class="text-purple-400 text-xs font-bold uppercase tracking-widest">Live Sync Active</p>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-[#0a0a0c] rounded-2xl p-3 border border-gray-800 text-gray-300 text-sm w-3/4 shadow-inner"><span class="font-bold text-red-500 text-xs block mb-1">Rahul</span>This scene is insane! 🔥</div>
+                    <div class="bg-gradient-to-r from-purple-900/40 to-purple-600/20 rounded-2xl p-3 border border-purple-500/30 text-white text-sm w-3/4 ml-auto text-right shadow-md"><span class="font-bold text-purple-400 text-xs block mb-1">You</span>I told you! Wait for the twist! 🤯</div>
+                </div>
+            </div>
+        </div>
+        <div class="order-1 md:order-2 text-center md:text-left z-10 tilt-card">
+            <h2 class="text-4xl md:text-5xl font-black text-white mb-6 tracking-wide leading-tight tilt-content">Watch with friends.</h2>
+            <p class="text-lg md:text-xl text-gray-400 leading-relaxed tilt-content">Create private rooms, invite your friends with a link, and chat live while perfectly synced to the same movie or episode.</p>
+        </div>
+    </div>
+</div>
+<div class="bg-black py-20 border-t-[1px] border-gray-900 overflow-hidden relative cv-auto">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+        <div class="text-center md:text-left z-10 tilt-card">
+            <h2 class="text-4xl md:text-5xl font-black text-white mb-6 tracking-wide leading-tight tilt-content">Create profiles for everyone.</h2>
+            <p class="text-lg md:text-xl text-gray-400 leading-relaxed tilt-content">Send kids on adventures with their favorite characters in a space made just for them—free with your membership.</p>
+        </div>
+        <div class="relative flex justify-center z-0 tilt-card">
+            <svg viewBox="0 0 512 384" width="512" height="384" role="img" aria-label="Create Kids Profiles" class="w-full max-w-lg drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] tilt-content">
+                <defs>
+                    <linearGradient id="cineKidsCard" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#1e2430"/><stop offset="100%" stop-color="#0d1117"/>
+                    </linearGradient>
+                </defs>
+                <rect x="26" y="60" width="460" height="264" rx="24" fill="url(#cineKidsCard)" stroke="#39404d" stroke-width="2"/>
+                <g>
+                    <circle cx="132" cy="176" r="46" fill="#f59e0b"/>
+                    <circle cx="132" cy="166" r="17" fill="#fde68a"/>
+                    <path d="M100 208c8-18 24-26 32-26s24 8 32 26z" fill="#fde68a"/>
+                    <text x="132" y="252" font-family="system-ui,sans-serif" font-size="16" font-weight="700" fill="#9ca3af" text-anchor="middle">Kids 1</text>
+                </g>
+                <g>
+                    <circle cx="256" cy="176" r="46" fill="#8b5cf6"/>
+                    <circle cx="256" cy="166" r="17" fill="#ddd6fe"/>
+                    <path d="M224 208c8-18 24-26 32-26s24 8 32 26z" fill="#ddd6fe"/>
+                    <text x="256" y="252" font-family="system-ui,sans-serif" font-size="16" font-weight="700" fill="#9ca3af" text-anchor="middle">Kids 2</text>
+                </g>
+                <g>
+                    <circle cx="380" cy="176" r="46" fill="#22c55e"/>
+                    <circle cx="380" cy="166" r="17" fill="#bbf7d0"/>
+                    <path d="M348 208c8-18 24-26 32-26s24 8 32 26z" fill="#bbf7d0"/>
+                    <text x="380" y="252" font-family="system-ui,sans-serif" font-size="16" font-weight="700" fill="#9ca3af" text-anchor="middle">Kids 3</text>
+                </g>
+                <rect x="196" y="292" width="120" height="34" rx="17" fill="#dc2626"/>
+                <text x="256" y="315" font-family="system-ui,sans-serif" font-size="15" font-weight="800" fill="#ffffff" text-anchor="middle">+ Add Profile</text>
+            </svg>
+        </div>
+    </div>
+</div>
+<div class="bg-gradient-to-b from-[#0f1014] to-black py-24 text-center px-4 relative overflow-hidden tilt-card cv-auto">
+    <div class="absolute inset-0 opacity-10 bg-gradient-to-r from-red-900/40 via-purple-900/40 to-black tilt-bg"></div>
+    <div class="relative z-10 tilt-content">
+        <h2 class="text-4xl md:text-6xl font-black text-white mb-6 drop-shadow-xl">Ready to dive in?</h2>
+        <p class="text-gray-400 text-lg md:text-xl mb-10 max-w-2xl mx-auto">Discover your next movie, series or anime with CINEAMIT.</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <a aria-label="Start Watching Now" href="/home" class="inline-flex items-center gap-3 bg-red-600 hover:bg-red-500 text-white text-xl md:text-2xl font-bold px-12 py-5 rounded-2xl transition-all duration-300 shadow-[0_0_30px_rgba(220,38,38,0.5)] hover:shadow-[0_0_50px_rgba(220,38,38,0.8)] hover:-translate-y-2 cursor-pointer">
+            <i class="fa-solid fa-play" aria-hidden="true"></i> Start Watching Now
+        </a>
+        <a aria-label="Download Android App" href="/app" class="inline-flex items-center gap-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xl md:text-2xl font-bold px-12 py-5 rounded-2xl transition-all duration-300 shadow-[0_0_30px_rgba(16,185,129,0.4)] hover:-translate-y-2 cursor-pointer">
+            <i class="fa-brands fa-android" aria-hidden="true"></i> Get the App
+        </a>
+        </div>
+    </div>
+</div>
+<footer class="bg-[#0f1014] border-t border-gray-800/60 pt-16 pb-10 mt-16 relative z-50">
+    <div class="w-full max-w-5xl mx-auto my-6 bg-gray-900 border border-gray-800 rounded-lg flex items-center justify-center min-h-[100px] overflow-hidden relative">
+            <span data-adsterra-smartlink class="text-[10px] text-gray-400 uppercase tracking-widest absolute top-2 right-4">Sponsored</span>
+            <div class="ad-slot-728 text-gray-400 text-sm py-2"></div>
+        </div>
+    <div class="max-w-[1800px] mx-auto px-6 md:px-12">
+        <div class="flex gap-6 mb-8 text-2xl text-gray-400">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-facebook-f" aria-hidden="true"></i></a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-instagram" aria-hidden="true"></i></a>
+            <a href="https://twitter.com/CineAmit" target="_blank" rel="noopener noreferrer" aria-label="Twitter" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-twitter" aria-hidden="true"></i></a>
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-youtube" aria-hidden="true"></i></a>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10 text-sm text-gray-400 font-medium tracking-wide">
+            <div class="flex flex-col gap-3">
+                <a href="/faq" class="hover:underline hover:text-gray-300 transition-colors">FAQ</a>
+                <a href="/about" class="hover:underline hover:text-gray-300 transition-colors">About Us</a>
+                <a href="/livetv" class="hover:underline hover:text-gray-300 transition-colors">Live TV Channels</a>
+                <a href="/app" class="hover:underline hover:text-gray-300 transition-colors">Android App</a>
+                <a href="/premium" class="hover:underline hover:text-gray-300 transition-colors">Premium</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <a href="/help" class="hover:underline hover:text-gray-300 transition-colors">Help Center</a>
+                <a href="/movies" class="hover:underline hover:text-gray-300 transition-colors">Popular Movies</a>
+                <a href="/terms" class="hover:underline hover:text-gray-300 transition-colors">Terms of Use</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <a href="/profile" class="hover:underline hover:text-gray-300 transition-colors">Account</a>
+                <a href="/privacy" class="hover:underline hover:text-gray-300 transition-colors">Privacy Policy</a>
+                <a href="/dmca" class="hover:underline hover:text-gray-300 transition-colors">DMCA / Copyright</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <a href="/blog" class="hover:underline hover:text-gray-300 transition-colors">Media Center & Blog</a>
+                <a href="/contact" class="hover:underline hover:text-gray-300 transition-colors">Contact Us</a>
+                <a href="/legal" class="hover:underline hover:text-gray-300 transition-colors">Legal Notices</a>
+            </div>
+        </div>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <button class="border border-gray-600 text-gray-400 hover:text-white hover:border-white transition-colors px-3 py-1.5 text-xs font-bold tracking-widest uppercase rounded-lg">
+                Service Code
+            </button>
+            <div class="text-gray-400 text-xs text-left md:text-right">
+                <p>&copy; 2026 CINEAMIT. All Rights Reserved.</p>
+                <p class="mt-1">Designed for a premium cinematic experience.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const tiltCards = document.querySelectorAll('.tilt-card');
+        tiltCards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                if(window.innerWidth > 768) {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+
+                    const rotateX = ((y - centerY) / centerY) * -8;
+                    const rotateY = ((x - centerX) / centerX) * 8;
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+                }
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+                card.style.transition = 'transform 0.5s ease-out';
+            });
+            card.addEventListener('mouseenter', () => {
+                card.style.transition = 'transform 0.1s ease-out';
+            });
+        });
+    });
+</script>
+{% endblock %}

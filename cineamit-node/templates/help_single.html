@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title }} - CINEAMIT Support{% endblock %}
+{% block meta_desc %}{{ article.content|striptags|slice(0, 150) }}{% endblock %}
+{% block content %}
+<div class="bg-[#0f1014] min-h-screen pt-8 md:pt-12 pb-16">
+    <div class="max-w-4xl mx-auto px-6">
+        <div class="flex items-center gap-2 text-xs md:text-sm text-gray-500 font-bold mb-8 uppercase tracking-widest">
+            <a href="/help" class="hover:text-red-500 transition-colors">Help Center</a>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            <a href="/help?topic={{ article.topic }}" class="hover:text-red-500 transition-colors">{{ article.topic|replace({'_': ' '})|title }}</a>
+        </div>
+        <div class="bg-[#141519] border border-gray-800 rounded-2xl p-8 md:p-12 shadow-2xl">
+            <h1 class="text-3xl md:text-5xl font-black text-white mb-6 leading-tight">{{ article.title }}</h1>
+            <div class="flex items-center gap-4 text-sm text-gray-400 mb-10 border-b border-gray-800 pb-6">
+                <span class="flex items-center gap-2"><i class="fa-regular fa-clock"></i> Updated: {{ article.created_at|date('M d, Y') }}</span>
+                <span class="flex items-center gap-2"><i class="fa-solid fa-eye"></i> {{ article.views }} Views</span>
+            </div>
+            <article class="prose prose-invert prose-red max-w-none text-gray-300 leading-relaxed">
+                {{ article.content | raw }}
+            </article>
+        </div>
+        <div class="mt-12 text-center">
+            <p class="text-gray-400 mb-4 font-medium">Was this article helpful?</p>
+            <div class="flex items-center justify-center gap-4">
+                <button onclick="alert('Thanks for your feedback!')" class="bg-gray-800 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg transition-colors border border-gray-700 hover:border-green-500"><i class="fa-solid fa-thumbs-up mr-2"></i> Yes</button>
+                <button onclick="alert('Thanks for your feedback! We will work to improve this article.')" class="bg-gray-800 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg transition-colors border border-gray-700 hover:border-red-500"><i class="fa-solid fa-thumbs-down mr-2"></i> No</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

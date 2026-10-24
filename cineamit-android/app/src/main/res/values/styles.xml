@@ -1,0 +1,94 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="radioButtonStyle">@style/MyRadioButtonStyle</item>
+        <item name="android:fontFamily">@font/custom</item>
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:statusBarColor">@color/transparent</item>
+        <item name="android:navigationBarColor">@color/bottom_nav_bg</item>
+    </style>
+
+    <style name="RemoveAppSplashTheme" parent="@style/AppTheme">
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
+
+    <!-- Round Corner BottomSheet -->
+    <style name="BottomSheetDialog" parent="@style/ThemeOverlay.MaterialComponents.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/BottomSheet</item>
+        <item name="android:navigationBarColor">@color/black</item>
+    </style>
+
+    <style name="BottomSheet" parent="Widget.MaterialComponents.BottomSheet.Modal">
+        <item name="backgroundTint">@android:color/transparent</item>
+    </style>
+
+    <style name="NotificationSwitch.control" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorControlActivated">@color/highlight</item>
+        <item name="colorSwitchThumbNormal">@color/white</item>
+        <item name="android:colorForeground">@color/white</item>
+    </style>
+
+    <style name="MyRadioButtonStyle" parent="Widget.AppCompat.CompoundButton.RadioButton">
+        <item name="buttonTint">@drawable/radio_button</item>
+    </style>
+
+    <style name="MyRadioButtonStyleSub" parent="Widget.AppCompat.CompoundButton.RadioButton">
+        <item name="buttonTint">@drawable/sub_title_radio_button</item>
+    </style>
+
+    <style name="FilterRadioButton" parent="Widget.MaterialComponents.CompoundButton.RadioButton">
+        <item name="buttonTint">@drawable/filter_check_button</item>
+    </style>
+
+    <style name="FilterCheckBox" parent="Widget.MaterialComponents.CompoundButton.CheckBox">
+        <item name="buttonTint">@drawable/filter_check_button</item>
+    </style>
+
+    <style name="WhiteCheck">
+        <item name="colorControlNormal">@color/white</item>
+        <item name="colorControlActivated">@color/white</item>
+    </style>
+
+    <style name="ShapeAppearanceOverlay.App.CornerSize50Percent" parent="">
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="RoundImageView" parent="">
+        <item name="cornerSize">5dp</item>
+    </style>
+
+    <style name="tabText" parent="@android:style/TextAppearance.Widget.TabWidget">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/custom</item>
+    </style>
+
+    <style name="Theme.AppCompat.Translucent" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="PinKey">
+        <item name="android:layout_width">64dp</item>
+        <item name="android:layout_height">64dp</item>
+        <item name="android:layout_margin">6dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/pin_key_bg</item>
+        <item name="android:textColor">#F4F1EA</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+
+</resources>

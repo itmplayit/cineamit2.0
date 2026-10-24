@@ -1,0 +1,40 @@
+{% if current_user.role in ['owner', 'super_admin'] and ads_ops.available %}
+<section class="ads-extra" aria-labelledby="adsDailyHeading">
+    <h3 id="adsDailyHeading">Daily Reward Summary</h3>
+    <p class="ads-muted">{{ ads_ops.summary.day }} UTC · New verified-earning counter, not wallet balances or client completion reports.</p>
+    <div class="ads-grid">
+        <div class="ads-card"><span>Verified points today</span><strong>{{ ads_ops.summary.verified_points }}</strong></div>
+        <div class="ads-card"><span>Accounts at daily cap</span><strong>{% if ads_ops.summary.cap == 0 %}Unlimited{% else %}{{ ads_ops.summary.cap_reached_users }}{% endif %}</strong></div>
+        <div class="ads-card"><span>Pending reserved points</span><strong>{{ ads_ops.summary.reserved_points }}</strong></div>
+        <div class="ads-card"><span>Unexpired pending claims</span><strong>{{ ads_ops.summary.pending_claims }}</strong></div>
+    </div>
+    <form method="GET" action="/cineamit-admin#tab-economy" class="ads-form">
+        <label>Account ID<input name="summary_user" type="number" min="1" max="2147483647" step="1" value="{{ ads_ops.filters.summary_user }}" placeholder="e.g. 12"></label>
+        <button type="submit">View account quota</button>
+    </form>
+    {% if ads_ops.summary.selection_error %}<p role="status" class="ads-warning">{{ ads_ops.summary.selection_error }}</p>{% endif %}
+    {% if ads_ops.summary.selected %}
+    {% set quota = ads_ops.summary.selected %}
+    <div class="ads-card" id="adsAccountQuota">
+        <h4>{{ quota.username }} #{{ quota.id }}</h4>
+        <p>Earned today: <b>{{ quota.earned }}</b> · Pending reservation: <b>{{ quota.reserved }}</b> points.</p>
+        <p>Remaining earning quota: <b>{% if ads_ops.summary.cap == 0 %}Unlimited{% else %}{{ quota.remaining }}{% endif %}</b> · Room for new claims after reservations: <b>{% if ads_ops.summary.cap == 0 %}Unlimited{% else %}{{ quota.admission_room }}{% endif %}</b> points.</p>
+        <p class="ads-muted">Cooldown remaining at refresh: {{ quota.cooldown_seconds }} seconds. A claim needs enough room for one full reward. This is not a promise of ad availability.</p>
+    </div>
+    {% endif %}
+    <p class="ads-muted">Pending reservations include still-valid claims, even if issued before UTC midnight. Old credits without daily timestamps are not backfilled. Refresh to update this snapshot.</p>
+</section>
+<section class="ads-extra" aria-labelledby="adsConfigHeading">
+    <h3 id="adsConfigHeading">Configuration &amp; Rollout Warnings</h3>
+    <p class="ads-muted">All client diagnostics received in the last 7 days, independent of the diagnostic table filters. These are untrusted reports, not verified configuration or delivery proof.</p>
+    {% for warning in ads_ops.config_warnings.warnings %}<p class="{% if warning.level == 'warning' %}ads-warning{% else %}ads-note{% endif %}">{{ warning.message }}</p>{% endfor %}
+    <p class="ads-muted">Expected rewarded placement: <code>{{ ads_ops.config_warnings.expected_rewarded|default('Not configured') }}</code>. Game ID agreement cannot be independently checked: current diagnostics do not send Game ID. Fingerprints also reflect other build/ad settings.</p>
+    <details><summary>Reported configuration groups ({{ ads_ops.config_warnings.reports }} reports)</summary>
+        <div class="ads-table-wrap"><table class="ads-table"><thead><tr><th>App / code</th><th>Config / mode</th><th>Format / placement</th><th>Reports / accounts</th><th>Last received (UTC)</th></tr></thead><tbody>
+        {% for group in ads_ops.config_warnings.groups %}<tr><td>{{ group.app_version }} ({{ group.app_code }})</td><td><code>{{ group.config_fingerprint }}</code><br>{% if group.test_mode %}TEST{% else %}production{% endif %}</td><td>{{ group.format }}<br><code>{{ group.unit|default('SDK-wide') }}</code></td><td>{{ group.reports }} / {{ group.reporting_accounts }}</td><td>{{ group.last_seen }}</td></tr>{% else %}<tr><td colspan="5">No recent reports.</td></tr>{% endfor %}
+        </tbody></table></div>
+        {% if ads_ops.config_warnings.truncated %}<p class="ads-warning">Only the 50 most recently seen groups are shown; warnings above consider all recent reports.</p>{% endif %}
+    </details>
+    <p class="ads-muted">Counts are reports and distinct reporting accounts per group—not impressions, active installs, revenue or total active users. Mixed versions can be expected during rollout.</p>
+</section>
+{% endif %}

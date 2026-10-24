@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootLayout"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="@dimen/item_space"
+    android:layout_marginBottom="@dimen/item_space"
+    android:background="#0A0612">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="#0A0612"
+        app:cardCornerRadius="12dp"
+        app:cardUseCompatPadding="false"
+        app:cardElevation="6dp"
+        android:foreground="@drawable/poster_rail_stroke"
+        app:elevation="0dp">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <in.cineamit.app.widget.RoundImageView
+                android:id="@+id/image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleType="centerCrop"
+                app:riv_corner_radius="12dp" />
+
+            <TextView
+                android:id="@+id/kindBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignStart="@id/image"
+                android:layout_alignTop="@id/image"
+                android:layout_marginStart="6dp"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/poster_kind_badge"
+                android:elevation="6dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/custom"
+                android:maxLines="1"
+                android:paddingStart="6dp"
+                android:paddingTop="3dp"
+                android:paddingEnd="6dp"
+                android:paddingBottom="3dp"
+                android:textAllCaps="true"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/ratingBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@id/image"
+                android:layout_alignTop="@id/image"
+                android:layout_marginTop="6dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/chip_bg"
+                android:elevation="6dp"
+                android:fontFamily="@font/custom"
+                android:paddingStart="6dp"
+                android:paddingTop="2dp"
+                android:paddingEnd="6dp"
+                android:paddingBottom="2dp"
+                android:textColor="#4ADE80"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/ivPremium"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentEnd="true"
+                android:layout_margin="5dp"
+                android:background="@drawable/subscription"
+                android:contentDescription="@string/app_name"
+                android:padding="3dp"
+                android:src="@drawable/ic_subscribe"
+                android:visibility="gone" />
+
+        </RelativeLayout>
+
+    </androidx.cardview.widget.CardView>
+</RelativeLayout>

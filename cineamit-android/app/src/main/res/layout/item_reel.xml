@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0A0612"
+    android:descendantFocusability="blocksDescendants">
+
+    <ImageView
+        android:id="@+id/poster"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/app_name"
+        android:scaleType="centerCrop" />
+
+    <WebView
+        android:id="@+id/reelVideo"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <View
+        android:id="@+id/reelShield"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#33000000"
+        android:clickable="false"
+        android:focusable="false" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:gravity="bottom"
+        android:orientation="horizontal"
+        android:paddingStart="18dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="36dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingEnd="12dp">
+
+            <TextView
+                android:id="@+id/kindBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/poster_kind_badge"
+                android:fontFamily="@font/custom"
+                android:paddingStart="8dp"
+                android:paddingTop="3dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="3dp"
+                android:textAllCaps="true"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/custom"
+                android:maxLines="2"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/meta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textColor="#86EFAC"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/overview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:ellipsize="end"
+                android:maxLines="3"
+                android:textColor="#D1D5DB"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/btnPlay"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="@drawable/watch_hex"
+                android:fontFamily="@font/custom"
+                android:gravity="center"
+                android:text="▶"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/btnInfo"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/chip_bg"
+                android:gravity="center"
+                android:text="i"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btnWatchlist"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/chip_bg"
+                android:gravity="center"
+                android:text="+"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btnMute"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/chip_bg"
+                android:gravity="center"
+                android:text="🔊"
+                android:textSize="16sp" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

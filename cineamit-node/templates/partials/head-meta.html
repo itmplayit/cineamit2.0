@@ -1,0 +1,78 @@
+    <meta name="author" content="CINEAMIT Team">
+    <meta name="format-detection" content="telephone=no, date=no, email=no, address=no">
+    <link rel="canonical" href="{{ seo.canonical }}">
+    {% if seo.prev %}<link rel="prev" href="{{ seo.prev }}">{% endif %}
+    {% if seo.next %}<link rel="next" href="{{ seo.next }}">{% endif %}
+    <link rel="preconnect" href="https://image.tmdb.org" crossorigin>
+    {% if ga_measurement_id %}<link rel="preconnect" href="https://www.googletagmanager.com">{% endif %}
+    <link rel="stylesheet" href="/static/assets/fa/css/all.min.css?v=6.4.0" id="cineFaCss">
+    <script>
+        (function () {
+            var l = document.getElementById('cineFaCss');
+            if (!l) return;
+            l.addEventListener('error', function () {
+                l.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+            });
+        })();
+    </script>
+    <script>
+        (function () {
+            function fixTmdbImage(img) {
+                if (!img || img.dataset.tmdbMirrorTried === '1') return;
+                const source = img.currentSrc || img.getAttribute('src') || '';
+                let imageUrl;
+                try {
+                    imageUrl = new URL(source, document.baseURI);
+                } catch (_) {
+                    return;
+                }
+                const localTmdbPath = /^\/(?:original|w\d+|h\d+|face)\/[^/]+\.(?:jpe?g|png|webp)$/i.test(imageUrl.pathname);
+                const isLocalBrokenTmdbPath = imageUrl.origin === location.origin && localTmdbPath;
+                const isTmdbImage = imageUrl.protocol === 'https:' && imageUrl.hostname.toLowerCase() === 'image.tmdb.org';
+                const incompleteTmdb = isTmdbImage && /^\/t\/p\/(?:original|w\d+|h\d+|face)\/?$/i.test(imageUrl.pathname);
+                const missingSize = isTmdbImage ? imageUrl.pathname.match(/^\/t\/p\/([^/]+\.(?:jpe?g|png|webp))$/i) : null;
+                if (!isLocalBrokenTmdbPath && !isTmdbImage) return;
+                const picture = img.closest('picture');
+                if (picture) picture.querySelectorAll('source[srcset]').forEach(sourceNode => sourceNode.removeAttribute('srcset'));
+                img.removeAttribute('srcset');
+                if (incompleteTmdb) {
+                    img.dataset.tmdbMirrorTried = '1';
+                    img.removeAttribute('crossorigin');
+                    img.src = '/static/logo-192.png';
+                    return;
+                }
+                if (isLocalBrokenTmdbPath) {
+                    img.src = 'https://image.tmdb.org/t/p' + imageUrl.pathname + imageUrl.search;
+                    return;
+                }
+                if (missingSize) {
+                    img.src = 'https://image.tmdb.org/t/p/w500/' + missingSize[1] + imageUrl.search;
+                    return;
+                }
+                img.dataset.tmdbMirrorTried = '1';
+                img.removeAttribute('crossorigin');
+                img.src = 'https://images.weserv.nl/?url=' + encodeURIComponent(imageUrl.host + imageUrl.pathname + imageUrl.search);
+            }
+            document.addEventListener('error', event => {
+                const img = event.target;
+                if (img && img.tagName === 'IMG') fixTmdbImage(img);
+            }, true);
+        })();
+    </script>
+    <link rel="dns-prefetch" href="https://api.themoviedb.org">
+    <link rel="dns-prefetch" href="https://image.tmdb.org">
+    <link rel="dns-prefetch" href="https://images.weserv.nl">
+    <link rel="dns-prefetch" href="https://www.youtube.com">
+    <link rel="preload" as="style" href="/static/tailwind.min.css?v=3.4.17-r4">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/assets/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/assets/logo-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/assets/apple-touch-icon.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#fe1a63">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta name="google-adsense-account" content="ca-pub-4993720325756525">
+    
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiQ0lORUFNSVQiLCJzaG9ydF9uYW1lIjoiQ0lORUFNSVQiLCJkZXNjcmlwdGlvbiI6IldhdGNoIE1vdmllcywgU2VyaWVzICYgQW5pbWUgRnJlZSIsInN0YXJ0X3VybCI6Ii8iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMGYxMDE0IiwidGhlbWVfY29sb3IiOiIjZGMyNjI2Iiwib3JpZW50YXRpb24iOiJhbnkiLCJpY29ucyI6W3sic3JjIjoiL3N0YXRpYy9hc3NldHMvbG9nby0xOTIucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifSx7InNyYyI6Ii9zdGF0aWMvYXNzZXRzL2xvZ28tNTEyLnBuZyIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9wbmciLCJwdXJwb3NlIjoiYW55IG1hc2thYmxlIn1dfQ==">
+
+    <meta name="robots" content="{{ seo.robots }}">

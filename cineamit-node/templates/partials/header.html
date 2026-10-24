@@ -1,0 +1,294 @@
+<div id="cineProgressBar" aria-hidden="true"></div>
+<a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[10002] focus:bg-red-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-full focus:text-xs focus:font-black focus:shadow-2xl">Skip to main content</a>
+
+<div id="pwaInstallBanner" style="display: none;" class="fixed bottom-20 md:bottom-6 right-4 left-4 md:left-auto md:w-96 z-[10000] bg-[#141519]/95 border border-red-600/50 p-4 rounded-2xl shadow-[0_10px_30px_rgba(220,38,38,0.3)] backdrop-blur-md animate-slide-down">
+    <div class="flex items-center gap-3">
+        <img src="/static/assets/logo-192.png" alt="CineAmit App Icon" loading="lazy" decoding="async" width="48" height="48" class="rounded-xl object-cover border border-gray-700 shadow-md">
+        <div class="flex-1">
+            <p class="text-white font-bold text-sm">Install CINEAMIT App</p>
+            <p class="text-gray-400 text-xs">PWA shortcut, ya official Android APK.</p>
+        </div>
+        <button id="pwaCloseBtn" aria-label="Close Install Banner" class="text-gray-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-lg" aria-hidden="true"></i></button>
+    </div>
+    <div class="mt-3 flex gap-2">
+        <button id="pwaInstallBtn" aria-label="Install PWA Application" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
+            <i class="fa-solid fa-download" aria-hidden="true"></i> Add to Home
+        </button>
+        <a href="/app" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
+            <i class="fa-brands fa-android" aria-hidden="true"></i> Android APK
+        </a>
+    </div>
+</div>
+
+{% set cur_path = request.path | default('/') %}
+
+<nav class="fixed top-0 left-0 right-0 z-[9999] bg-gradient-to-b from-[#090a0f]/95 via-[#0f1014]/90 to-[#0f1014]/85 backdrop-blur-xl border-b border-white/[0.08] hidden md:flex justify-between items-center h-16 lg:h-[70px] px-4 lg:px-8 gap-3 lg:gap-5 shadow-[0_10px_30px_rgba(0,0,0,0.65)] transition-all duration-300">
+    <div class="flex items-center gap-3 lg:gap-6 xl:gap-7 flex-1 min-w-0">
+        <a href="/" class="flex items-center gap-2 shrink-0 group focus:outline-none" aria-label="CINEAMIT Home">
+            <img src="/static/assets/logo-192.png" alt="" width="36" height="36"
+                 class="w-8 h-8 lg:w-9 lg:h-9 rounded-xl object-contain bg-[#141519] border border-white/10 shadow-[0_0_18px_rgba(254,26,99,0.35)] group-hover:scale-105 transition-transform"
+                 onerror="this.onerror=null;this.src='/static/logo-192.png';">
+            <span class="text-xl lg:text-2xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-red-600 to-orange-500">
+                CINE<span class="text-white not-italic font-extrabold">AMIT</span>
+            </span>
+        </a>
+
+        <div class="flex items-center gap-1 lg:gap-1.5 bg-white/[0.03] border border-white/[0.07] rounded-full p-1 shrink-0 shadow-inner">
+            <a href="/home" class="px-3 lg:px-3.5 py-1.5 rounded-full text-xs lg:text-[13px] font-bold whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 {% if cur_path == '/home' or cur_path == '/' %}bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.45)]{% else %}text-gray-300 hover:text-white hover:bg-white/[0.06]{% endif %}">
+                <i class="fa-solid fa-house text-[11px] hidden xl:inline-block" aria-hidden="true"></i>
+                <span>Home</span>
+            </a>
+            <a href="/movies" class="px-3 lg:px-3.5 py-1.5 rounded-full text-xs lg:text-[13px] font-bold whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 {% if cur_path starts with '/movies' %}bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.45)]{% else %}text-gray-300 hover:text-white hover:bg-white/[0.06]{% endif %}">
+                <i class="fa-solid fa-film text-[11px] hidden xl:inline-block" aria-hidden="true"></i>
+                <span>Movies</span>
+            </a>
+            <a href="/series" class="px-3 lg:px-3.5 py-1.5 rounded-full text-xs lg:text-[13px] font-bold whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 {% if cur_path starts with '/series' %}bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.45)]{% else %}text-gray-300 hover:text-white hover:bg-white/[0.06]{% endif %}">
+                <i class="fa-solid fa-tv text-[11px] hidden xl:inline-block" aria-hidden="true"></i>
+                <span>Series</span>
+            </a>
+            <a href="/anime" class="px-3 lg:px-3.5 py-1.5 rounded-full text-xs lg:text-[13px] font-bold whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 {% if cur_path starts with '/anime' %}bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.45)]{% else %}text-gray-300 hover:text-white hover:bg-white/[0.06]{% endif %}">
+                <i class="fa-solid fa-dragon text-[11px] hidden xl:inline-block" aria-hidden="true"></i>
+                <span>Anime</span>
+            </a>
+            <a href="/reels" class="hidden xl:flex px-3.5 py-1.5 rounded-full text-[13px] font-bold whitespace-nowrap transition-all duration-200 items-center gap-1.5 {% if cur_path starts with '/reels' %}bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.45)]{% else %}text-gray-300 hover:text-white hover:bg-white/[0.06]{% endif %}">
+                <i class="fa-solid fa-bolt text-[11px] text-amber-400" aria-hidden="true"></i>
+                <span>Reels</span>
+            </a>
+            <a href="/livetv" class="px-3 lg:px-3.5 py-1.5 rounded-full text-xs lg:text-[13px] font-bold whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 {% if cur_path starts with '/livetv' %}bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.45)]{% else %}bg-red-600/10 text-red-400 border border-red-500/25 hover:bg-red-600/20 hover:text-white{% endif %}">
+                <span class="relative flex items-center justify-center h-2 w-2">
+                    <span class="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                </span>
+                <span>Live TV</span>
+            </a>
+        </div>
+
+        <div class="relative flex-1 min-w-[140px] max-w-xs lg:max-w-md mx-1 lg:mx-3 search-container group" role="search">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                <i class="fa-solid fa-magnifying-glass text-gray-400 group-focus-within:text-red-500 transition-colors text-xs lg:text-sm" aria-hidden="true"></i>
+            </span>
+            <input aria-label="Desktop Search Input" type="text" id="desktopSearchInput" name="q" placeholder="Search movies, series, anime..." 
+                   class="live-search-input w-full bg-white/[0.05] hover:bg-white/[0.08] focus:bg-[#14151c] border border-white/10 focus:border-red-500/70 text-white rounded-full pl-9 lg:pl-10 pr-4 xl:pr-10 py-1.5 lg:py-2 text-xs lg:text-sm outline-none transition-all duration-200 shadow-inner placeholder-gray-400" autocomplete="off">
+            <kbd class="hidden xl:inline-flex items-center justify-center absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono font-bold text-gray-400 bg-white/[0.06] border border-white/10 rounded pointer-events-none">/</kbd>
+            <div class="live-search-results absolute top-full mt-2.5 left-0 w-full min-w-[280px] bg-[#121318]/95 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] z-[9999] overflow-hidden flex flex-col max-h-96" style="display: none;">
+                <div class="search-spinner p-4 text-center text-gray-400" style="display: none;"><i class="fa-solid fa-spinner fa-spin text-xl text-red-500" aria-hidden="true"></i></div>
+                <div class="search-results-list flex flex-col overflow-y-auto search-scroll"></div>
+                <button aria-label="View All Results" class="view-all-results-btn p-3 text-center text-xs font-black uppercase tracking-wider text-red-400 hover:text-white hover:bg-red-600/20 border-t border-white/10 w-full transition-colors cursor-pointer" style="display: none;">
+                    View All Results <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-1.5 lg:gap-2 shrink-0 relative" id="desktopDropdownContainer">
+        <div class="relative" id="desktopDomainBox">
+            <button type="button" id="desktopDomainBtn" aria-label="Official domains" aria-haspopup="true" aria-expanded="false" title="Domains" class="hdr-ico text-sky-300">
+                <i class="fa-solid fa-globe text-[13px]" aria-hidden="true"></i>
+            </button>
+            <div id="desktopDomainMenu" class="hdr-menu hidden" hidden>
+                <p class="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-sky-400">Official domains</p>
+                {% if site_domains | default([]) | length %}
+                    {% for d in site_domains %}
+                    <a href="{{ d.href }}" {% if not d.current %}rel="noopener"{% endif %} class="flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs font-bold {% if d.current %}text-white bg-white/[0.08]{% else %}text-gray-300 hover:text-white hover:bg-white/[0.07]{% endif %}">
+                        <span class="truncate"><i class="fa-solid fa-link mr-2 text-sky-400" aria-hidden="true"></i>{{ d.label }}</span>
+                        {% if d.current %}<i class="fa-solid fa-check text-emerald-400 text-[11px]" aria-hidden="true"></i>{% endif %}
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <p class="px-3 py-2 text-[11px] text-gray-500">Add domains in Admin → Settings.</p>
+                {% endif %}
+            </div>
+        </div>
+        <a href="/surprise" title="Surprise me" class="hdr-ico" aria-label="Surprise Me">
+            <i class="fa-solid fa-dice text-[13px]" aria-hidden="true"></i>
+        </a>
+        <a href="/premium" title="Premium" class="hdr-ico {% if cur_path starts with '/premium' %}is-on text-amber-300{% endif %}" aria-label="Premium plans">
+            <i class="fa-solid fa-crown text-[13px]" aria-hidden="true"></i>
+        </a>
+        <a href="/app" title="Download Android app" class="hdr-ico {% if cur_path starts with '/app' %}is-on text-emerald-300{% endif %}" aria-label="Download Android App">
+            <i class="fa-brands fa-android text-[14px]" aria-hidden="true"></i>
+        </a>
+
+        {% if current_user.is_authenticated %}
+            {% set raw_prof_name = session.get('active_profile_name', '') %}
+            {% set active_prof_name = (raw_prof_name and (session.get('active_profile_uid') == current_user.id or (not session.get('active_profile_uid') and (raw_prof_name|lower != 'itmplayit' or current_user.username|lower == 'itmplayit')))) ? raw_prof_name : current_user.username %}
+            {% set active_prof_color = (session.get('active_profile_color') and (session.get('active_profile_uid') == current_user.id or not session.get('active_profile_uid'))) ? session.get('active_profile_color') : 'bg-red-600' %}
+            <a href="{{ url_for('routes.notifications') }}" aria-label="Notifications" title="Notifications" class="relative w-9 h-9 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 hover:border-red-500/40 flex items-center justify-center text-gray-300 hover:text-white transition-all">
+                <i class="fa-solid fa-bell text-xs" aria-hidden="true"></i>
+                {% if unread_notifs | default(0) > 0 %}
+                <span class="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-600 text-white text-[9px] font-black px-1 rounded-full flex items-center justify-center animate-pulse shadow">{{ unread_notifs }}</span>
+                {% endif %}
+            </a>
+
+            <button id="desktopProfileBtn" aria-label="Open User Profile Menu" aria-haspopup="true" aria-expanded="false" class="flex items-center gap-2 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 hover:border-red-500/50 pl-1.5 pr-3 py-1 rounded-full transition-all focus:outline-none group cursor-pointer">
+                <div class="w-7 h-7 rounded-full {{ active_prof_color }} flex items-center justify-center font-black text-white text-xs shadow-md ring-2 ring-white/15 group-hover:ring-red-500/50 transition-all">
+                    {{ active_prof_name|first|upper }}
+                </div>
+                <span class="text-xs font-bold text-gray-200 group-hover:text-white transition-colors max-w-[90px] truncate hidden lg:inline">
+                    {{ active_prof_name }}
+                </span>
+                <i class="fa-solid fa-chevron-down text-[10px] text-gray-400 group-hover:text-white transition-transform duration-200" aria-hidden="true"></i>
+            </button>
+            <div id="desktopDropdown" class="hidden absolute right-0 top-full mt-3 w-60 rounded-2xl bg-[#121318]/95 border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl z-[999] overflow-hidden flex flex-col p-2 gap-0.5">
+                <div class="px-3 py-2.5 border-b border-white/10 mb-1 flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full {{ active_prof_color }} flex items-center justify-center font-black text-white text-sm shrink-0 shadow-md">
+                        {{ active_prof_name|first|upper }}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[10px] text-red-400 font-black uppercase tracking-widest">Active Profile</p>
+                        <p class="text-sm font-black text-white truncate">{{ active_prof_name }}</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('routes.select_profile') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/[0.07] transition-all"><i class="fa-solid fa-users text-blue-400 text-sm w-4 text-center" aria-hidden="true"></i> Switch Profile</a>
+                <a href="{{ url_for('routes.my_playlists') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/[0.07] transition-all"><i class="fa-solid fa-folder-open text-purple-400 text-sm w-4 text-center" aria-hidden="true"></i> My Collections</a>
+                <a href="/watchlist" class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/[0.07] transition-all"><i class="fa-solid fa-bookmark text-amber-400 text-sm w-4 text-center" aria-hidden="true"></i> My Watchlist</a>
+                <a href="/history" class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/[0.07] transition-all"><i class="fa-solid fa-clock-rotate-left text-cyan-400 text-sm w-4 text-center" aria-hidden="true"></i> Watch History</a>
+                <a href="/premium" class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/[0.07] transition-all"><i class="fa-solid fa-crown text-amber-400 text-sm w-4 text-center" aria-hidden="true"></i> Premium</a>
+                <a href="/app" class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/[0.07] transition-all"><i class="fa-brands fa-android text-emerald-400 text-sm w-4 text-center" aria-hidden="true"></i> Android App</a>
+                <a href="{{ url_for('routes.reels') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/[0.07] transition-all"><i class="fa-solid fa-mobile-screen text-red-500 text-sm w-4 text-center" aria-hidden="true"></i> Trailer Reels</a>
+                <a href="{{ url_for('routes.cine_wrapped') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/[0.07] transition-all"><i class="fa-solid fa-chart-pie text-green-400 text-sm w-4 text-center" aria-hidden="true"></i> Cine-Wrapped</a>
+                <a href="{{ url_for('routes.cine_match_home') }}" class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/[0.07] transition-all"><i class="fa-solid fa-heart-crack text-pink-400 text-sm w-4 text-center" aria-hidden="true"></i> Cine-Match</a>
+                <a href="/blog" class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/[0.07] transition-all"><i class="fa-solid fa-blog text-emerald-400 text-sm w-4 text-center" aria-hidden="true"></i> Blog & News</a>
+                <div class="h-[1px] bg-white/10 my-1 mx-2"></div>
+                <a href="/profile" class="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/[0.07] transition-all"><i class="fa-solid fa-circle-user text-gray-400 text-sm w-4 text-center" aria-hidden="true"></i> Account Settings</a>
+                <form method="POST" action="/logout" class="m-0">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" class="w-full text-left flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all cursor-pointer"><i class="fa-solid fa-arrow-right-from-bracket text-sm w-4 text-center" aria-hidden="true"></i> Sign Out</button>
+                </form>
+            </div>
+        {% else %}
+            <a href="/login" class="h-9 inline-flex items-center bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white px-4 lg:px-5 rounded-full font-black text-xs lg:text-sm transition-all shadow-[0_0_20px_rgba(220,38,38,0.45)] border border-red-400/30 whitespace-nowrap">Sign In</a>
+        {% endif %}
+    </div>
+</nav>
+
+
+<div class="fixed top-0 left-0 right-0 z-[9999] bg-gradient-to-b from-[#090a0f]/95 to-[#0f1014]/90 backdrop-blur-xl border-b border-white/[0.08] flex md:hidden items-center justify-between h-14 px-3 shadow-[0_8px_25px_rgba(0,0,0,0.6)] gap-2">
+    <a href="/" class="flex items-center gap-1.5 shrink-0 group focus:outline-none" aria-label="CINEAMIT Home">
+        <img src="/static/assets/logo-192.png" alt="" width="32" height="32"
+             class="w-8 h-8 rounded-lg object-contain bg-[#141519] border border-white/10 group-hover:scale-105 transition-transform"
+             onerror="this.onerror=null;this.src='/static/logo-192.png';">
+        <span class="text-xl font-black text-red-600 italic tracking-tighter">C<span class="text-white">A</span></span>
+    </a>
+    
+    <div class="relative flex-1 min-w-0 search-container" role="search">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <i class="fa-solid fa-magnifying-glass text-gray-400 text-xs" aria-hidden="true"></i>
+        </span>
+        <input aria-label="Mobile Search Input" type="text" id="mobileSearchInput" placeholder="Search movies, series..." 
+               class="live-search-input w-full bg-white/[0.06] focus:bg-[#14151c] border border-white/10 focus:border-red-500/70 text-white rounded-full pl-8 pr-3 py-1.5 text-xs outline-none transition-all shadow-inner placeholder-gray-400" autocomplete="off">
+        <div class="live-search-results fixed top-14 left-2 right-2 bg-[#121318]/98 backdrop-blur-2xl border border-white/15 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-[9999] overflow-hidden flex flex-col max-h-[65vh]" style="display: none;">
+            <div class="search-spinner p-4 text-center text-gray-400" style="display: none;"><i class="fa-solid fa-spinner fa-spin text-xl text-red-500" aria-hidden="true"></i></div>
+            <div class="search-results-list flex flex-col overflow-y-auto search-scroll"></div>
+            <button aria-label="View All Results" class="view-all-results-btn p-3 text-center text-xs font-black uppercase tracking-wider text-red-400 hover:bg-white/5 border-t border-white/10 w-full" style="display: none;">View All Results <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></button>
+        </div>
+    </div>
+    
+    <div class="relative shrink-0" id="mobileDomainBox">
+        <button type="button" id="mobileDomainBtn" aria-label="Official domains" aria-haspopup="true" aria-expanded="false" class="hdr-ico w-8 h-8 text-sky-300">
+            <i class="fa-solid fa-globe text-xs" aria-hidden="true"></i>
+        </button>
+        <div id="mobileDomainMenu" class="hdr-menu hidden" hidden>
+            <p class="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-sky-400">Official domains</p>
+            {% if site_domains | default([]) | length %}
+                {% for d in site_domains %}
+                <a href="{{ d.href }}" {% if not d.current %}rel="noopener"{% endif %} class="flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-xs font-bold {% if d.current %}text-white bg-white/[0.08]{% else %}text-gray-300 hover:text-white hover:bg-white/5{% endif %}">
+                    <span class="truncate">{{ d.label }}</span>
+                    {% if d.current %}<i class="fa-solid fa-check text-emerald-400 text-[11px]" aria-hidden="true"></i>{% endif %}
+                </a>
+                {% endfor %}
+            {% else %}
+                <p class="px-3 py-2 text-[11px] text-gray-500">Add domains in Admin → Settings.</p>
+            {% endif %}
+        </div>
+    </div>
+    <a href="/app" class="hdr-ico w-8 h-8" aria-label="Download Android App">
+        <i class="fa-brands fa-android text-xs" aria-hidden="true"></i>
+    </a>
+
+    <div class="shrink-0 relative" id="mobileDropdownContainer">
+        {% if current_user.is_authenticated %}
+            {% set raw_mob_prof = session.get('active_profile_name', '') %}
+            {% set mob_prof_name = (raw_mob_prof and (session.get('active_profile_uid') == current_user.id or (not session.get('active_profile_uid') and (raw_mob_prof|lower != 'itmplayit' or current_user.username|lower == 'itmplayit')))) ? raw_mob_prof : current_user.username %}
+            {% set mob_prof_color = (session.get('active_profile_color') and (session.get('active_profile_uid') == current_user.id or not session.get('active_profile_uid'))) ? session.get('active_profile_color') : 'bg-red-600' %}
+            <button id="mobileProfileBtn" aria-label="Open Mobile User Profile Menu" aria-haspopup="true" aria-expanded="false" class="relative w-8 h-8 rounded-full {{ mob_prof_color }} flex items-center justify-center text-white font-black text-xs shadow-md ring-2 ring-white/20 focus:outline-none cursor-pointer">
+                {{ mob_prof_name|first|upper }}
+                {% if unread_notifs | default(0) > 0 %}
+                <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-[#0f1014] animate-pulse"></span>
+                {% endif %}
+            </button>
+            <div id="mobileDropdown" class="hidden absolute right-0 top-full mt-2.5 w-52 rounded-2xl bg-[#121318]/95 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-[999] flex flex-col p-2 gap-0.5">
+                <div class="px-3 py-2 border-b border-white/10 mb-1">
+                    <p class="text-[9px] text-red-400 font-black uppercase tracking-widest">Active Profile</p>
+                    <p class="text-xs font-black text-white truncate">{{ mob_prof_name }}</p>
+                </div>
+                <a href="/livetv" class="px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5 flex items-center justify-between"><span><i class="fa-solid fa-satellite-dish mr-2 text-red-500" aria-hidden="true"></i>Live TV</span><span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span></a>
+                <a href="/premium" class="px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5"><i class="fa-solid fa-crown mr-2 text-amber-400" aria-hidden="true"></i>Premium</a>
+                <a href="/app" class="px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5"><i class="fa-brands fa-android mr-2 text-emerald-400" aria-hidden="true"></i>Android App</a>
+                <a href="{{ url_for('routes.select_profile') }}" class="px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5"><i class="fa-solid fa-users mr-2 text-blue-400" aria-hidden="true"></i>Switch Profile</a>
+                <a href="/watchlist" class="px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5"><i class="fa-solid fa-bookmark mr-2 text-amber-400" aria-hidden="true"></i>Watchlist</a>
+                <a href="/history" class="px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5"><i class="fa-solid fa-clock-rotate-left mr-2 text-cyan-400" aria-hidden="true"></i>History</a>
+                <a href="{{ url_for('routes.my_playlists') }}" class="px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5"><i class="fa-solid fa-folder-open mr-2 text-purple-400" aria-hidden="true"></i>Collections</a>
+                <a href="{{ url_for('routes.cine_wrapped') }}" class="px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5"><i class="fa-solid fa-chart-pie mr-2 text-green-400" aria-hidden="true"></i>Cine-Wrapped</a>
+                <a href="{{ url_for('routes.cine_match_home') }}" class="px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5"><i class="fa-solid fa-heart-crack mr-2 text-pink-400" aria-hidden="true"></i>Cine-Match</a>
+                <a href="/blog" class="px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5"><i class="fa-solid fa-blog mr-2 text-emerald-400" aria-hidden="true"></i>Blog</a>
+                <a href="{{ url_for('routes.notifications') }}" class="px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5 flex justify-between items-center">
+                    <span><i class="fa-solid fa-bell mr-2 text-yellow-400" aria-hidden="true"></i>Alerts</span>
+                    {% if unread_notifs | default(0) > 0 %}<span class="bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded-full">{{ unread_notifs | default(0) }}</span>{% endif %}
+                </a>
+                <div class="h-[1px] bg-white/10 my-1"></div>
+                <a href="/profile" class="px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5"><i class="fa-solid fa-circle-user mr-2 text-gray-400" aria-hidden="true"></i>Account</a>
+                <form method="POST" action="/logout" class="m-0">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" class="px-3 py-2 rounded-xl text-xs font-bold text-red-400 hover:bg-red-500/10 cursor-pointer"><i class="fa-solid fa-right-from-bracket mr-2" aria-hidden="true"></i>Sign Out</button>
+                </form>
+            </div>
+        {% else %}
+            <div class="relative" id="mobileMoreContainer">
+                <button type="button" id="mobileMoreBtn" aria-label="More" aria-haspopup="true" aria-expanded="false" class="w-8 h-8 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center text-gray-200">
+                    <i class="fa-solid fa-ellipsis-vertical text-xs" aria-hidden="true"></i>
+                </button>
+                <div id="mobileMoreMenu" class="hidden absolute right-0 top-full mt-2.5 w-44 rounded-2xl bg-[#121318]/95 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-[999] flex flex-col p-2">
+                    <a href="/surprise" class="px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5"><i class="fa-solid fa-dice mr-2 text-purple-400" aria-hidden="true"></i>Surprise</a>
+                    <a href="/premium" class="px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5"><i class="fa-solid fa-crown mr-2 text-amber-400" aria-hidden="true"></i>Premium</a>
+                    <a href="/livetv" class="px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5"><i class="fa-solid fa-satellite-dish mr-2 text-red-500" aria-hidden="true"></i>Live TV</a>
+                    <a href="/reels" class="px-3 py-2 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/5"><i class="fa-solid fa-bolt mr-2 text-amber-400" aria-hidden="true"></i>Reels</a>
+                </div>
+            </div>
+            <a href="/login" class="bg-gradient-to-r from-red-600 to-red-700 text-white px-3 py-1.5 rounded-full font-black text-xs transition-all shadow-[0_0_12px_rgba(220,38,38,0.4)] whitespace-nowrap">Sign In</a>
+        {% endif %}
+    </div>
+</div>
+
+<div id="mobileBottomNav" class="fixed bottom-0 left-0 right-0 z-[999] bg-[#0b0c10]/95 backdrop-blur-2xl border-t border-white/[0.08] flex md:hidden justify-around items-center py-1.5 px-1 shadow-[0_-10px_30px_rgba(0,0,0,0.75)]" style="padding-bottom: env(safe-area-inset-bottom, 12px);">
+    <a href="/home" aria-label="Navigate to Home" class="flex flex-col items-center justify-center min-w-[48px] min-h-[44px] gap-1 text-[10px] font-bold tracking-wide transition-all px-2 py-1 rounded-xl {% if cur_path == '/home' or cur_path == '/' %}text-red-500 bg-red-500/10{% else %}text-gray-400 hover:text-white active:scale-95{% endif %}">
+        <i class="fa-solid fa-house text-base" aria-hidden="true"></i><span>Home</span>
+    </a>
+    <a href="/movies" aria-label="Navigate to Movies" class="flex flex-col items-center justify-center min-w-[48px] min-h-[44px] gap-1 text-[10px] font-bold tracking-wide transition-all px-2 py-1 rounded-xl {% if cur_path starts with '/movies' %}text-red-500 bg-red-500/10{% else %}text-gray-400 hover:text-white active:scale-95{% endif %}">
+        <i class="fa-solid fa-film text-base" aria-hidden="true"></i><span>Movies</span>
+    </a>
+    <a href="/reels" aria-label="Navigate to Reels" class="flex flex-col items-center justify-center min-w-[48px] min-h-[44px] gap-1 text-[10px] font-bold tracking-wide transition-all px-2 py-1 rounded-xl {% if cur_path starts with '/reels' %}text-red-500 bg-red-500/10{% else %}text-gray-400 hover:text-white active:scale-95{% endif %}">
+        <i class="fa-solid fa-bolt text-base text-amber-400" aria-hidden="true"></i><span>Reels</span>
+    </a>
+    <a href="/series" aria-label="Navigate to Series" class="flex flex-col items-center justify-center min-w-[48px] min-h-[44px] gap-1 text-[10px] font-bold tracking-wide transition-all px-2 py-1 rounded-xl {% if cur_path starts with '/series' %}text-red-500 bg-red-500/10{% else %}text-gray-400 hover:text-white active:scale-95{% endif %}">
+        <i class="fa-solid fa-tv text-base" aria-hidden="true"></i><span>Series</span>
+    </a>
+    <a href="/anime" aria-label="Navigate to Anime" class="flex flex-col items-center justify-center min-w-[48px] min-h-[44px] gap-1 text-[10px] font-bold tracking-wide transition-all px-2 py-1 rounded-xl {% if cur_path starts with '/anime' %}text-red-500 bg-red-500/10{% else %}text-gray-400 hover:text-white active:scale-95{% endif %}">
+        <i class="fa-solid fa-dragon text-base" aria-hidden="true"></i><span>Anime</span>
+    </a>
+    <a href="/livetv" aria-label="Navigate to Live TV" class="flex flex-col items-center justify-center min-w-[48px] min-h-[44px] gap-1 text-[10px] font-bold tracking-wide transition-all px-2 py-1 rounded-xl relative {% if cur_path starts with '/livetv' %}text-red-500 bg-red-500/10{% else %}text-gray-400 hover:text-red-400 active:scale-95{% endif %}">
+        <span class="absolute top-1 right-2.5 w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
+        <i class="fa-solid fa-satellite-dish text-base text-red-500" aria-hidden="true"></i><span>Live TV</span>
+    </a>
+</div>
+
+{# Keep notifications outside page content and its stacking/animation contexts. #}
+<div id="cineFlashStack" aria-label="Status messages">
+    {% set messages = get_flashed_messages() %}
+    {% for fm in messages %}
+        <div class="cine-flash {% if fm.category == 'error' %}cine-flash--error{% elseif fm.category == 'success' %}cine-flash--success{% else %}cine-flash--info{% endif %}" role="{% if fm.category == 'error' %}alert{% else %}status{% endif %}" aria-atomic="true">
+            <span class="cine-flash-message">{{ fm.message }}</span>
+            <button type="button" aria-label="Dismiss notification" onclick="this.closest('.cine-flash').remove()" class="cine-flash-close">×</button>
+        </div>
+    {% endfor %}
+</div>

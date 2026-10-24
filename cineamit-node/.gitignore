@@ -1,0 +1,13 @@
+# Private runtime configuration, including legacy backups
+.env
+.env.*
+!.env.example
+env.js
+env.js.*
+*.migrate-*.tmp
+node_modules/
+cache/
+*.log
+coverage/
+data/app/*.apk
+data/app/*.tmp

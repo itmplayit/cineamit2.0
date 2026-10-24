@@ -1,0 +1,126 @@
+        <div id="tab-users" class="tab-content hidden animate-fade-in">
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl shadow-xl overflow-hidden render-optimize">
+                <div class="p-5 border-b border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-user-group text-teal-400"></i> Registered Users</h2>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <form method="GET" action="/cineamit-admin" class="m-0">
+                            <select aria-label="Filter users by role" name="role_filter" onchange="this.form.submit()" class="bg-[#141519] border border-gray-700 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-teal-500 cursor-pointer">
+                                <option value="all" {% if role_filter == 'all' %}selected{% endif %}>All Roles ({{ users|length }})</option>
+                                <option value="owner" {% if role_filter == 'owner' %}selected{% endif %}>Owners</option>
+                                <option value="super_admin" {% if role_filter == 'super_admin' %}selected{% endif %}>Super Admins</option>
+                                <option value="editor" {% if role_filter == 'editor' %}selected{% endif %}>Editors</option>
+                                <option value="moderator" {% if role_filter == 'moderator' %}selected{% endif %}>Moderators</option>
+                                <option value="user" {% if role_filter == 'user' %}selected{% endif %}>Users</option>
+                            </select>
+                        </form>
+                        {% if current_user.role == 'owner' or current_user.role == 'super_admin' %}
+                        <a href="/admin/export_users_csv" title="Download all users as CSV (no passwords/secrets)" class="inline-flex items-center gap-1.5 bg-teal-600/10 border border-teal-600/30 text-teal-400 hover:bg-teal-600 hover:text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors">
+                            <i class="fa-solid fa-file-csv"></i> CSV
+                        </a>
+                        {% endif %}
+                        <div class="relative w-full sm:w-56">
+                            <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm"></i>
+                            <input type="text" id="userSearchInput" placeholder="Search by name or email..." class="w-full bg-[#141519] border border-gray-700 text-white rounded-lg pl-9 pr-4 py-2 text-sm outline-none focus:border-teal-500 transition-colors">
+                        </div>
+                    </div>
+                </div>
+                {% if current_user.role == 'owner' %}
+                <form id="bulkUsersForm" action="/admin/bulk_users" method="POST" class="m-0 border-b border-gray-800 bg-[#0a0a0c] p-3 flex flex-wrap items-center gap-3">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="button" id="selectAllUsers" class="text-[10px] font-black uppercase tracking-wider text-teal-400 hover:text-teal-300 bg-teal-600/10 border border-teal-600/30 rounded-lg px-3 py-1.5 cursor-pointer"><i class="fa-solid fa-check-double mr-1"></i>Select All</button>
+                    <span id="bulkCount" class="text-[10px] text-gray-500 font-bold">0 selected</span>
+                    <span class="text-gray-700">|</span>
+                    <button type="submit" data-bulk="suspend" class="text-[10px] font-black uppercase tracking-wider text-red-400 hover:text-red-300 bg-red-600/10 border border-red-600/30 rounded-lg px-3 py-1.5 cursor-pointer"><i class="fa-solid fa-ban mr-1"></i>Suspend</button>
+                    <button type="submit" data-bulk="unsuspend" class="text-[10px] font-black uppercase tracking-wider text-green-400 hover:text-green-300 bg-green-600/10 border border-green-600/30 rounded-lg px-3 py-1.5 cursor-pointer"><i class="fa-solid fa-unlock mr-1"></i>Unsuspend</button>
+                    <button type="submit" data-bulk="kill" class="text-[10px] font-black uppercase tracking-wider text-yellow-400 hover:text-yellow-300 bg-yellow-600/10 border border-yellow-600/30 rounded-lg px-3 py-1.5 cursor-pointer"><i class="fa-solid fa-power-off mr-1"></i>Kill Sessions</button>
+                    <button type="submit" data-bulk="delete" class="text-[10px] font-black uppercase tracking-wider text-red-500 hover:text-red-400 bg-red-600/20 border border-red-600/40 rounded-lg px-3 py-1.5 cursor-pointer"><i class="fa-solid fa-skull mr-1"></i>Delete</button>
+                    <input type="hidden" name="bulk_action" id="bulkAction" value="">
+                    <small class="text-[9px] text-gray-600 w-full sm:w-auto">Max 50 users. Owner (id 1) and you are skipped.</small>
+                </form>
+                {% endif %}
+                <div class="overflow-x-auto max-h-[600px] custom-scrollbar">
+                    <table class="w-full text-left border-collapse min-w-[900px]" id="usersTable">
+                        <thead class="sticky top-0 bg-gray-900 shadow-sm z-10">
+                            <tr class="text-gray-400 text-xs font-bold uppercase border-b border-gray-800">
+                                {% if current_user.role == 'owner' %}<th scope="col" class="py-3 px-2 w-8"><input type="checkbox" id="checkAllUsers" aria-label="Select all users" class="accent-teal-500 cursor-pointer"></th>{% endif %}
+                                <th scope="col" class="py-3 px-4">User</th>
+                                <th scope="col" class="py-3 px-4">Joined</th>
+                                <th scope="col" class="py-3 px-4">Last Active</th>
+                                <th scope="col" class="py-3 px-4">Status</th>
+                                <th scope="col" class="py-3 px-4">Points</th>
+                                <th scope="col" class="py-3 px-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-gray-300 divide-y divide-gray-800">
+                            {% for u in users %}
+                            <tr class="hover:bg-gray-800/50 transition-colors user-row {% if u.is_active is defined and u.is_active == 0 %}bg-red-950/20{% endif %}">
+                                {% if current_user.role == 'owner' and u.id != 1 %}
+                                <td class="py-3 px-2"><input type="checkbox" form="bulkUsersForm" name="user_ids[]" value="{{ u.id }}" class="bulk-user-check accent-teal-500 cursor-pointer" aria-label="Select {{ u.username }}"></td>
+                                {% endif %}
+                                <td class="py-3 px-4">
+                                    <div class="font-bold text-white search-name">{{ u.username }} {% if u.id == 1 %}<span class="text-[9px] bg-red-600 text-white px-1.5 rounded ml-1 uppercase">Owner</span>{% endif %}
+                                    {% if u.totp_enabled is defined and u.totp_enabled %}<span class="text-[9px] bg-green-600/10 text-green-400 border border-green-700/30 px-1.5 py-0.5 rounded ml-1 uppercase" title="Two-factor authentication enabled"><i class="fa-solid fa-shield-halved mr-0.5"></i>2FA</span>{% endif %}
+                                    </div>
+                                    <div class="text-xs text-gray-500 search-email">{{ u.email }}</div>
+                                    {% if current_user.role != 'owner' or u.id == 1 %}
+                                    <div class="text-[10px] mt-1 inline-block bg-gray-800 text-gray-300 px-2 py-0.5 rounded font-black">{{ u.role|upper }}</div>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 px-4 text-xs text-gray-400">{{ (u.created_at) ? (u.created_at|date('d M Y')) : ('N/A') }}</td>
+                                <td class="py-3 px-4 text-xs text-gray-400 whitespace-nowrap last-active" data-ts="{{ (u.last_login) ? u.last_login : '' }}">{{ (u.last_login) ? (u.last_login|date('d M Y H:i')) : ('Never') }}</td>
+                                <td class="py-3 px-4 whitespace-nowrap">
+                                    {% if u.is_active is defined and u.is_active == 0 %}
+                                    <span class="bg-red-600/15 text-red-400 border border-red-700/40 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider"><i class="fa-solid fa-ban mr-1"></i>Suspended</span>
+                                    {% else %}
+                                    <span class="bg-green-600/15 text-green-400 border border-green-700/40 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider"><i class="fa-solid fa-circle-check mr-1"></i>Active</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 px-4 whitespace-nowrap">
+                                    <div class="text-xs font-black text-amber-300">{{ u.points|default(0) }} pts</div>
+                                    {% if u.sub_plan is defined and u.sub_plan in ['monthly', 'yearly'] %}
+                                    <div class="text-[9px] font-bold uppercase text-purple-400">{{ u.sub_plan }}</div>
+                                    {% else %}
+                                    <div class="text-[9px] text-gray-600 uppercase">free</div>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 px-4 text-right">
+                                    {% if current_user.role == 'owner' and u.id != 1 %}
+                                        <!-- role dropdown: confirm + cancel par purana value restore -->
+                                    <form action="/admin/update_role/{{ u.id }}" method="POST" class="inline m-0" data-username="{{ u.username }}" data-orig-role="{{ u.role }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <select aria-label="Update User Role" name="new_role" onchange="return adminRoleConfirm(this)" class="bg-[#0a0a0c] text-white text-xs p-2 rounded-lg border border-gray-700 mr-2 outline-none cursor-pointer focus:border-red-500">
+                                            <option value="user" {% if u.role == 'user' %}selected{% endif %}>User</option>
+                                            <option value="moderator" {% if u.role == 'moderator' %}selected{% endif %}>Moderator</option>
+                                            <option value="editor" {% if u.role == 'editor' %}selected{% endif %}>Editor</option>
+                                            <option value="super_admin" {% if u.role == 'super_admin' %}selected{% endif %}>Super Admin</option>
+                                        </select>
+                                    </form>
+                                    {% endif %}
+                                    {% if current_user.role in ['owner', 'super_admin'] and u.id != 1 %}
+                                    <form action="/admin/delete_user/{{ u.id }}" method="POST" class="inline" onsubmit="return confirm('WARNING: Are you sure you want to completely ban and delete this user?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button aria-label="Ban and Delete User" type="submit" class="text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 px-3 py-2 rounded-lg text-xs font-bold transition-colors inline-block mt-2 sm:mt-0 shadow-sm border border-red-500/20 cursor-pointer">Ban/Delete</button>
+                                    </form>
+                                    {% endif %}
+                                    {% if current_user.role in ['owner', 'super_admin'] and u.id != 1 and current_user.id != u.id %}
+                                    <form action="/admin/toggle_suspend/{{ u.id }}" method="POST" class="inline" onsubmit="return confirm('{{ (u.is_active is defined and u.is_active == 0) ? "Unsuspend " : "Suspend " }}{{ u.username }}? Suspended users cannot log in.';');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        {% if u.is_active is defined and u.is_active == 0 %}
+                                        <button aria-label="Unsuspend User" type="submit" class="text-green-500 hover:text-green-400 bg-green-500/10 hover:bg-green-500/20 px-3 py-2 rounded-lg text-xs font-bold transition-colors inline-block mt-2 sm:mt-0 shadow-sm border border-green-500/20 cursor-pointer"><i class="fa-solid fa-unlock mr-1"></i>Unsuspend</button>
+                                        {% else %}
+                                        <button aria-label="Suspend User" type="submit" class="text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 px-3 py-2 rounded-lg text-xs font-bold transition-colors inline-block mt-2 sm:mt-0 shadow-sm border border-red-500/20 cursor-pointer"><i class="fa-solid fa-ban mr-1"></i>Suspend</button>
+                                        {% endif %}
+                                    </form>
+                                    <form action="/admin/kill_sessions/{{ u.id }}" method="POST" class="inline" data-confirm-msg="Force-logout ALL active sessions of {{ u.username }}?" onsubmit="return confirm(this.dataset.confirmMsg);">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button aria-label="Kill User Sessions" type="submit" class="text-yellow-500 hover:text-yellow-400 bg-yellow-500/10 hover:bg-yellow-500/20 px-3 py-2 rounded-lg text-xs font-bold transition-colors inline-block mt-2 sm:mt-0 shadow-sm border border-yellow-500/20 cursor-pointer" title="Force logout all their devices"><i class="fa-solid fa-power-off mr-1"></i>Kill Sessions</button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>

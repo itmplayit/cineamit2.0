@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}{{ seo.title }}{% endblock %}
+{% block meta_desc %}{{ seo.description }}{% endblock %}
+{% block content %}
+<div class="px-4 md:px-12 pt-5">{% include "seo_breadcrumbs.html" %}</div>
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+        will-change: transform, opacity;
+    }
+</style>
+<div class="min-h-screen bg-[#0f1014] pt-6 md:pt-8 pb-12 px-4 sm:px-6 md:px-12 max-w-[1800px] mx-auto animate-fade-in">
+    <a aria-label="Go Back" href="javascript:history.back()" class="inline-flex items-center text-sm font-bold text-gray-400 hover:text-white transition-colors bg-gray-900 px-4 py-2 rounded-lg border border-gray-800 hover:border-gray-600 mb-8 w-max">
+        <i class="fa-solid fa-arrow-left mr-2" aria-hidden="true"></i> Back
+    </a>
+    <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 mb-16 bg-[#141519] border border-gray-800 rounded-3xl p-6 lg:p-10 shadow-2xl relative overflow-hidden">
+        <div class="absolute -top-32 -right-32 w-96 h-96 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="w-48 md:w-64 lg:w-72 shrink-0 mx-auto lg:mx-0 relative z-10">
+            {% if actor.profile_path %}
+                <img src="{{ image_base_url|default("https://image.tmdb.org/t/p/w500") }}{{ actor.profile_path }}" 
+                     alt="{{ actor.name }}" 
+                     width="500" height="750" fetchpriority="high" loading="eager" decoding="sync"
+                     class="w-full aspect-[2/3] rounded-2xl shadow-[0_0_30px_rgba(220,38,38,0.2)] border border-gray-700 object-cover">
+            {% else %}
+                <div class="w-full aspect-[2/3] rounded-2xl bg-gray-900 border border-gray-700 flex items-center justify-center shadow-lg">
+                    <i class="fa-solid fa-user text-6xl text-gray-700" aria-hidden="true"></i>
+                </div>
+            {% endif %}
+        </div>
+        <div class="flex-1 text-center lg:text-left relative z-10 flex flex-col justify-center">
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 tracking-tight drop-shadow-md">{{ actor.name }}</h1>
+            <div class="flex flex-wrap justify-center lg:justify-start gap-3 mb-6 text-xs md:text-sm font-bold text-gray-300">
+                {% if actor.birthday %}
+                <span class="bg-gray-900/80 border border-gray-800 px-3 py-1.5 rounded-lg flex items-center">
+                    <i class="fa-solid fa-cake-candles text-red-500 mr-2" aria-hidden="true"></i> Born: {{ actor.birthday }}
+                </span>
+                {% endif %}
+                {% if actor.deathday %}
+                <span class="bg-gray-900/80 border border-gray-800 px-3 py-1.5 rounded-lg flex items-center">
+                    <i class="fa-solid fa-dove text-gray-500 mr-2" aria-hidden="true"></i> Died: {{ actor.deathday }}
+                </span>
+                {% endif %}
+                {% if actor.place_of_birth %}
+                <span class="bg-gray-900/80 border border-gray-800 px-3 py-1.5 rounded-lg flex items-center">
+                    <i class="fa-solid fa-location-dot text-blue-500 mr-2" aria-hidden="true"></i> {{ actor.place_of_birth }}
+                </span>
+                {% endif %}
+                <span class="bg-gray-900/80 border border-gray-800 px-3 py-1.5 rounded-lg flex items-center">
+                    <i class="fa-solid fa-star text-yellow-500 mr-2" aria-hidden="true"></i> {{ actor.known_for_department }}
+                </span>
+            </div>
+            <div class="text-gray-400 text-sm md:text-base leading-relaxed max-w-4xl">
+                {% if actor.biography %}
+                    <p class="line-clamp-6 hover:line-clamp-none transition-all duration-500" title="Hover to expand">
+                        {{ actor.biography|nl2br }}
+                    </p>
+                {% else %}
+                    <p class="italic text-gray-500">No biography available for {{ actor.name }}.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="w-full">
+        <h2 class="text-2xl font-bold text-white border-l-4 border-red-600 pl-3 mb-8 flex items-center">
+            <i class="fa-solid fa-film mr-3 text-red-600 opacity-50" aria-hidden="true"></i> Known For
+        </h2>
+        {% if credits and credits|length > 0 %}
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+            {% for item in credits %}
+                {% if item.poster_path %}
+                {% set item_media = item.media_type|default('movie') %}
+                <div class="relative transition-all duration-300 hover:z-10 group">
+                    <a href="{{ url_for('routes.details', media_type=item_media, tmdb_id=item.id, title=item.title ?: item.name) }}" class="block relative rounded-lg overflow-hidden shadow-lg border border-gray-800 aspect-[2/3] hover:scale-105 hover:border-red-500 transition-transform duration-300">
+                        <img src="{{ image_base_url|default("https://image.tmdb.org/t/p/w500") }}{{ item.poster_path }}" 
+                             alt="{{ item.title ?: item.name }}" 
+                             width="300" height="450" loading="lazy" decoding="async"
+                             class="w-full h-full object-cover">
+                        <div class="absolute top-2 left-2 {{ item_media == 'movie' ? 'bg-red-600' : 'bg-blue-600' }}/90 px-2 py-1 rounded text-[10px] text-white font-bold backdrop-blur-md shadow-lg uppercase tracking-wider z-20">
+                            {{ item_media == 'movie' ? 'Movie' : 'TV Show' }}
+                        </div>
+                        {% if item.vote_average and item.vote_average > 0 %}
+                        <div class="absolute top-2 right-2 bg-black bg-opacity-80 px-2 py-1 rounded text-[11px] text-green-400 font-bold border border-green-500/30 backdrop-blur-md shadow-lg z-20">
+                            <i class="fa-solid fa-star text-[10px] mr-1" aria-hidden="true"></i>{{ item.vote_average | round(1) }}
+                        </div>
+                        {% endif %}
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-4">
+                            <p class="text-white font-bold text-sm truncate drop-shadow-md">{{ item.title ?: item.name }}</p>
+                            <p class="text-[10px] text-red-400 truncate mt-1 uppercase font-bold tracking-widest">{{ item.character ? 'As ' ~ item.character : 'Cast' }}</p>
+                        </div>
+                    </a>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="flex flex-col items-center justify-center py-16 text-center bg-[#141519] border border-gray-800 rounded-2xl">
+            <i class="fa-solid fa-clapperboard text-5xl text-gray-700 mb-4" aria-hidden="true"></i>
+            <h3 class="text-lg text-white font-bold mb-1">No credits found</h3>
+            <p class="text-gray-500 text-sm">We couldn't find any movies or TV shows for this actor.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

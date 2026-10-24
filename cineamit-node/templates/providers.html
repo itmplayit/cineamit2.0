@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}All Streaming Providers - CINEAMIT{% endblock %}
+{% block meta_desc %}Browse movies and TV shows from all 300+ streaming providers globally.{% endblock %}
+{% block content %}
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.4s ease-out forwards;
+        will-change: transform, opacity;
+    }
+</style>
+<div class="pt-6 md:pt-8 pb-12 px-4 sm:px-6 md:px-12 max-w-[1800px] mx-auto min-h-screen animate-fade-in">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 border-b border-gray-800 pb-4 gap-4">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-white border-l-4 border-red-600 pl-4 tracking-wide">
+                All Streaming Providers
+            </h1>
+            <p class="text-gray-400 mt-2 pl-5 text-sm">Select a platform to browse its library.</p>
+        </div>
+        <a aria-label="Go Back to Home" href="/" class="flex items-center text-sm font-bold text-gray-400 hover:text-white transition-colors bg-gray-900 px-4 py-2 rounded-lg border border-gray-800 hover:border-gray-600">
+            <i class="fa-solid fa-arrow-left mr-2" aria-hidden="true"></i> Back to Home
+        </a>
+    </div>
+    <div class="mb-8 max-w-sm">
+        <div class="relative group">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                <i class="fa-solid fa-magnifying-glass text-gray-500 group-focus-within:text-red-500 transition-colors" aria-hidden="true"></i>
+            </div>
+            <input aria-label="Search for a provider" type="text" id="providerSearch" 
+                   class="bg-[#141519] border border-gray-700 text-white text-sm rounded-xl focus:ring-1 focus:ring-red-600 focus:border-red-600 block w-full pl-10 p-3 transition-all placeholder-gray-400 shadow-inner" 
+                   placeholder="Search for a provider (e.g. Netflix)...">
+        </div>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6" id="providersContainer">
+        {% for provider in providers %}
+            <a aria-label="{{ provider.provider_name }}" href="{{ url_for('routes.provider', provider_id=provider.provider_id, media_type='all') }}?name={{ provider.provider_name|url_encode }}" 
+               class="provider-card flex flex-col items-center justify-center p-4 bg-[#141519] border border-gray-800 rounded-2xl hover:border-red-600 hover:shadow-[0_0_15px_rgba(220,38,38,0.2)] hover:-translate-y-1 transition-all duration-300 group">
+                <div class="w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden shadow-inner border border-gray-700 bg-white flex items-center justify-center p-1 group-hover:scale-105 transition-transform">
+                    {% if provider.logo_path %}
+                        <img src="{{ image_base|default("https://image.tmdb.org/t/p") }}/w200{{ provider.logo_path }}" 
+                             alt="{{ provider.provider_name }} Logo" 
+                             width="80" height="80" loading="lazy" decoding="async"
+                             class="w-full h-full object-contain">
+                    {% else %}
+                        <span class="text-2xl font-black text-gray-800">{{ provider.provider_name|first }}</span>
+                    {% endif %}
+                </div>
+                <span class="provider-name text-[10px] md:text-xs font-bold text-gray-400 group-hover:text-white mt-3 text-center truncate w-full transition-colors">
+                    {{ provider.provider_name }}
+                </span>
+            </a>
+        {% endfor %}
+        <div id="noResultsMsg" class="hidden col-span-full py-16 text-center animate-fade-in">
+            <i class="fa-solid fa-satellite-dish text-4xl text-gray-600 mb-4 animate-pulse" aria-hidden="true"></i>
+            <h2 class="text-lg text-white font-bold mb-1">No providers found</h2>
+            <p class="text-gray-400 text-sm">Try searching with a different name.</p>
+        </div>
+    </div>
+    {% if ads_enabled and adsterra_banner_available %}
+    <div class="w-full flex flex-col items-center justify-center mt-8">
+        <span data-adsterra-smartlink class="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Sponsored</span>
+        <div class="ad-slot-728 text-gray-400 text-sm py-2"></div>
+    </div>
+    {% endif %}
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('providerSearch');
+        const providerCards = document.querySelectorAll('.provider-card');
+        const noResultsMsg = document.getElementById('noResultsMsg');
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            let hasVisibleCards = false;
+            providerCards.forEach(card => {
+                const providerName = card.querySelector('.provider-name').textContent.toLowerCase();
+                if (providerName.includes(searchTerm)) {
+                    card.style.display = 'flex';
+                    hasVisibleCards = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            if (!hasVisibleCards) {
+                noResultsMsg.style.display = 'block';
+            } else {
+                noResultsMsg.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

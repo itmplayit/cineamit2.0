@@ -1,0 +1,34 @@
+{
+  "name": "cineamit",
+  "version": "16.0.16",
+  "description": "CineAmit Node.js website \u2014 schema v25, verified reward operations and hardened authentication",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20.12.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "config:migrate": "node tools/migrate-env.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.2",
+    "express-mysql-session": "^3.0.3",
+    "express-session": "^1.18.1",
+    "mysql2": "^3.24.6",
+    "nodemailer": "^10.1.1",
+    "twing": "7.3.1",
+    "sanitize-html": "^2.17.7",
+    "fast-xml-parser": "^5.3.8",
+    "chart.js": "^4.4.4",
+    "locutus": "file:vendor/locutus-compat"
+  },
+  "overrides": {
+    "mysql2": "$mysql2",
+    "twing": {
+      "locutus": "$locutus"
+    }
+  }
+}

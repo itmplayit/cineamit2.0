@@ -1,0 +1,9 @@
+{
+  "name": "locutus",
+  "version": "3.0.36",
+  "private": true,
+  "description": "Legacy import-path adapter for the patched Locutus release used by Twing",
+  "dependencies": {
+    "locutus-modern": "npm:locutus@3.0.36"
+  }
+}

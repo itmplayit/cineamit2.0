@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="p-4 sm:p-6 md:p-8 min-h-screen bg-[#0f1014] max-w-[1800px] mx-auto">
+    <div class="mb-8 border-b border-gray-800 pb-4 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-white flex items-center">
+                <i class="fa-solid fa-clock-rotate-left mr-3 text-red-600"></i>
+                Watch History
+            </h1>
+            <p class="text-gray-400 mt-2">Resume where you left off or rewatch your favorite moments.</p>
+        </div>
+        {% if history and history|length > 0 %}
+        <form action="{{ url_for('routes.clear_history') }}" method="POST" class="m-0" onsubmit="return confirm('Are you sure you want to clear your entire watch history? This cannot be undone.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button aria-label="Clear all watch history" type="submit" class="bg-gray-900 hover:bg-red-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-all border border-gray-700 hover:border-red-600 flex items-center justify-center shadow-lg group cursor-pointer">
+                <i class="fa-solid fa-trash mr-2 text-gray-400 group-hover:text-white transition-colors"></i> Clear History
+            </button>
+        </form>
+        {% endif %}
+    </div>
+    {% if history and history|length > 0 %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+        {% for item in history %}
+            <div class="relative group transition-all duration-300 hover:scale-105 hover:z-10 animate-fade-in will-change-transform">
+                <a aria-label="Resume playing {{ item.title }}" href="{{ url_for('player.watch', media_type=item.media_type, tmdb_id=item.tmdb_id, title=item.title, media_type=item.media_type) }}" class="block relative rounded-lg overflow-hidden shadow-lg border border-gray-800 aspect-[2/3] group-hover:border-red-500/50 transition-colors">
+                    {% if item.poster_path %}
+                    <img src="{{ image_base_url|default("https://image.tmdb.org/t/p/w500") }}{{ item.poster_path }}" 
+                         alt="Poster of {{ item.title }}" 
+                         width="300" height="450"
+                         {% if loop.index0 < 6 %}
+                            loading="eager" fetchpriority="high"
+                         {% else %}
+                            loading="lazy" decoding="async"
+                         {% endif %}
+                         class="w-full h-full object-cover">
+                    {% else %}
+                    <div class="w-full h-full bg-gray-900 flex items-center justify-center text-center p-4">
+                        <span class="text-gray-500 font-bold">{{ item.title }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="absolute top-2 left-2 bg-black/80 px-2 py-1 rounded text-[10px] text-gray-300 font-bold border border-gray-700 backdrop-blur-md shadow-lg">
+                        {% if item.watch_time %}
+                            {{ item.watch_time|date('M d, Y') }}
+                        {% else %}
+                            Recently
+                        {% endif %}
+                    </div>
+                    <div class="absolute top-2 right-2 bg-red-600/90 px-2 py-1 rounded text-[10px] text-white font-bold backdrop-blur-md shadow-lg uppercase tracking-wider">
+                        {{ item.media_type }}
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-4 text-left border-2 border-transparent group-hover:border-gray-500/50">
+                        <i class="fa-solid fa-play text-white text-4xl mb-auto self-center mt-auto text-red-600 shadow-xl drop-shadow-[0_0_15px_rgba(220,38,38,0.8)]"></i>
+                        <p class="text-white font-bold text-sm line-clamp-2 w-full leading-tight">{{ item.title }}</p>
+                        <p class="text-xs text-red-500 font-bold mt-1 tracking-wider uppercase">Resume <i class="fa-solid fa-arrow-right ml-1 text-[10px]"></i></p>
+                    </div>
+                </a>
+                <form action="{{ url_for('routes.remove_from_history', tmdb_id=item.tmdb_id, title=item.title, media_type=item.media_type) }}" method="POST" class="absolute -top-3 -right-3 z-20 m-0" onsubmit="return confirm('Remove this from your watch history?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button aria-label="Remove {{ item.title }} from history" type="submit" class="bg-gray-900 hover:bg-red-600 text-gray-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 border border-gray-700 hover:border-red-600 cursor-pointer">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="flex flex-col items-center justify-center h-[50vh] text-center max-w-md mx-auto animate-fade-in">
+        <div class="w-24 h-24 bg-gray-900 rounded-full flex items-center justify-center mb-6 border border-gray-800 shadow-2xl">
+            <i class="fa-solid fa-ghost text-4xl text-gray-600"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-white mb-2">Your history is empty!</h2>
+        <p class="text-gray-400 mb-8 leading-relaxed">You haven't watched anything yet. Time to grab some popcorn, explore our library, and start streaming.</p>
+        <a aria-label="Explore Content to Watch" href="{{ url_for('routes.home') }}" class="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-bold transition-colors shadow-lg shadow-red-600/20 flex items-center hover:scale-105 duration-300">
+            <i class="fa-solid fa-magnifying-glass mr-2"></i> Explore Content
+        </a>
+    </div>
+    {% endif %}
+    <div class="w-full max-w-5xl mx-auto my-6 bg-gray-900 border border-gray-800 rounded-lg flex items-center justify-center min-h-[100px] overflow-hidden relative">
+        <span data-adsterra-smartlink class="text-[10px] text-gray-400 uppercase tracking-widest absolute top-2 right-4">Sponsored</span>
+        <div class="ad-slot-728 text-gray-400 text-sm py-2"></div>
+    </div>
+</div>
+<style>
+    @keyframes fadeIn {
+        from { transform: translateY(10px); }
+        to { transform: translateY(0); }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.35s ease-out forwards;
+    }
+</style>
+{% endblock %}

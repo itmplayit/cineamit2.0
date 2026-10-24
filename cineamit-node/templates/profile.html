@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .animate-slide-down { animation: slideDown 0.3s ease-out forwards; will-change: transform, opacity; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+</style>
+<div class="container mx-auto px-4 py-6 md:py-10 max-w-2xl">
+    <div class="bg-gray-900/80 border border-gray-800 rounded-3xl p-5 sm:p-8 shadow-2xl backdrop-blur-md relative overflow-hidden">
+        <div class="absolute -top-20 -right-20 w-64 h-64 bg-{{ active_profile.theme_color|default('red') }}-600/10 rounded-full blur-3xl pointer-events-none transition-colors duration-500"></div>
+        <div class="flex flex-col md:flex-row items-center gap-8 relative z-10">
+            <div class="relative shrink-0 group cursor-pointer" onclick="document.getElementById('avatarModal').classList.remove('hidden')">
+                <img src="{{ active_profile.avatar_image ?: 'https://ui-avatars.com/api/?name=' ~ current_user.username ~ '&background=dc2626&color=fff&size=128&bold=true' }}" 
+                     alt="Profile Picture" width="128" height="128" class="w-32 h-32 rounded-full border-4 border-{{ active_profile.theme_color|default('red') }}-600 shadow-[0_0_20px_rgba(220,38,38,0.4)] object-cover group-hover:scale-105 transition-transform">
+                <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i class="fa-solid fa-pen text-white text-xl"></i>
+                </div>
+                <div class="absolute bottom-1 right-3 w-5 h-5 bg-green-500 border-2 border-gray-900 rounded-full"></div>
+            </div>
+            <div class="text-center md:text-left flex-1">
+                <h1 class="text-3xl font-black text-white tracking-wide mb-1">{{ current_user.username }}</h1>
+                <p class="text-gray-400 font-medium text-sm mb-3"><i class="fa-solid fa-envelope mr-2"></i> {{ current_user.email }}</p>
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-4">
+                    {% if is_premium %}
+                    <span class="inline-block bg-gradient-to-r from-yellow-600 to-yellow-400 text-black text-[10px] font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-widest">
+                        <i class="fa-solid fa-crown mr-1"></i> Premium
+                    </span>
+                    {% else %}
+                    <span class="inline-block bg-gray-800 text-gray-300 border border-gray-700 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
+                        Free
+                    </span>
+                    {% endif %}
+                    <span class="inline-block bg-orange-500/20 text-orange-400 border border-orange-500/30 text-[10px] font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-widest">
+                        <i class="fa-solid fa-fire mr-1 {% if binge_streak > 0 %}animate-pulse{% endif %}"></i> {{ binge_streak }} Day Streak
+                    </span>
+                </div>
+                <button onclick="document.getElementById('editProfileModal').classList.remove('hidden')" class="bg-gray-800 hover:bg-gray-700 text-white text-xs font-bold px-4 py-2 rounded-full border border-gray-600 transition-colors">
+                    <i class="fa-solid fa-pen mr-1"></i> Edit Account
+                </button>
+            </div>
+        </div>
+        <hr class="border-gray-800 my-8">
+        <div class="mb-8 relative z-10">
+            <h2 class="text-lg font-black text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-dna text-{{ active_profile.theme_color|default('red') }}-500"></i> My Watch DNA
+            </h2>
+            {% if watch_dna %}
+            <div class="w-full h-3 bg-gray-800 rounded-full overflow-hidden flex mb-3 shadow-inner">
+                {% for dna in watch_dna %}
+                    <div class="{{ dna.color }} h-full" style="width: {{ dna.percentage }}%;"></div>
+                {% endfor %}
+            </div>
+            <div class="flex flex-wrap gap-4">
+                {% for dna in watch_dna %}
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full {{ dna.color }} shadow-md"></span>
+                    <span class="text-xs text-gray-300 font-bold">{{ dna.name }} <span class="text-gray-500">({{ dna.percentage }}%)</span></span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-sm text-gray-500 italic bg-gray-800/40 p-4 rounded-xl border border-gray-800">Watch more movies to discover your unique Watch DNA!</p>
+            {% endif %}
+        </div>
+        <hr class="border-gray-800 my-8">
+        <div class="mb-8 relative z-10">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-black text-white flex items-center gap-2">
+                    <i class="fa-solid fa-user-group text-pink-500"></i> Cine-Match Friends
+                </h2>
+                <a href="/cine-match" class="text-[10px] text-pink-500 font-bold uppercase tracking-widest hover:text-white transition-colors">Invite +</a>
+            </div>
+            <div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
+                {% for friend in friends %}
+                    <a href="/cine-match/compare?code={{ friend.match_code }}" class="flex flex-col items-center group min-w-[70px]">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-pink-500 to-red-600 flex items-center justify-center font-black text-white text-xl shadow-md group-hover:scale-110 transition-transform border-2 border-transparent group-hover:border-white overflow-hidden">
+                            {% if friend.profile_image and friend.profile_image != 'default_avatar.png' %}
+                                <img src="{{ friend.profile_image }}" alt="{{ friend.username }}" width="56" height="56" class="w-full h-full object-cover">
+                            {% else %}
+                                {{ friend.username|first|upper }}
+                            {% endif %}
+                        </div>
+                        <span class="text-xs text-gray-400 font-bold mt-2 group-hover:text-white truncate w-full text-center">{{ friend.username }}</span>
+                    </a>
+                {% else %}
+                    <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-4 w-full text-center">
+                        <p class="text-sm text-gray-400">You haven't connected with any friends yet.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <hr class="border-gray-800 my-8">
+        <div class="mb-8 relative z-10">
+            <h2 class="text-lg font-black text-white mb-5 flex items-center gap-2"><i class="fa-solid fa-medal text-yellow-500"></i> My Achievements</h2>
+            <div class="grid grid-cols-3 gap-3 md:gap-4 mb-6">
+                <div class="text-center bg-gray-800/50 p-4 rounded-2xl border border-gray-700"><p class="text-2xl font-black text-white">{{ stats.movies|default('0') }}</p><p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Movies</p></div>
+                <div class="text-center bg-gray-800/50 p-4 rounded-2xl border border-gray-700"><p class="text-2xl font-black text-white">{{ stats.shows|default('0') }}</p><p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Shows</p></div>
+                <div class="text-center bg-gray-800/50 p-4 rounded-2xl border border-gray-700"><p class="text-2xl font-black text-white">{{ stats.reviews|default('0') }}</p><p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Reviews</p></div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {% for badge in badges %}
+                <div class="bg-gray-800/60 border border-gray-700 rounded-2xl p-4 flex flex-col items-center justify-center text-center hover:border-gray-500 transition-colors">
+                    <i class="fa-solid {{ badge.icon }} text-xl mb-2" aria-hidden="true"></i>
+                    <h3 class="text-white font-bold text-xs">{{ badge.name }}</h3>
+                    <p class="text-[9px] text-gray-400 mt-1 font-semibold">{{ badge.desc }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <hr class="border-gray-800 my-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
+            <a href="/history" class="group bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl p-4 flex items-center justify-between transition-colors">
+                <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-blue-500/20 text-blue-500 flex items-center justify-center"><i class="fa-solid fa-clock-rotate-left"></i></div><div><h3 class="text-white font-bold text-sm">History</h3></div></div><i class="fa-solid fa-chevron-right text-gray-500"></i>
+            </a>
+            <a href="/watchlist" class="group bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl p-4 flex items-center justify-between transition-colors">
+                <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-yellow-500/20 text-yellow-500 flex items-center justify-center"><i class="fa-solid fa-bookmark"></i></div><div><h3 class="text-white font-bold text-sm">Watchlist</h3></div></div><i class="fa-solid fa-chevron-right text-gray-500"></i>
+            </a>
+            <a href="/playlists" class="w-full md:col-span-2 group bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl p-4 flex items-center justify-between transition-colors">
+                <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-purple-500/20 text-purple-500 flex items-center justify-center"><i class="fa-solid fa-folder-open"></i></div><div><h3 class="text-white font-bold text-sm">My Collections (Playlists)</h3><p class="text-gray-400 text-xs">Curate and share your favorites</p></div></div><i class="fa-solid fa-chevron-right text-gray-500"></i>
+            </a>
+            <button onclick="document.getElementById('preferencesModal').classList.remove('hidden')" class="w-full md:col-span-1 group bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl p-4 flex items-center justify-between transition-colors text-left">
+                <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center"><i class="fa-solid fa-sliders"></i></div><div><h3 class="text-white font-bold text-sm">Playback & Theme</h3></div></div><i class="fa-solid fa-chevron-right text-gray-500"></i>
+            </button>
+            <button onclick="document.getElementById('privacyModal').classList.remove('hidden')" class="w-full md:col-span-1 group bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl p-4 flex items-center justify-between transition-colors text-left">
+                <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center"><i class="fa-solid fa-shield-halved"></i></div><div><h3 class="text-white font-bold text-sm">Privacy & PIN</h3></div></div><i class="fa-solid fa-chevron-right text-gray-500"></i>
+            </button>
+            <button onclick="document.getElementById('requestModal').classList.remove('hidden')" class="w-full md:col-span-2 group bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl p-4 flex items-center justify-between transition-colors text-left">
+                <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center"><i class="fa-solid fa-clapperboard"></i></div><div><h3 class="text-white font-bold text-sm">Request a Movie / Show / Report Issue</h3><p class="text-xs text-gray-400">Can't find a title or facing a broken link? Let us know!</p></div></div><i class="fa-solid fa-chevron-right text-gray-500"></i>
+            </button>
+        </div>
+        <div class="mt-8 relative z-10">
+            <form method="POST" action="/logout" class="w-full">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="w-full block text-center bg-red-600/10 hover:bg-red-600 border border-red-600/50 hover:border-red-600 text-red-500 hover:text-white rounded-xl py-3 font-bold transition-all cursor-pointer">
+                    <i class="fa-solid fa-power-off mr-2"></i> Log Out
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+<div id="avatarModal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-2xl p-6 relative animate-slide-down">
+        <button aria-label="Close Avatar Modal" onclick="document.getElementById('avatarModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i></button>
+        <h2 class="text-2xl font-black text-white mb-6">Choose Your Avatar</h2>
+        <form action="/update_avatar" method="POST" class="flex flex-col gap-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 max-h-[60vh] overflow-y-auto hide-scrollbar p-2">
+                {% set avatars = [
+                    '{{ image_base|default("https://image.tmdb.org/t/p") }}/w200/nqzGqB0gT6D4j2K1lU4T1fCqI8i.jpg',
+                    '{{ image_base|default("https://image.tmdb.org/t/p") }}/w200/5qHNvN7K4qEpsuK00yHwGjI4yYJ.png',
+                    '{{ image_base|default("https://image.tmdb.org/t/p") }}/w200/8qBylBsQf4llkGrG3aq17kEebJ7.jpg',
+                    '{{ image_base|default("https://image.tmdb.org/t/p") }}/w200/3oWEuo0e8Nx8JvkqYCDec2iMY6K.jpg',
+                    '{{ image_base|default("https://image.tmdb.org/t/p") }}/w200/vD5KEX9N7uHlD9yA8Oq2bBpm3hD.jpg',
+                    '{{ image_base|default("https://image.tmdb.org/t/p") }}/w200/1NjtCXJkEVHgZkP45M3kLrtK1vO.jpg',
+                    '{{ image_base|default("https://image.tmdb.org/t/p") }}/w200/1YjdSym1jTG7xjHSI0yGGWEsw5i.jpg',
+                    '{{ image_base|default("https://image.tmdb.org/t/p") }}/w200/rRdru6REr9i3WIHv2mntpcgx6sY.jpg'
+                ] %}
+                {% for avatar in avatars %}
+                <label class="cursor-pointer group">
+                    <input type="radio" name="avatar_url" value="{{ avatar }}" class="peer hidden" {% if active_profile.avatar_image == avatar %}checked{% endif %}>
+                    <img src="{{ avatar }}" alt="Avatar Option {{ loop.index }}" width="100" height="100" loading="lazy" class="w-full aspect-square rounded-full object-cover border-4 border-transparent peer-checked:border-{{ active_profile.theme_color|default('red') }}-600 peer-checked:scale-110 shadow-lg group-hover:scale-105 transition-all">
+                </label>
+                {% endfor %}
+                <label class="cursor-pointer group">
+                    <input type="radio" name="avatar_url" value="" class="peer hidden" {% if not active_profile.avatar_image %}checked{% endif %}>
+                    <div class="w-full aspect-square rounded-full border-4 border-transparent peer-checked:border-{{ active_profile.theme_color|default('red') }}-600 peer-checked:scale-110 shadow-lg group-hover:scale-105 transition-all bg-gray-800 flex items-center justify-center text-gray-500">
+                        <i class="fa-solid fa-rotate-left text-2xl"></i>
+                    </div>
+                </label>
+            </div>
+            <button type="submit" class="w-full bg-{{ active_profile.theme_color|default('red') }}-600 text-white font-bold py-3 rounded-lg mt-4 shadow-lg transition-colors">Save Avatar</button>
+        </form>
+    </div>
+</div>
+<div id="preferencesModal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md p-6 relative animate-slide-down">
+        <button aria-label="Close Preferences Modal" onclick="document.getElementById('preferencesModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i></button>
+        <h2 class="text-2xl font-black text-white mb-6">Playback & Theme</h2>
+        <form action="/update_playback_settings" method="POST" class="flex flex-col gap-5 mb-5 pb-5 border-b border-gray-800">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="flex items-center justify-between bg-gray-800/50 p-4 rounded-xl border border-gray-800">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-forward-step text-blue-500" aria-hidden="true"></i>
+                    <div><h3 class="text-white text-sm font-bold">Autoplay Next Episode</h3></div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input aria-label="Autoplay Next Episode" type="checkbox" name="autoplay_next" value="1" {% if active_profile.autoplay_next %}checked{% endif %} class="sr-only peer">
+                    <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+            </div>
+            <div>
+                <label class="block text-gray-400 text-sm font-bold mb-2">Default Streaming Server</label>
+                <select name="default_server" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none cursor-pointer appearance-none">
+                    <option value="auto" {% if active_profile.default_server == 'auto' %}selected{% endif %}>Auto-Select (Recommended)</option>
+                    <option value="vip1" {% if active_profile.default_server == 'vip1' %}selected{% endif %}>VIP Ad-Free Server 1</option>
+                    <option value="vip2" {% if active_profile.default_server == 'vip2' %}selected{% endif %}>VIP Ad-Free Server 2</option>
+                </select>
+            </div>
+            <button type="submit" class="w-full bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white font-bold py-2 rounded-lg transition-colors">Save Playback Settings</button>
+        </form>
+        <form action="/update_theme" method="POST" class="flex flex-col gap-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <label class="block text-gray-400 text-sm font-bold mb-2">App Accent Color (Theme)</label>
+            <div class="flex gap-4 justify-center">
+                <label class="cursor-pointer group">
+                    <input type="radio" name="theme_color" value="red" class="peer hidden" {% if active_profile.theme_color == 'red' %}checked{% endif %}>
+                    <div class="w-10 h-10 rounded-full bg-red-600 ring-2 ring-transparent peer-checked:ring-white peer-checked:scale-110 transition-all shadow-[0_0_15px_rgba(220,38,38,0.5)]"></div>
+                </label>
+                <label class="cursor-pointer group">
+                    <input type="radio" name="theme_color" value="blue" class="peer hidden" {% if active_profile.theme_color == 'blue' %}checked{% endif %}>
+                    <div class="w-10 h-10 rounded-full bg-blue-600 ring-2 ring-transparent peer-checked:ring-white peer-checked:scale-110 transition-all shadow-[0_0_15px_rgba(37,99,235,0.5)]"></div>
+                </label>
+                <label class="cursor-pointer group">
+                    <input type="radio" name="theme_color" value="purple" class="peer hidden" {% if active_profile.theme_color == 'purple' %}checked{% endif %}>
+                    <div class="w-10 h-10 rounded-full bg-purple-600 ring-2 ring-transparent peer-checked:ring-white peer-checked:scale-110 transition-all shadow-[0_0_15px_rgba(147,51,234,0.5)]"></div>
+                </label>
+                <label class="cursor-pointer group">
+                    <input type="radio" name="theme_color" value="green" class="peer hidden" {% if active_profile.theme_color == 'green' %}checked{% endif %}>
+                    <div class="w-10 h-10 rounded-full bg-green-500 ring-2 ring-transparent peer-checked:ring-white peer-checked:scale-110 transition-all shadow-[0_0_15px_rgba(34,197,94,0.5)]"></div>
+                </label>
+            </div>
+            <button type="submit" class="w-full bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white font-bold py-2 rounded-lg mt-2 transition-colors">Apply Theme</button>
+        </form>
+    </div>
+</div>
+<div id="editProfileModal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md p-6 relative animate-slide-down">
+        <button aria-label="Close Edit Account Modal" onclick="document.getElementById('editProfileModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i></button>
+        <h2 class="text-2xl font-black text-white mb-6">Edit Account</h2>
+        <form action="/edit_profile" method="POST" class="flex flex-col gap-5">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div><label class="block text-gray-400 text-sm font-bold mb-2">Username</label><input aria-label="Username" type="text" name="username" value="{{ current_user.username }}" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none"></div>
+            <div><label class="block text-gray-400 text-sm font-bold mb-2">New Password</label><input aria-label="New Password" type="password" name="new_password" placeholder="Leave blank to keep current" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none"></div>
+            <div><label class="block text-gray-400 text-sm font-bold mb-2">Current Password</label><input aria-label="Current Password" type="password" name="current_password" placeholder="Required if changing password" autocomplete="current-password" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none"></div>
+            <button type="submit" class="w-full bg-{{ active_profile.theme_color|default('red') }}-600 text-white font-bold py-3 rounded-lg mt-2 transition-colors">Save Changes</button>
+        </form>
+    </div>
+</div>
+<div id="privacyModal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md p-6 relative animate-slide-down">
+        <button aria-label="Close Privacy Modal" onclick="document.getElementById('privacyModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i></button>
+        <h2 class="text-2xl font-black text-white mb-4">Privacy & Security</h2>
+        {% if current_user.role in ['owner', 'super_admin'] and not current_user.totp_enabled %}
+        <div class="bg-amber-900/30 border border-amber-700/50 rounded-xl p-4 mb-4 flex items-start gap-3">
+            <i class="fa-solid fa-shield-halved text-amber-400 text-lg mt-0.5"></i>
+            <div class="text-sm text-amber-200 leading-relaxed">
+                <b>Recommendation: enable 2FA.</b>
+                Your admin account is password-only right now. Use the card below to
+                turn on 2FA — even if the password is stolen, the account stays locked.
+                (Optional here; you can require it for site admins from Settings → Site Status.)
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="bg-gray-800/40 border {% if current_user.totp_enabled %}border-green-700/40{% else %}border-gray-800{% endif %} rounded-xl p-4 mb-4">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <h3 class="text-white text-sm font-bold"><i class="fa-solid fa-shield-halved {% if current_user.totp_enabled %}text-green-500{% else %}text-gray-500{% endif %} mr-1" aria-hidden="true"></i> Two-Factor Authentication</h3>
+                    <p class="text-[11px] text-gray-400 mt-0.5">
+                        {% if current_user.totp_enabled %}
+                            ✅ Enabled — sign-in will also ask for an authenticator code.
+                        {% else %}
+                            ⚠️ Disabled — enable it to add extra security (free, 1 min).
+                        {% endif %}
+                    </p>
+                </div>
+                {% if not session.get('is_kids') %}
+                {% if current_user.totp_enabled %}
+                    <form action="/profile/totp_disable" method="POST" onsubmit="return confirm('Disable 2FA? Your account will be less secure.');" class="m-0 shrink-0">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <input aria-label="Confirm Password" type="password" name="confirm_password" required placeholder="Current password" autocomplete="current-password" class="w-36 bg-gray-900 border border-gray-700 text-white text-xs rounded-lg px-3 py-2 outline-none mb-2">
+                        <button type="submit" class="w-full bg-red-600/10 border border-red-600/30 text-red-400 hover:bg-red-600 hover:text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors">Disable</button>
+                    </form>
+                {% else %}
+                    <form action="/profile/totp_setup" method="POST" class="m-0 shrink-0">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <input aria-label="Current password to enable 2FA" type="password" name="confirm_password" autocomplete="current-password" required placeholder="Current account password" class="w-44 bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs mb-2">
+                        <button type="submit" class="bg-green-600 hover:bg-green-500 text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors">
+                            <i class="fa-solid fa-plus mr-1" aria-hidden="true"></i>Enable 2FA
+                        </button>
+                    </form>
+                {% endif %}
+                {% else %}<p class="text-xs text-gray-400">Use an adult profile to manage account security.</p>{% endif %}
+            </div>
+        </div>
+        <form action="/update_profile_pin" method="POST" class="bg-gray-800/40 border border-gray-800 rounded-xl p-4 mb-4">
+            <input aria-label="Account password for PIN change" type="password" name="confirm_password" autocomplete="current-password" required placeholder="Account password" class="bg-gray-800 text-white rounded p-3 w-full">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <h3 class="text-white text-sm font-bold mb-1"><i class="fa-solid fa-lock text-yellow-500 mr-1" aria-hidden="true"></i> Profile PIN Lock</h3>
+            <div class="flex gap-2 mt-3">
+                <input aria-label="4-Digit PIN" type="password" name="pin" maxlength="4" inputmode="numeric" autocomplete="off" pattern="\d{4}" placeholder="{{ active_profile.pin ? '••••  (new 4-digit PIN)' : '0000' }}" value="" class="flex-1 bg-gray-900 border border-gray-700 text-white font-mono tracking-widest text-center rounded-lg px-4 py-2 outline-none">
+                <button type="submit" class="bg-yellow-600 hover:bg-yellow-500 transition-colors text-white font-bold px-4 py-2 rounded-lg text-sm">Save PIN</button>
+            </div>
+        </form>
+        <div class="border border-red-900/40 bg-red-950/10 rounded-xl p-4">
+            <h3 class="text-red-500 text-sm font-black mb-1"><i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i> Danger Zone</h3>
+            <form action="/delete_account" method="POST" onsubmit="return confirm('WARNING: Are you sure you want to permanently delete your account?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input aria-label="Confirm Password to Delete Account" type="password" name="confirm_password" required placeholder="Enter your current password to confirm" autocomplete="current-password" class="w-full bg-gray-900 border border-red-900/50 text-white text-sm rounded-lg px-3 py-2 mb-2 outline-none focus:border-red-600">
+                <button type="submit" class="w-full bg-red-600/10 border border-red-600/30 text-red-500 hover:bg-red-600 hover:text-white font-bold py-2.5 rounded-lg text-xs mt-2 transition-colors">Delete Account</button>
+            </form>
+        </div>
+    </div>
+</div>
+<div id="requestModal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md p-6 relative animate-slide-down">
+        <button aria-label="Close Request Modal" onclick="document.getElementById('requestModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i></button>
+        <h2 class="text-2xl font-black text-white mb-2">Submit Request</h2>
+        <p class="text-xs text-gray-400 mb-5">Request a missing movie, TV series, dubbed version, or report a broken server.</p>
+        <form action="/submit_request" method="POST" class="flex flex-col gap-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div>
+                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-1.5">Request Type</label>
+                <select name="request_type" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white text-sm outline-none">
+                    <option value="movie">Movie Request</option>
+                    <option value="show">TV Series / Anime Request</option>
+                    <option value="bug">Broken Link / Buffering Report</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-1.5">Title / Subject</label>
+                <input type="text" name="title" required maxlength="200" placeholder="e.g. Pushpa 2 (Hindi) or Server 1 issue" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white text-sm outline-none focus:border-red-600">
+            </div>
+            <div>
+                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-1.5">Details (Optional)</label>
+                <textarea name="message" rows="3" maxlength="2000" placeholder="Release year, language, or issue details..." class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white text-sm outline-none focus:border-red-600 resize-none"></textarea>
+            </div>
+            <button type="submit" class="w-full bg-{{ active_profile.theme_color|default('red') }}-600 hover:opacity-90 text-white font-bold py-3 rounded-lg transition-all shadow-lg cursor-pointer">
+                <i class="fa-solid fa-paper-plane mr-2"></i>Submit Request
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

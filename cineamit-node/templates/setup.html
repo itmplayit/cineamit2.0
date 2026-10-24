@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="referrer" content="no-referrer">
+    <title>Database setup — CineAmit</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; min-height: 100vh; padding: 40px 16px; display: flex; align-items: center; justify-content: center; background: #0f1014; color: #f3f4f6; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.6; }
+        main { width: 100%; max-width: 560px; padding: 30px; border: 1px solid #374151; border-radius: 20px; background: #17191f; box-shadow: 0 24px 60px #0006; }
+        .brand { margin: 0 0 10px; color: #fe1a63; font-size: 14px; font-weight: 800; letter-spacing: .15em; }
+        h1 { margin: 0 0 12px; font-size: clamp(24px, 5vw, 32px); line-height: 1.2; }
+        p { margin: 12px 0; color: #cbd5e1; }
+        .notice { padding: 14px; margin: 20px 0; border: 1px solid #a16207; border-radius: 12px; background: #422006; color: #fef3c7; }
+        label { display: block; margin: 20px 0 8px; font-weight: 700; }
+        input { display: block; width: 100%; padding: 13px; border: 1px solid #64748b; border-radius: 10px; background: #0f1014; color: #fff; font: inherit; }
+        input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid #fb7185; outline-offset: 3px; }
+        button { display: block; width: 100%; margin-top: 18px; padding: 14px; border: 0; border-radius: 10px; background: linear-gradient(100deg, #fe8706, #fe0476); color: #fff; font: inherit; font-weight: 800; cursor: pointer; }
+        .help { margin: 8px 0 0; font-size: 13px; color: #94a3b8; }
+        code { overflow-wrap: anywhere; color: #fda4af; }
+        a { color: #fda4af; }
+        footer { margin-top: 24px; border-top: 1px solid #374151; padding-top: 14px; font-size: 13px; }
+        @media (max-width: 400px) { body { padding: 20px 12px; } main { padding: 22px; } }
+    </style>
+</head>
+<body>
+<main>
+    <p class="brand">CINEAMIT · OPERATOR SETUP</p>
+    <h1>Database setup</h1>
+    <p>Setup mode is enabled. Opening this page does not run setup. Submit the existing application secret to create missing tables and apply supported upgrades for schema v{{ schema_version }}.</p>
+    <div class="notice" role="note">
+        Back up your database first. This is not a backup import tool and does not automatically repair missing <code>AUTO_INCREMENT</code> on existing columns such as <code>password_otp.id</code>.
+    </div>
+    <form method="POST" action="/setup" autocomplete="off">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label for="setup-key">Setup key — existing SECRET_KEY</label>
+        <input type="password" id="setup-key" name="key" autocomplete="off" autocapitalize="none" spellcheck="false" required aria-describedby="key-help">
+        <p class="help" id="key-help">Use SECRET_KEY from your existing .env, not OWNER_BOOTSTRAP_KEY. Do not change it or share it. The key is submitted in the POST body, never the URL.</p>
+        <button type="submit">Create / upgrade tables</button>
+    </form>
+    <footer>
+        <p>When finished, set <code>SETUP_ENABLED=false</code> in .env and restart or redeploy.</p>
+        <a href="/">Back to website</a>
+    </footer>
+</main>
+</body>
+</html>

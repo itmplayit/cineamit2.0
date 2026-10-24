@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}CINEAMIT Blog - Latest Movie News & Top Picks{% endblock %}
+{% block meta_desc %}Read the latest news, top 10 lists, and updates from the entertainment world.{% endblock %}
+{% block content %}
+<div class="p-4 sm:p-6 md:p-8 min-h-screen bg-[#0f1014] max-w-7xl mx-auto">
+    <div class="mb-10 border-b border-gray-800 pb-6 text-center">
+        <h1 class="text-4xl font-black text-white"><i class="fa-solid fa-newspaper text-red-600 mr-2"></i> Our Blog</h1>
+        <p class="text-gray-400 mt-2">Latest news, reviews, and top picks for your next binge session.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for post in posts %}
+        <a aria-label="Read article: {{ post.title }}" href="/blog/{{ post.slug }}" class="bg-[#141519] border border-gray-800 rounded-2xl overflow-hidden group hover:border-red-500/50 transition-all shadow-lg hover:-translate-y-2 will-change-transform">
+            <div class="w-full aspect-video bg-gray-900 overflow-hidden relative">
+                {% if post.image_url %}
+                <img src="{{ post.image_url }}" 
+                     alt="Cover Image for {{ post.title }}" 
+                     width="640" height="360"
+                     {% if loop.index0 < 2 %} 
+                        loading="eager" fetchpriority="high" 
+                     {% else %} 
+                        loading="lazy" decoding="async" 
+                     {% endif %}
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center absolute inset-0"><i class="fa-solid fa-image text-4xl text-gray-700"></i></div>
+                {% endif %}
+            </div>
+            <div class="p-6">
+                <span class="text-[10px] font-bold text-red-500 uppercase tracking-widest">{{ post.created_at|date('d M Y') }}</span>
+                <h2 class="text-xl font-bold text-white mt-2 mb-3 line-clamp-2 group-hover:text-red-500 transition-colors">{{ post.title }}</h2>
+                <p class="text-sm text-gray-400 line-clamp-3">{{ post.meta_description ?: post.content|striptags }}</p>
+            </div>
+        </a>
+        {% else %}
+        <div class="col-span-full text-center py-20 text-gray-400">
+            <i class="fa-solid fa-pen-nib text-5xl mb-4" aria-hidden="true"></i>
+            <h2 class="text-xl font-bold text-white">No articles published yet.</h2>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<footer class="bg-[#0f1014] border-t border-gray-800/60 pt-16 pb-10 mt-16 relative z-50">
+    <div class="w-full max-w-5xl mx-auto my-6 bg-gray-900 border border-gray-800 rounded-lg flex items-center justify-center min-h-[100px] overflow-hidden relative">
+            <span data-adsterra-smartlink class="text-[10px] text-gray-400 uppercase tracking-widest absolute top-2 right-4">Sponsored</span>
+            <div class="ad-slot-728 text-gray-400 text-sm py-2"></div>
+        </div>
+    <div class="max-w-[1800px] mx-auto px-6 md:px-12">
+        <div class="flex gap-6 mb-8 text-2xl text-gray-400">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-facebook-f" aria-hidden="true"></i></a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-instagram" aria-hidden="true"></i></a>
+            <a href="https://twitter.com/CineAmit" target="_blank" rel="noopener noreferrer" aria-label="Twitter" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-twitter" aria-hidden="true"></i></a>
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-youtube" aria-hidden="true"></i></a>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10 text-sm text-gray-400 font-medium tracking-wide">
+            <div class="flex flex-col gap-3">
+                <a href="/faq" class="hover:underline hover:text-gray-300 transition-colors">FAQ</a>
+                <a href="/about" class="hover:underline hover:text-gray-300 transition-colors">About Us</a>
+                <a href="/livetv" class="hover:underline hover:text-gray-300 transition-colors">Live TV Channels</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <a href="/help" class="hover:underline hover:text-gray-300 transition-colors">Help Center</a>
+                <a href="/movies/popular" class="hover:underline hover:text-gray-300 transition-colors">Popular Movies</a>
+                <a href="/terms" class="hover:underline hover:text-gray-300 transition-colors">Terms of Use</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <a href="/profile" class="hover:underline hover:text-gray-300 transition-colors">Account</a>
+                <a href="/privacy" class="hover:underline hover:text-gray-300 transition-colors">Privacy Policy</a>
+                <a href="/dmca" class="hover:underline hover:text-gray-300 transition-colors">DMCA / Copyright</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <a href="/blog" class="hover:underline hover:text-gray-300 transition-colors">Media Center & Blog</a>
+                <a href="/contact" class="hover:underline hover:text-gray-300 transition-colors">Contact Us</a>
+                <a href="/legal" class="hover:underline hover:text-gray-300 transition-colors">Legal Notices</a>
+            </div>
+        </div>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <button class="border border-gray-600 text-gray-400 hover:text-white hover:border-white transition-colors px-3 py-1.5 text-xs font-bold tracking-widest uppercase">
+                Service Code
+            </button>
+            <div class="text-gray-500 text-xs text-left md:text-right">
+                <p>&copy; 2026 CINEAMIT. All Rights Reserved.</p>
+                <p class="mt-1">Designed for a premium cinematic experience.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+{% endblock %}

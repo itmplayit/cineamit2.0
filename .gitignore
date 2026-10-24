@@ -1,0 +1,12 @@
+# Private runtime configuration and credentials
+**/env.js
+**/.env
+**/.env.*
+!**/.env.example
+**/node_modules/
+**/cache/
+**/*.log
+**/coverage/
+# Runtime downloads (keep data/app ignore rules)
+**/data/app/*.apk
+**/data/app/*.tmp

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.CineAmit" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="android:statusBarColor">#0A0612</item>
+        <item name="android:navigationBarColor">#0A0612</item>
+        <item name="android:windowBackground">#0A0612</item>
+        <item name="android:colorPrimary">#C4B5FD</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:fontFamily">@font/custom</item>
+        <item name="android:windowAnimationStyle">@style/CineActivityAnim</item>
+    </style>
+    <style name="CineActivityAnim" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/cine_fade_in</item>
+        <item name="android:activityOpenExitAnimation">@anim/cine_fade_out</item>
+        <item name="android:activityCloseEnterAnimation">@anim/cine_fade_in</item>
+        <item name="android:activityCloseExitAnimation">@anim/cine_fade_out</item>
+    </style>
+    <style name="CineSheetAnim">
+        <item name="android:windowEnterAnimation">@anim/cine_slide_up</item>
+        <item name="android:windowExitAnimation">@anim/cine_slide_down</item>
+    </style>
+    <style name="Theme.CineAmit.Splash" parent="Theme.CineAmit">
+        <item name="android:windowBackground">#0A0612</item>
+        <item name="android:statusBarColor">#0A0612</item>
+        <item name="android:navigationBarColor">#0A0612</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+    <style name="Theme.CineAmit.Player" parent="Theme.CineAmit">
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:statusBarColor">#0A0612</item>
+        <item name="android:navigationBarColor">#0A0612</item>
+        <item name="android:windowBackground">#0A0612</item>
+    </style>
+    <style name="SettingRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:padding">15dp</item>
+        <item name="android:textColor">@color/setting_text</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">@font/custom</item>
+    </style>
+    <style name="Field">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/login_edit_bg</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textColorHint">#9C9C9C</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:fontFamily">@font/custom</item>
+    </style>
+</resources>

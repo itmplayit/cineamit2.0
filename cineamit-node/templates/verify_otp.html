@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px) scale(0.95); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .animate-fade-in { opacity: 0; animation: fadeIn 0.4s ease-out forwards; will-change: transform, opacity; }
+    .otp-box {
+        width: 48px; height: 58px; text-align: center; font-size: 24px; font-weight: 800;
+        color: #fff; background:#0a0a0c; border:1px solid #374151; border-radius:10px; outline:none;
+        transition: border-color .15s, box-shadow .15s; caret-color:#a855f7;
+    }
+    .otp-box:focus { border-color:#a855f7; box-shadow:0 0 0 3px rgba(168,85,247,.25); }
+    .otp-box.filled { border-color:#7e22ce; }
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+</style>
+
+<div class="min-h-screen flex items-center justify-center bg-[#09090b] px-4">
+  <div class="bg-[#141519] p-8 rounded-2xl shadow-2xl border border-gray-800 w-full max-w-md text-center animate-fade-in">
+
+    <i class="fa-solid fa-shield-halved text-5xl text-purple-600 mb-4" aria-hidden="true"></i>
+    <h2 class="text-2xl font-black text-white mb-2 tracking-wide">Enter Verification Code</h2>
+    <p class="text-gray-400 text-sm mb-6 leading-relaxed">
+      If an account matches
+      <span class="text-purple-400 font-semibold">{{ masked_email }}</span>, check your inbox and spam for a 6-digit code.<br>
+      Codes expire 10 minutes after being requested.
+    </p>
+
+    <form method="POST" action="{{ url_for('routes.verify_otp') }}" id="otpForm" class="flex flex-col gap-5">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="otp" id="otpValue">
+
+      <div class="flex justify-center gap-2" id="otpWrap">
+        <input class="otp-box" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-label="Digit 1" autofocus>
+        <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Digit 2">
+        <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Digit 3">
+        <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Digit 4">
+        <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Digit 5">
+        <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Digit 6">
+      </div>
+
+      <button type="submit" id="verifyBtn"
+        class="w-full bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition-colors shadow-[0_0_15px_rgba(147,51,234,0.4)] cursor-pointer">
+        Verify Code
+      </button>
+    </form>
+
+    <form method="POST" action="{{ url_for('routes.verify_otp') }}" class="mt-5">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="action" value="resend">
+      <p class="text-sm text-gray-500">
+        Didn't get the code?
+        <button type="submit" id="resendBtn"
+          class="text-purple-400 hover:text-purple-300 font-bold disabled:text-gray-600 disabled:cursor-not-allowed cursor-pointer bg-transparent border-0">
+          Resend
+        </button>
+        <span id="timer" class="text-gray-600"></span>
+      </p>
+    </form>
+
+    <p class="mt-4 text-sm text-gray-500">
+      <a href="{{ url_for('routes.forgot_password') }}" class="hover:text-purple-400 transition-colors font-bold">Change email</a>
+      <span class="mx-2 text-gray-700">|</span>
+      <a href="/login" class="hover:text-purple-400 transition-colors font-bold">Back to Login</a>
+    </p>
+  </div>
+</div>
+
+<script>
+(function () {
+  var boxes   = Array.prototype.slice.call(document.querySelectorAll('#otpWrap .otp-box'));
+  var hidden  = document.getElementById('otpValue');
+  var form    = document.getElementById('otpForm');
+  var btn     = document.getElementById('verifyBtn');
+
+  function value() { return boxes.map(function (b) { return b.value; }).join(''); }
+
+  function sync() {
+    boxes.forEach(function (b) { b.classList.toggle('filled', b.value !== ''); });
+    var v = value();
+    hidden.value = v;
+    btn.disabled = v.length !== 6;
+  }
+
+  var submitting = false;
+
+  function submitComplete() {
+    if (value().length === 6 && !submitting) {
+      if (form.requestSubmit) form.requestSubmit();
+      else if (typeof Event === 'function') {
+        var event = new Event('submit', { bubbles: true, cancelable: true });
+        if (form.dispatchEvent(event)) form.submit();
+      }
+    }
+  }
+
+  function fillCode(digits) {
+    digits = digits.replace(/\D/g, '').slice(0, 6);
+    boxes.forEach(function (box, i) { box.value = digits[i] || ''; });
+    sync();
+    boxes[Math.min(digits.length, 5)].focus();
+    submitComplete();
+  }
+
+  form.addEventListener('submit', function (event) {
+    if (submitting || value().length !== 6) {
+      event.preventDefault();
+      return;
+    }
+    hidden.value = value();
+    submitting = true;
+    btn.disabled = true;
+  });
+  window.addEventListener('pageshow', function () { submitting = false; sync(); });
+
+  boxes.forEach(function (box, i) {
+    box.addEventListener('input', function () {
+      var digits = box.value.replace(/\D/g, '');
+      // OS/email autofill can insert the entire code in the first input.
+      if (digits.length > 1) { fillCode(digits); return; }
+      box.value = digits.slice(0, 1);
+      if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+      sync();
+      submitComplete();
+    });
+
+    box.addEventListener('keydown', function (e) {
+      if (e.key === 'Backspace' && !box.value && i > 0) { boxes[i - 1].focus(); boxes[i - 1].value = ''; sync(); }
+      if (e.key === 'ArrowLeft' && i > 0) boxes[i - 1].focus();
+      if (e.key === 'ArrowRight' && i < boxes.length - 1) boxes[i + 1].focus();
+    });
+
+    box.addEventListener('paste', function (e) {
+      e.preventDefault();
+      fillCode((e.clipboardData || window.clipboardData).getData('text'));
+    });
+  });
+
+  sync();
+
+  var rb = document.getElementById('resendBtn');
+  var tm = document.getElementById('timer');
+  var left = {{ resend_wait|default(0) }};
+  rb.disabled = left > 0;
+  var iv = setInterval(function () {
+    left--;
+    tm.textContent = left > 0 ? '(' + left + 's)' : '';
+    if (left <= 0) { clearInterval(iv); rb.disabled = false; }
+  }, 1000);
+  tm.textContent = left > 0 ? '(' + left + 's)' : '';
+
+  // This is email OTP, not SMS; do not request WebOTP SMS access.
+
+})();
+</script>
+{% endblock %}

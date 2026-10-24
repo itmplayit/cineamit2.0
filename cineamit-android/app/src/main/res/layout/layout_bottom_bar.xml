@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/bottom_nav_bg"
+    android:baselineAligned="false"
+    android:orientation="horizontal"
+    android:weightSum="5">
+
+    <LinearLayout
+        android:id="@+id/llHome"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingTop="8dp"
+        android:paddingBottom="5dp">
+
+        <ImageView
+            android:id="@+id/ivHome"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/app_name"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_home" />
+
+
+        <TextView
+            android:id="@+id/tvHome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:singleLine="true"
+            android:text="@string/menu_home"
+            android:textColor="@color/bottom_text"
+            android:textSize="13sp" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llWatchlist"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingTop="8dp"
+        android:paddingBottom="5dp">
+
+
+        <ImageView
+            android:id="@+id/ivWatchlist"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/app_name"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_watchlist" />
+
+
+        <TextView
+            android:id="@+id/tvWatchlist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/menu_watch_list"
+            android:textColor="@color/bottom_text"
+            android:textSize="13sp" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llMenu"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp">
+
+        <ImageView
+            android:id="@+id/ivMenu"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:background="@drawable/subscription"
+            android:contentDescription="@string/app_name"
+            android:elevation="8dp"
+            android:padding="13dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_menu" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/llAccount"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingTop="8dp"
+        android:paddingBottom="5dp">
+
+
+        <ImageView
+            android:id="@+id/ivAccount"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/app_name"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_profile" />
+
+
+        <TextView
+            android:id="@+id/tvAccount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/account"
+            android:textColor="@color/bottom_text"
+            android:textSize="13sp" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llSetting"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingTop="8dp"
+        android:paddingBottom="5dp">
+
+
+        <ImageView
+            android:id="@+id/ivSetting"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/app_name"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_setting" />
+
+
+        <TextView
+            android:id="@+id/tvSetting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/menu_setting"
+            android:textColor="@color/bottom_text"
+            android:textSize="13sp" />
+
+
+    </LinearLayout>
+
+</LinearLayout>

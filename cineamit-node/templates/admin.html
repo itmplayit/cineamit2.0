@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block content %}
+<script src="/static/app-ads-preview.js?v=16.0.8" defer></script>
+<link rel="stylesheet" href="/static/app-ads-admin.css?v=16.0.8">
+<style>
+    .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #ef4444; }
+    .animate-fade-in { 
+        animation: fadeIn 0.3s ease-out forwards; 
+        will-change: transform, opacity;
+    }
+    @keyframes fadeIn { 
+        from { opacity: 0; transform: translateY(10px); } 
+        to { opacity: 1; transform: translateY(0); } 
+    }
+    .render-optimize {
+        content-visibility: auto;
+        contain-intrinsic-size: 600px;
+    }
+    .cine-sw { position: relative; width: 44px; height: 24px; flex-shrink: 0; display: inline-block; }
+    .cine-sw input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .cine-sw i { position: absolute; inset: 0; background: #2a2d36; border-radius: 999px; transition: .2s; pointer-events: none; }
+    .cine-sw i:before { content: ''; position: absolute; height: 18px; width: 18px; left: 3px; top: 3px; background: #fff; border-radius: 999px; transition: .2s; }
+    .cine-sw input:checked + i { background: #f59e0b; }
+    .cine-sw input:checked + i:before { transform: translateX(20px); }
+    .cine-sw input:focus-visible + i { outline: 2px solid #f59e0b; outline-offset: 2px; }
+    .wallet-plan-btn.active { background: #f59e0b; color: #111; border-color: #f59e0b; }
+</style>
+<div class="flex flex-col min-h-screen bg-[#09090b]">
+    <aside id="admin-sidebar" aria-label="Admin Navigation" class="w-full bg-[#141519] border-b border-gray-800 shrink-0 z-40">
+        <div class="flex overflow-x-auto hide-scrollbar p-3 gap-2 snap-x">
+            <button aria-label="Open Dashboard Tab" data-target="tab-dashboard" id="btn-tab-dashboard" class="tab-btn flex-none flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all text-gray-400 border border-transparent hover:bg-gray-800/50 snap-start active-tab bg-red-600/10 text-red-500 border-red-500/30">
+                <i class="fa-solid fa-chart-pie w-5 text-center"></i> <span class="whitespace-nowrap pointer-events-none">Dashboard</span>
+            </button>
+            <button aria-label="Open Manage Users Tab" data-target="tab-users" id="btn-tab-users" class="tab-btn flex-none flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all text-gray-400 border border-transparent hover:bg-gray-800/50 snap-start">
+                <i class="fa-solid fa-users w-5 text-center"></i> <span class="whitespace-nowrap pointer-events-none">Manage Users</span>
+            </button>
+            <button aria-label="Open User Requests Tab" data-target="tab-requests" id="btn-tab-requests" class="tab-btn flex-none flex items-center justify-between gap-2 px-4 py-3 rounded-xl font-bold text-sm transition-all text-gray-400 border border-transparent hover:bg-gray-800/50 snap-start">
+                <div class="flex items-center gap-3 pointer-events-none"><i class="fa-solid fa-paper-plane w-5 text-center"></i> <span class="whitespace-nowrap">User Requests</span></div>
+                {% if requests|length > 0 %}<span class="bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded-full pointer-events-none">{{ requests|length }}</span>{% endif %}
+            </button>
+            <button aria-label="Open Video Servers Tab" data-target="tab-servers" id="btn-tab-servers" class="tab-btn flex-none flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all text-gray-400 border border-transparent hover:bg-gray-800/50 snap-start">
+                <i class="fa-solid fa-server w-5 text-center"></i> <span class="whitespace-nowrap pointer-events-none">Video Servers</span>
+            </button>
+            <button aria-label="Open Live TV & Proxies Tab" data-target="tab-livetv" id="btn-tab-livetv" class="tab-btn flex-none flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all text-gray-400 border border-transparent hover:bg-gray-800/50 snap-start">
+                <i class="fa-solid fa-satellite-dish w-5 text-center"></i> <span class="whitespace-nowrap pointer-events-none">Live TV & Proxies</span>
+            </button>
+            <button aria-label="Open Blog & SEO Tab" data-target="tab-blogs" id="btn-tab-blogs" class="tab-btn flex-none flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all text-gray-400 border border-transparent hover:bg-gray-800/50 snap-start">
+               <i class="fa-solid fa-pen-nib w-5 text-center"></i> <span class="whitespace-nowrap pointer-events-none">Blog & SEO</span>
+            </button>
+            <button aria-label="Open Help Center Tab" data-target="tab-help" id="btn-tab-help" class="tab-btn flex-none flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all text-gray-400 border border-transparent hover:bg-gray-800/50 snap-start">
+                <i class="fa-solid fa-life-ring w-5 text-center"></i> <span class="whitespace-nowrap pointer-events-none">Help Center DB</span>
+            </button>
+            <button aria-label="Open Push Notifications Tab" data-target="tab-notifications" id="btn-tab-notifications" class="tab-btn flex-none flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all text-gray-400 border border-transparent hover:bg-gray-800/50 snap-start">
+              <i class="fa-solid fa-bell w-5 text-center"></i> <span class="whitespace-nowrap pointer-events-none">Push Alerts</span>
+            </button>
+            <button aria-label="Open System Settings Tab" data-target="tab-settings" id="btn-tab-settings" class="tab-btn flex-none flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all text-gray-400 border border-transparent hover:bg-gray-800/50 snap-start">
+                <i class="fa-solid fa-gear w-5 text-center"></i> <span class="whitespace-nowrap pointer-events-none">System Settings</span>
+            </button>
+            <button aria-label="Open App Ads and Points Tab" data-target="tab-economy" id="btn-tab-economy" class="tab-btn flex-none flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all text-gray-400 border border-transparent hover:bg-gray-800/50 snap-start">
+                <i class="fa-solid fa-coins w-5 text-center pointer-events-none text-amber-400"></i> <span class="whitespace-nowrap pointer-events-none">App Ads &amp; Points</span>
+            </button>
+            <button aria-label="Open Security Log Tab" data-target="tab-security" id="btn-tab-security" class="tab-btn flex-none flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all text-gray-400 border border-transparent hover:bg-gray-800/50 snap-start">
+                <i class="fa-solid fa-shield-halved w-5 text-center pointer-events-none text-green-500"></i> <span class="whitespace-nowrap pointer-events-none">Security Log</span>
+            </button>
+            {% if current_user.role in ['owner', 'super_admin'] %}
+            <button aria-label="Open Insights and Content Tab" data-target="tab-insights" id="btn-tab-insights" class="tab-btn flex-none flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all text-gray-400 border border-transparent hover:bg-gray-800/50 snap-start">
+                <i class="fa-solid fa-chart-line w-5 text-center pointer-events-none text-teal-400"></i> <span class="whitespace-nowrap pointer-events-none">Insights & Content</span>
+            </button>
+            <button aria-label="Open Announcements Tab" data-target="tab-announce" id="btn-tab-announce" class="tab-btn flex-none flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all text-gray-400 border border-transparent hover:bg-gray-800/50 snap-start">
+                <i class="fa-solid fa-bullhorn w-5 text-center pointer-events-none text-amber-400"></i> <span class="whitespace-nowrap pointer-events-none">Announcements</span>
+            </button>
+            {% endif %}
+            <a href="/" class="flex-none flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm text-gray-500 hover:text-red-400 hover:bg-gray-800/40 transition-all border border-transparent snap-start whitespace-nowrap shrink-0" title="Exit admin console">
+                <i class="fa-solid fa-arrow-up-right-from-square w-5 text-center pointer-events-none"></i> <span class="pointer-events-none">View Site</span>
+            </a>
+        </div>
+    </aside>
+    <div class="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+{% include 'admin/partials/tab-dashboard.html' %}
+{% include 'admin/partials/tab-users.html' %}
+{% include 'admin/partials/tab-requests.html' %}
+{% include 'admin/partials/tab-servers.html' %}
+{% include 'admin/partials/tab-livetv.html' %}
+{% include 'admin/partials/tab-notifications.html' %}
+{% include 'admin/partials/tab-security.html' %}
+{% include 'admin/partials/tab-blogs.html' %}
+{% include 'admin/partials/tab-help.html' %}
+{% include 'admin/partials/tab-insights.html' %}
+
+{% include 'admin/partials/tab-announce.html' %}
+
+{% include 'admin/partials/tab-settings.html' %}
+{% include 'admin/partials/tab-economy.html' %}
+</div>
+{% include 'admin/partials/scripts.html' %}
+{% endblock %}

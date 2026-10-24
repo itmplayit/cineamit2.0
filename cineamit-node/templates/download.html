@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="referrer" content="no-referrer">
+    <title>{{ title }}</title>
+    <style nonce="{{ nonce }}">
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+        iframe { display: block; width: 100%; height: 100%; border: 0; }
+    </style>
+</head>
+<body>
+{% if valid %}
+    <iframe src="{{ frame_url }}" title="Download page" sandbox="{{ iframe_sandbox|default('allow-scripts allow-forms allow-downloads') }}" referrerpolicy="no-referrer" loading="eager"></iframe>
+{% else %}
+    <p>Download link expired or unavailable. Go back to the watch page, refresh it, and select Download Options again.</p>
+{% endif %}
+</body>
+</html>

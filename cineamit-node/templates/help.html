@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="w-full bg-gradient-to-b from-[#141519] to-[#0f1014] pt-8 md:pt-12 pb-12 px-4 sm:px-6 md:px-12 border-b border-gray-800">
+    <div class="max-w-4xl mx-auto text-center">
+        <h1 class="text-3xl md:text-5xl font-black text-white mb-6 tracking-wide">Hi, how can we help?</h1>
+        <form action="/help" method="GET" class="relative w-full max-w-2xl mx-auto">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-xl"></i>
+            <input type="text" name="q" value="{{ query }}" placeholder="Search for articles, topics, or issues..." 
+                   class="w-full bg-white text-black font-medium text-lg rounded-full py-4 pl-14 pr-6 focus:outline-none focus:ring-4 focus:ring-red-600/50 transition-all shadow-lg">
+        </form>
+    </div>
+</div>
+<div class="max-w-[1400px] mx-auto px-6 md:px-12 py-16">
+    {% if not query and not topic %}
+    <h2 class="text-xl md:text-2xl font-bold text-white mb-8 border-l-4 border-red-600 pl-3">Browse by Topic</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        <a href="/help?topic=account" class="bg-[#141519] border border-gray-800 rounded-xl p-6 hover:border-gray-600 transition-colors cursor-pointer group shadow-lg block">
+            <i class="fa-solid fa-user-gear text-3xl text-gray-400 group-hover:text-white transition-colors mb-4"></i>
+            <h3 class="text-lg font-bold text-white mb-2">Account & Profile</h3>
+            <p class="text-sm text-gray-400">Manage your profiles, change passwords, and update account details.</p>
+        </a>
+        <a href="/help?topic=streaming" class="bg-[#141519] border border-gray-800 rounded-xl p-6 hover:border-gray-600 transition-colors cursor-pointer group shadow-lg block">
+            <i class="fa-solid fa-tv text-3xl text-gray-400 group-hover:text-white transition-colors mb-4"></i>
+            <h3 class="text-lg font-bold text-white mb-2">Watching & Devices</h3>
+            <p class="text-sm text-gray-400">Fix streaming issues, buffering, and supported devices.</p>
+        </a>
+        <a href="/help?topic=content" class="bg-[#141519] border border-gray-800 rounded-xl p-6 hover:border-gray-600 transition-colors cursor-pointer group shadow-lg block">
+            <i class="fa-solid fa-clapperboard text-3xl text-gray-400 group-hover:text-white transition-colors mb-4"></i>
+            <h3 class="text-lg font-bold text-white mb-2">Content &amp; Requests</h3>
+            <p class="text-sm text-gray-400">Request movies and shows, manage watchlists and history.</p>
+        </a>
+        <a href="/help?topic=security" class="bg-[#141519] border border-gray-800 rounded-xl p-6 hover:border-gray-600 transition-colors cursor-pointer group shadow-lg block">
+            <i class="fa-solid fa-shield-halved text-3xl text-gray-400 group-hover:text-white transition-colors mb-4"></i>
+            <h3 class="text-lg font-bold text-white mb-2">Security & Privacy</h3>
+            <p class="text-sm text-gray-400">Learn how we protect your data and manage your privacy settings.</p>
+        </a>
+        <a href="/help?topic=livetv" class="bg-[#141519] border border-gray-800 rounded-xl p-6 hover:border-gray-600 transition-colors cursor-pointer group shadow-lg block">
+            <i class="fa-solid fa-satellite-dish text-3xl text-gray-400 group-hover:text-white transition-colors mb-4"></i>
+            <h3 class="text-lg font-bold text-white mb-2">Live TV Guide</h3>
+            <p class="text-sm text-gray-400">Troubleshoot Live TV channels, EPG guide, and stream quality.</p>
+        </a>
+        <a href="/help?topic=getting_started" class="bg-[#141519] border border-gray-800 rounded-xl p-6 hover:border-gray-600 transition-colors cursor-pointer group shadow-lg block">
+            <i class="fa-solid fa-circle-play text-3xl text-gray-400 group-hover:text-white transition-colors mb-4"></i>
+            <h3 class="text-lg font-bold text-white mb-2">Getting Started</h3>
+            <p class="text-sm text-gray-400">New to CINEAMIT? Learn how to navigate and find the best content.</p>
+        </a>
+    </div>
+    {% endif %}
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-8 shadow-2xl">
+        <h2 class="text-xl md:text-2xl font-bold text-white mb-6">
+            {% if query %}
+                Search Results for "{{ query }}"
+            {% elseif topic %}
+                Articles for "{{ topic|replace({'_': ' '})|title }}"
+            {% else %}
+                Popular Articles
+            {% endif %}
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+            {% for article in articles %}
+            <a href="/help/article/{{ article.slug }}" class="flex items-center text-gray-300 hover:text-white transition-colors text-sm md:text-base border-b border-gray-800 pb-3">
+                <i class="fa-regular fa-file-lines mr-3 text-red-600"></i> {{ article.title }}
+            </a>
+            {% else %}
+            <p class="text-gray-500 italic col-span-full">No articles found matching your criteria.</p>
+            {% endfor %}
+        </div>
+        {% if query or topic %}
+        <div class="mt-6 border-t border-gray-800 pt-4">
+            <a href="/help" class="text-red-500 hover:text-white font-bold text-sm transition-colors"><i class="fa-solid fa-arrow-left mr-1"></i> Back to Help Center</a>
+        </div>
+        {% endif %}
+    </div>
+    <div class="mt-16 text-center">
+        <p class="text-gray-400 mb-4 font-medium">Can't find what you're looking for?</p>
+        <a href="/contact" class="inline-block bg-white text-black font-extrabold py-3 px-8 rounded-lg hover:bg-gray-200 transition-colors shadow-lg">
+            Contact Support
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1349 @@
+{% extends "base.html" %}
+{% block title %}Watching {{ details.title ?: details.name }} HD - CINEAMIT{% endblock %}
+{% block meta_desc %}Watch {{ details.title ?: details.name }} HD online for free. Join the Watch Party, chat with friends live, and stream without buffering. No sign-up required.{% endblock %}
+{% block meta_keywords %}watch {{ details.title ?: details.name }}, stream {{ details.title ?: details.name }} free, {{ details.title ?: details.name }} watch party, live stream {{ details.title ?: details.name }} hd, free movie streaming{% endblock %}
+{% block og_image %}{{ image_base|default("https://image.tmdb.org/t/p") }}/w1280{{ details.backdrop_path ?: details.poster_path }}{% endblock %}
+{% block content %}
+<meta name="pulse-title" content="Now watching: {{ details.title ?: details.name }}">
+<style>
+    @keyframes fadeIn { from { opacity: 1; } to { opacity: 1; } }
+    .animate-fade-in { 
+        animation: fadeIn 0.25s ease-out forwards; 
+    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #3f3f46; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #9333ea; }
+    #playerWrapper.cine-player-expanded {
+        width: 100vw !important; height: 100vh !important; height: 100dvh !important;
+        min-height: 0 !important; max-height: none !important; aspect-ratio: auto !important;
+        margin: 0 !important; padding: 0 !important; background: #000 !important;
+    }
+    /* Separate rules: unsupported vendor pseudo-classes must not invalidate fallback CSS. */
+    #playerWrapper:fullscreen {
+        width: 100vw !important; height: 100vh !important; height: 100dvh !important;
+        min-height: 0 !important; max-height: none !important; aspect-ratio: auto !important;
+        margin: 0 !important; padding: 0 !important; background: #000 !important;
+    }
+    #playerWrapper:-webkit-full-screen {
+        width: 100vw !important; height: 100vh !important; height: 100dvh !important;
+        min-height: 0 !important; max-height: none !important; aspect-ratio: auto !important;
+        margin: 0 !important; padding: 0 !important; background: #000 !important;
+    }
+    .cine-player-expanded-ancestor {
+        transform: none !important; filter: none !important; backdrop-filter: none !important;
+        perspective: none !important; contain: none !important; container-type: normal !important;
+        content-visibility: visible !important; will-change: auto !important; animation: none !important;
+        overflow: visible !important; clip: auto !important; clip-path: none !important;
+        mask: none !important; isolation: auto !important; z-index: auto !important;
+    }
+    #playerWrapper.cine-player-expanded {
+        position: fixed !important; inset: 0 !important; z-index: 2147482000 !important;
+    }
+    html.cine-player-expanded, html.cine-player-expanded body { overflow: hidden !important; }
+    #watchQuotaPanel[hidden] { display: none !important; }
+    .cine-fullscreen-controls { position: absolute; top: 12px; right: 12px; z-index: 20; text-align: right; }
+    #playerFullscreenButton {
+        color: #fff; background: rgba(0,0,0,.8); border: 1px solid rgba(255,255,255,.4);
+        border-radius: 8px; padding: 8px 12px; font: 600 12px/1.3 system-ui,sans-serif; cursor: pointer;
+    }
+    #playerFullscreenButton:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+    #playerFullscreenButton:disabled { opacity: .6; cursor: wait; }
+    #playerFullscreenStatus {
+        color: #fff; background: rgba(0,0,0,.85); max-width: 260px;
+        padding: 6px 8px; border-radius: 6px; margin-top: 4px; text-align: left; font: 12px/1.4 system-ui,sans-serif;
+    }
+    #playerFullscreenStatus:empty { display: none; }
+</style>
+<div class="flex flex-col min-h-screen bg-[#09090b] animate-fade-in relative">
+    <div class="px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between glass z-10 sticky top-0 border-b border-gray-800/50 backdrop-blur-xl gap-2">
+        <a aria-label="Go Back to Details Page" href="{{ url_for('routes.details', media_type=media_type, tmdb_id=details.id, title=details.title ?: details.name) }}" class="text-gray-400 hover:text-white transition-all flex items-center group bg-gray-900/50 hover:bg-red-600 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-gray-700 hover:border-red-600 shrink-0">
+            <i class="fa-solid fa-arrow-left mr-1.5 sm:mr-2 group-hover:-translate-x-1 transition-transform text-xs sm:text-sm" aria-hidden="true"></i>
+            <span class="font-bold text-xs sm:text-sm">Back</span>
+        </a>
+        <h1 class="text-white font-bold text-xs sm:text-sm md:text-base truncate max-w-[140px] sm:max-w-xs md:max-w-xl text-center flex-1 mx-1 sm:mx-4">
+            <span class="text-gray-400 font-normal mr-1.5 hidden md:inline">Playing:</span> {{ details.title ?: details.name }}
+            {% if media_type == 'tv' %} <span class="text-red-500 bg-red-600/10 px-1.5 sm:px-2 py-0.5 rounded border border-red-500/20 ml-1 sm:ml-2 text-[10px] sm:text-xs">S{{ s }} E{{ e }}</span> {% endif %}
+
+        </h1>
+        <div class="flex items-center gap-1.5 sm:gap-2 md:gap-3 shrink-0">
+            <button aria-label="Join a Watch Party Room" onclick="openJoinModal()" class="bg-gray-800 hover:bg-gray-700 text-white font-bold py-1.5 px-2.5 sm:px-3 md:py-2 md:px-4 rounded-full text-[11px] md:text-sm flex items-center transition-all hover:scale-105 border border-gray-600 shadow-md whitespace-nowrap cursor-pointer">
+                <i class="fa-solid fa-right-to-bracket mr-1 sm:mr-1.5" aria-hidden="true"></i> <span>Join</span>
+            </button>
+            <button aria-label="Invite Friends to Watch Party" id="inviteBtn" onclick="generateWatchPartyLink()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-1.5 px-2.5 sm:px-3 md:py-2 md:px-4 rounded-full shadow-[0_0_15px_rgba(147,51,234,0.4)] text-[11px] md:text-sm flex items-center transition-all hover:scale-105 border border-purple-400/50 whitespace-nowrap cursor-pointer">
+                <i id="inviteIcon" class="fa-solid fa-user-group mr-1 sm:mr-1.5" aria-hidden="true"></i> 
+                <span id="inviteText" class="invite-text-label"><span class="hidden sm:inline">Invite </span>Friends</span>
+            </button>
+        </div>
+    </div>
+    <div class="px-3 sm:px-4 py-2 bg-black border-b border-gray-800">
+            <span id="watchQuotaSummary" role="status" aria-live="polite" class="block text-xs text-amber-300"
+                  data-player-ready="{{ watch_quota is defined and watch_quota.blocked ? '0' : '1' }}"
+                  data-quota-url="/api/watch/quota?media_type={{ media_type|e('html_attr') }}&amp;tmdb_id={{ details.id }}&amp;s={{ s|default(1) }}&amp;e={{ e|default(1) }}"
+                  title="{{ watch_quota.detail|default('Reset: 12 AM IST. Same-day replay and server switch are free.')|e('html_attr') }}">{{ watch_quota.summary|default('Checking daily unlocks…') }}</span>
+    </div>
+    <div class="flex flex-col lg:flex-row w-full bg-black border-b border-gray-800 shadow-2xl relative z-0">
+        <div class="flex-1 w-full flex flex-col relative bg-black min-w-0">
+          <div class="w-full bg-[#141519] border-b border-gray-800 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-3 sm:gap-4 overflow-x-auto hide-scrollbar relative z-20 shadow-md {% if watch_quota is defined and watch_quota.blocked %}hidden{% endif %}">
+                <span class="text-[11px] md:text-xs font-black text-white uppercase tracking-widest shrink-0 flex items-center gap-2">
+                    <i class="fa-solid fa-server text-red-600" aria-hidden="true"></i> Select Server:
+                </span>
+                <div class="flex items-center gap-2">
+                    {% for server in servers %}
+                    <button aria-label="Select Video Server {{ server.name }}" onclick="changeServer('{{ server.token|e('js') }}', this)" class="server-btn px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-300 border flex items-center gap-2 whitespace-nowrap group cursor-pointer {% if loop.index == 1 %}bg-red-600 border-red-600 text-white shadow-[0_0_10px_rgba(220,38,38,0.3)]{% else %}bg-[#0a0a0c] border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white hover:border-gray-500{% endif %}" data-server-token="{{ server.token }}">
+                        <i class="fa-solid fa-play text-[10px] {% if loop.index != 1 %}text-gray-400 group-hover:text-white{% else %}text-white{% endif %}" aria-hidden="true"></i>
+                        <span>{{ server.name }}</span>
+                    </button>
+                    {% endfor %}
+                </div>
+                <div id="adBlockerContainer" class="hidden items-center gap-2 ml-auto bg-[#0a0a0c] border border-green-900/50 px-3 py-1.5 rounded-lg shadow-inner shrink-0">
+                    <i class="fa-solid fa-shield-halved text-green-500 text-xs" aria-hidden="true"></i>
+                    <span class="text-[10px] font-bold text-gray-300 uppercase tracking-widest mr-1">VIP Ad-Block</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input aria-label="Toggle VIP Ad Blocker" type="checkbox" id="adBlockToggle" class="sr-only peer" checked onchange="toggleAdBlocker()">
+                        <div class="w-8 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-green-500 shadow-md"></div>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="w-full relative flex items-center justify-center aspect-video lg:aspect-auto lg:h-[72vh] min-h-[220px] group" id="playerWrapper">
+                <div class="absolute inset-0 flex items-center justify-center bg-[#09090b] z-0 text-gray-500 flex-col">
+                    <i class="fa-solid fa-spinner fa-spin text-4xl mb-4 text-red-600" aria-hidden="true"></i>
+                    <p class="font-bold tracking-widest uppercase text-xs">Loading Stream...</p>
+                </div>
+                <iframe id="videoPlayer" src="" title="Streaming Player for {{ details.title ?: details.name }}" loading="eager" fetchpriority="high" class="absolute inset-0 w-full h-full border-0 z-10 bg-transparent {% if watch_quota is defined and watch_quota.blocked %}hidden{% endif %}" allow="autoplay; encrypted-media; fullscreen *; picture-in-picture" allowfullscreen></iframe>
+                {% if watch_quota is not defined or not watch_quota.blocked %}
+                <div class="cine-fullscreen-controls">
+                    <button type="button" id="playerFullscreenButton" aria-controls="playerWrapper" aria-pressed="false" hidden>Fullscreen</button>
+                    <div id="playerFullscreenStatus" role="status" aria-live="polite"></div>
+                </div>
+                {% endif %}
+                <div id="watchQuotaPanel" class="absolute inset-0 z-40 flex items-center justify-center bg-[#09090b] px-5" {% if watch_quota is not defined or not watch_quota.blocked %}hidden{% endif %}>
+                    <div class="max-w-md text-center">
+                        <p class="text-[11px] font-black uppercase tracking-[0.2em] text-amber-400 mb-3">Daily content unlocks</p>
+                        <h2 id="watchQuotaHeading" class="text-2xl md:text-3xl font-black text-white mb-3">{% if watch_quota.reason|default('') == 'unavailable' %}Watch usage unavailable{% else %}No new unlocks left today{% endif %}</h2>
+                        <p id="watchQuotaMessage" class="text-gray-400 text-sm leading-relaxed mb-5">{% if watch_quota.reason|default('') == 'unavailable' %}Please retry shortly. No new player access until usage can be checked.{% else %}{{ watch_quota.message|default('') ?: 'Same-day unlocked titles can still be replayed. New unlocks reset at 12 AM IST.' }}{% endif %}</p>
+                        <div class="flex flex-wrap justify-center gap-3">
+                            <button type="button" onclick="window.location.reload()" class="bg-amber-400 text-black font-black text-sm px-5 py-2.5 rounded-xl">Retry / reload</button>
+                            <a href="/app" class="bg-emerald-600 text-white font-black text-sm px-5 py-2.5 rounded-xl">Get App</a>
+                        </div>
+                    </div>
+                </div>
+               
+                {% if (ads_enabled is not defined or ads_enabled is not same as(false)) and ((hilltopads_vast_url | default('')) != '' or (vast_fallback_url | default('')) != '') %}
+                <div id="videoPreRollOverlay" class="absolute inset-0 z-30 bg-black flex flex-col justify-between overflow-hidden select-none">
+                    <video id="videoPreRollVideo" playsinline muted autoplay class="absolute inset-0 w-full h-full object-cover bg-black cursor-pointer"></video>
+                    <button type="button" id="videoPreRollPlayBtn" aria-label="Play sponsored video ad" class="hidden absolute z-30 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 rounded-xl bg-red-600 hover:bg-red-500 text-white px-5 py-3 text-sm font-black border border-white/25 shadow-2xl cursor-pointer whitespace-nowrap">
+                        <i class="fa-solid fa-play" aria-hidden="true"></i> Tap to play ad
+                    </button>
+                    <div class="relative z-20 flex items-center justify-between p-3 sm:p-4 bg-gradient-to-b from-black/80 to-transparent">
+                        <span class="px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span> Sponsored Ad
+                        </span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" id="videoPreRollMuteBtn" onclick="toggleVideoPreRollMute()" aria-label="Toggle Ad Audio" class="w-8 h-8 rounded-full bg-black/70 border border-white/15 text-white flex items-center justify-center text-xs hover:bg-white/10 cursor-pointer">
+                                <i class="fa-solid fa-volume-xmark" id="videoPreRollMuteIcon" aria-hidden="true"></i>
+                            </button>
+                            <a id="videoPreRollClickBtn" href="#" target="_blank" rel="noopener noreferrer" class="hidden bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/20 text-white text-[11px] font-bold px-3 py-1.5 rounded-full transition-all">
+                                Learn More <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-[9px]" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="relative z-20 flex items-center justify-end p-3 sm:p-5 bg-gradient-to-t from-black/85 to-transparent">
+                        <button type="button" id="videoPreRollSkipBtn" disabled onclick="skipVideoPreRoll()" class="bg-black/85 hover:bg-red-600 disabled:opacity-75 disabled:hover:bg-black/85 text-white border border-white/25 px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-black tracking-wide transition-all shadow-2xl cursor-pointer disabled:cursor-not-allowed">
+                            Skip Ad in <span id="videoPreRollSkipTimer">15</span>s
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="w-full lg:w-[350px] xl:w-[400px] bg-[#0f1014] border-t lg:border-t-0 lg:border-l border-gray-800 flex flex-col h-[360px] sm:h-[420px] lg:h-[78vh] shrink-0">
+            <div class="p-4 border-b border-gray-800 bg-[#141519] flex justify-between items-center shadow-md z-10">
+                <h2 class="text-white font-bold text-sm flex items-center tracking-wide">
+                    <i class="fa-solid fa-comments text-purple-500 mr-2" aria-hidden="true"></i> Party Chat
+                </h2>
+                <span class="text-[9px] bg-red-500/20 text-red-500 px-2 py-1 rounded uppercase tracking-widest font-black flex items-center gap-1.5 border border-red-500/20">
+                    <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span> Live
+                </span>
+            </div>
+            <div id="chatBox" class="flex-1 p-4 overflow-y-auto space-y-4 custom-scrollbar flex flex-col bg-[#0a0a0c]">
+                <div class="text-center bg-purple-900/20 border border-purple-500/20 rounded-lg p-3 mx-2 mt-2 shadow-inner">
+                    <p class="text-xs text-gray-300 leading-relaxed">Welcome to Watch Party <span class="font-bold text-white block mt-1 text-sm">#{{ room_id }}</span></p>
+                    <p class="text-[10px] text-purple-400 mt-1">Invite-link room: anyone signed in with this link can join.</p>
+                </div>
+            </div>
+            <form id="chatForm" class="p-3 bg-[#141519] border-t border-gray-800">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="relative flex items-center">
+                    <input aria-label="Type your message in Party Chat" type="text" id="chatInput" autocomplete="off" placeholder="{{ current_user.is_authenticated ? 'Type a message...' : 'Login to chat...' }}" class="w-full bg-[#0a0a0c] border border-gray-700 text-sm text-white rounded-full pl-4 pr-12 py-2.5 outline-none focus:border-purple-500 transition-colors shadow-inner">
+                    <button aria-label="Send Message" type="submit" class="absolute right-1 w-8 h-8 bg-purple-600 hover:bg-purple-500 text-white rounded-full flex items-center justify-center transition-colors shadow-md cursor-pointer">
+                        <i class="fa-solid fa-paper-plane text-xs -ml-0.5 mt-0.5" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% if media_type == 'tv' %}
+    <div class="bg-[#141519] border-b border-gray-800 p-4 flex justify-center items-center gap-3 md:gap-6 flex-wrap z-20 shadow-md">
+        {% if e > 1 %}
+        <a aria-label="Play Previous Episode" href="?s={{ s }}&e={{ e-1 }}&room={{ room_id }}" class="bg-gray-800 hover:bg-gray-700 text-white px-5 py-2.5 rounded-lg font-bold transition flex items-center border border-gray-700 text-sm shadow-md">
+            <i class="fa-solid fa-backward-step mr-2" aria-hidden="true"></i> Prev
+        </a>
+        {% else %}
+        <button disabled class="bg-gray-800/50 text-gray-500 px-5 py-2.5 rounded-lg font-bold cursor-not-allowed flex items-center border border-gray-800 text-sm">
+            <i class="fa-solid fa-backward-step mr-2" aria-hidden="true"></i> Prev
+        </button>
+        {% endif %}
+        <div class="flex items-center gap-2 bg-black px-5 py-2.5 rounded-lg border border-gray-700 shadow-inner">
+            <select aria-label="Select TV Season" id="seasonSelect" class="bg-transparent text-white font-bold outline-none cursor-pointer text-sm appearance-none pr-2 focus:text-red-500 transition-colors">
+                {% if details.seasons %}
+                    {% for season in details.seasons %}
+                        {% if season.season_number > 0 %}
+                        <option value="{{ season.season_number }}" data-episodes="{{ season.episode_count }}" class="bg-gray-900 text-white" {% if season.season_number == s %}selected{% endif %}>
+                            Season {{ season.season_number }}
+                        </option>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </select>
+            <span class="text-gray-600 font-light">|</span>
+            <select aria-label="Select TV Episode" id="episodeSelect" class="bg-transparent text-white font-bold outline-none cursor-pointer text-sm appearance-none pl-1 focus:text-red-500 transition-colors"></select>
+        </div>
+        <a aria-label="Play Next Episode" id="nextEpisodeBtn" href="?s={{ s }}&e={{ e+1 }}&room={{ room_id }}" class="bg-red-600 hover:bg-red-500 text-white px-5 py-2.5 rounded-lg font-bold transition flex items-center shadow-[0_0_15px_rgba(220,38,38,0.3)] text-sm border border-red-500">
+            Next <i class="fa-solid fa-forward-step ml-2" aria-hidden="true"></i>
+        </a>
+    </div>
+    {% endif %}
+    <div class="w-full bg-[#0a0a0c] border-t border-gray-800 p-3 flex justify-center md:justify-end z-20 shadow-md">
+        <a href="/app" class="bg-emerald-600/90 hover:bg-emerald-500 text-white border border-emerald-500/50 px-6 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2">
+            <i class="fa-brands fa-android" aria-hidden="true"></i>
+            Download in the app
+        </a>
+    </div>
+    <div class="bg-[#141519] border border-gray-800 rounded-xl p-4 mt-6 flex items-start gap-3 shadow-inner max-w-[1600px] mx-auto w-full md:w-[calc(100%-4rem)] mx-4 md:mx-auto">
+        <i class="fa-solid fa-circle-info text-blue-500 mt-0.5 shrink-0" aria-hidden="true"></i>
+        <div>
+            <h2 class="text-white font-bold text-xs uppercase tracking-widest">Helpful Note:</h2>
+            <p class="text-[11px] text-gray-400 mt-1 leading-relaxed">
+                If the video will not play or keeps buffering, pick another server from the <b>"Select Server"</b> list above. Each server has a different speed.
+            </p>
+        </div>
+    </div>
+    {% if can_track_history %}
+    <div class="max-w-[1600px] mx-auto w-full md:w-[calc(100%-4rem)] mx-4 md:mx-auto mt-4 bg-[#141519] border border-gray-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex-1">
+            <p class="text-white text-xs font-bold">Track your watch history</p>
+            <p class="text-gray-400 text-[11px] mt-1">History is saved automatically when a streaming server opens. Use the button to retry saving if needed.</p>
+        </div>
+        <input type="hidden" id="watchHistoryCsrf" value="{{ csrf_token }}">
+        <button type="button" id="trackWatchButton" data-tmdb-id="{{ tmdb_id }}" data-media-type="{{ media_type }}" class="bg-red-600 hover:bg-red-500 disabled:bg-gray-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition-colors cursor-pointer disabled:cursor-wait">
+            I've started watching — track it
+        </button>
+        <span id="watchHistoryMessage" class="text-[11px] text-gray-400" aria-live="polite"></span>
+    </div>
+    {% endif %}
+    <div class="p-4 md:p-8 flex flex-col gap-4 max-w-[1600px] mx-auto w-full">
+        <h2 class="text-2xl md:text-4xl font-black text-white mb-2 tracking-wide">{{ details.title ?: details.name }}</h2>
+        <div class="flex items-center gap-3 text-xs font-bold uppercase tracking-wider mb-2">
+            <span class="bg-red-600 text-white px-2 py-1 rounded shadow-md">HD</span>
+            <span class="border border-gray-600 text-gray-400 px-2 py-1 rounded bg-gray-900/50">{{ media_type }}</span>
+            {% if details.vote_average %} 
+            <span class="text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-1 rounded flex items-center"><i class="fa-solid fa-star mr-1" aria-hidden="true"></i>{{ details.vote_average | round(1) }}</span>
+            {% endif %}
+        </div>
+        <p class="text-sm text-gray-400 max-w-4xl leading-relaxed">{{ details.overview }}</p>
+    </div>
+    {% if media_type == 'tv' and details.seasons %}
+    <div class="w-full max-w-[1600px] mx-auto px-4 md:px-8 pb-12">
+        <div id="episodesSection" class="w-full border-t border-gray-800/80 pt-10 mt-4">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-8 border-b border-gray-800/60 pb-4">
+                <h2 class="text-xl md:text-2xl font-black text-white tracking-tight flex items-center">
+                    Browse Episodes
+                </h2>
+                <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    <div class="relative w-full sm:w-64">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs" aria-hidden="true"></i>
+                        <input aria-label="Search Episode" type="text" id="watchEpisodeSearchInput" oninput="filterNetflixEpisodesLocal()" placeholder="Search episode..." class="w-full bg-[#141519] border border-gray-700 text-white text-xs rounded-md pl-9 pr-4 py-2 outline-none focus:border-red-600 transition-all shadow-md">
+                    </div>
+                    <div class="relative min-w-[140px] md:min-w-[180px]">
+                        <select aria-label="Select Season Filter" id="netflixSeasonSelector" onchange="loadNetflixEpisodes(this.value)" class="w-full bg-[#141519] border border-gray-700 text-white font-black rounded-md pl-4 pr-10 py-2 text-xs md:text-sm outline-none focus:border-white cursor-pointer appearance-none shadow-md transition-all">
+                            {% for season in details.seasons %}
+                                {% if season.season_number > 0 %}
+                                <option value="{{ season.season_number }}" class="bg-[#141519]" {% if season.season_number == s %}selected{% endif %}>Season {{ season.season_number }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <i class="fa-solid fa-caret-down absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none text-xs" aria-hidden="true"></i>
+                    </div>
+                </div>
+            </div>
+            <div id="netflixEpisodesList" class="flex flex-col gap-6 md:gap-4 max-h-[75vh] overflow-y-auto custom-scrollbar pr-2">
+                <div class="flex flex-col justify-center items-center py-20 w-full">
+                    <i class="fa-solid fa-spinner fa-spin text-3xl text-red-600 mb-3 shadow-[0_0_15px_rgba(220,38,38,0.3)]" aria-hidden="true"></i>
+                    <p class="text-gray-500 text-xs font-black uppercase tracking-widest animate-pulse">Assembling Episodes...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div id="joinRoomModal" class="fixed inset-0 bg-black/90 z-[100] hidden flex items-center justify-center backdrop-blur-sm px-4 transition-opacity">
+        <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl relative transform transition-all">
+            <button aria-label="Close Join Room Modal" onclick="document.getElementById('joinRoomModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i></button>
+            <h2 class="text-xl font-bold text-white mb-4"><i class="fa-solid fa-right-to-bracket text-purple-500 mr-2" aria-hidden="true"></i> Join Party Room</h2>
+            <div class="mb-6">
+                <label for="roomCodeInput" class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 block">Enter Room Code</label>
+                <input aria-label="Enter Room Code Input" type="text" id="roomCodeInput" placeholder="e.g. ROOM-123" class="w-full bg-[#0a0a0c] border border-gray-700 text-white font-bold rounded-lg px-4 py-3 outline-none focus:border-purple-500 transition-colors shadow-inner text-center tracking-widest uppercase">
+            </div>
+            <button aria-label="Submit Room Join Code" onclick="submitJoinRoom()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-lg transition-colors flex justify-center items-center shadow-[0_0_15px_rgba(147,51,234,0.4)] cursor-pointer">
+                Join Now <i class="fa-solid fa-arrow-right ml-2" aria-hidden="true"></i>
+            </button>
+        </div>
+</div>
+
+{% if not current_user.is_authenticated %}
+<div id="authPopupModal" class="fixed inset-0 bg-black/90 z-[100] hidden flex items-center justify-center backdrop-blur-sm px-4 transition-opacity animate-fade-in">
+    <div class="bg-[#141519] border border-gray-800 rounded-2xl p-8 max-w-md w-full shadow-2xl relative text-center transform transition-all scale-95 opacity-0" id="authPopupContent">
+        <button aria-label="Close Auth Popup" onclick="closeAuthPopup()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors cursor-pointer"><i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i></button>
+        
+        <div class="w-16 h-16 bg-red-600/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl border border-red-500/30 shadow-[0_0_15px_rgba(220,38,38,0.3)]">
+            <i class="fa-solid fa-user-lock" aria-hidden="true"></i>
+        </div>
+        
+        <h2 class="text-2xl font-black text-white mb-2 tracking-wide">Unlock Full Experience</h2>
+        <p class="text-gray-400 text-sm mb-6 leading-relaxed">Create a free account to join Watch Parties, chat live with friends, and save your watch history.</p>
+        
+        <div class="flex flex-col gap-3">
+            <a href="{{ url_for('auth.register') }}" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_0_15px_rgba(220,38,38,0.4)] hover:shadow-[0_0_25px_rgba(220,38,38,0.6)] cursor-pointer flex items-center justify-center gap-2">
+                <i class="fa-solid fa-user-plus" aria-hidden="true"></i> Create Free Account
+            </a>
+            <a href="{{ url_for('auth.login') }}?next={{ request.path|url_encode }}" class="w-full bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-500 text-white font-bold py-3.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2">
+                <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i> Already have an account?
+            </a>
+        </div>
+        
+        <p class="text-[10px] text-gray-400 mt-5 font-medium uppercase tracking-widest">Takes less than 30 seconds</p>
+    </div>
+</div>
+{% endif %}
+
+<footer class="bg-[#0f1014] border-t border-gray-800/60 pt-16 pb-10 mt-16 relative z-50">
+    {% if ads_enabled and adsterra_native_banner %}
+    <div class="w-full max-w-5xl mx-auto my-4 px-4 adsterra-native-wrap">
+        <div class="bg-[#141519] border border-gray-800 rounded-2xl p-4 relative overflow-hidden">
+            <span class="text-[10px] text-amber-400 font-black uppercase tracking-widest mb-2 block"><i class="fa-solid fa-sparkles mr-1"></i> Sponsored Content</span>
+            <div class="ad-slot-native w-full min-h-[90px]"></div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="w-full max-w-5xl mx-auto my-6 bg-gray-900 border border-gray-800 rounded-lg flex items-center justify-center min-h-[100px] overflow-hidden relative">
+            <span data-adsterra-smartlink class="text-[10px] text-gray-400 uppercase tracking-widest absolute top-2 right-4">Sponsored</span>
+            <div class="ad-slot-728 text-gray-400 text-sm py-2"></div>
+        </div>
+    <div class="max-w-[1800px] mx-auto px-6 md:px-12">
+        <div class="flex gap-6 mb-8 text-2xl text-gray-400">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-facebook-f" aria-hidden="true"></i></a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-instagram" aria-hidden="true"></i></a>
+            <a href="https://twitter.com/CineAmit" target="_blank" rel="noopener noreferrer" aria-label="Twitter" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-twitter" aria-hidden="true"></i></a>
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-youtube" aria-hidden="true"></i></a>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10 text-sm text-gray-400 font-medium tracking-wide">
+            <div class="flex flex-col gap-3">
+                <a href="/faq" class="hover:underline hover:text-gray-300 transition-colors">FAQ</a>
+                <a href="/about" class="hover:underline hover:text-gray-300 transition-colors">About Us</a>
+                <a href="/livetv" class="hover:underline hover:text-gray-300 transition-colors">Live TV Channels</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <a href="/help" class="hover:underline hover:text-gray-300 transition-colors">Help Center</a>
+                <a href="/movies/popular" class="hover:underline hover:text-gray-300 transition-colors">Popular Movies</a>
+                <a href="/terms" class="hover:underline hover:text-gray-300 transition-colors">Terms of Use</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <a href="/profile" class="hover:underline hover:text-gray-300 transition-colors">Account</a>
+                <a href="/privacy" class="hover:underline hover:text-gray-300 transition-colors">Privacy Policy</a>
+                <a href="/dmca" class="hover:underline hover:text-gray-300 transition-colors">DMCA / Copyright</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <a href="/blog" class="hover:underline hover:text-gray-300 transition-colors">Media Center & Blog</a>
+                <a href="/contact" class="hover:underline hover:text-gray-300 transition-colors">Contact Us</a>
+                <a href="/legal" class="hover:underline hover:text-gray-300 transition-colors">Legal Notices</a>
+            </div>
+        </div>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <button class="border border-gray-600 text-gray-400 hover:text-white hover:border-white transition-colors px-3 py-1.5 text-xs font-bold tracking-widest uppercase">
+                Service Code
+            </button>
+            <div class="text-gray-500 text-xs text-left md:text-right">
+                <p>&copy; 2026 CINEAMIT. All Rights Reserved.</p>
+                <p class="mt-1">Designed for a premium cinematic experience.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    const tmdbId = {{ tmdb_id|default(0) }} || 0;
+    const fallbackImg = "{{ image_base_url|default("https://image.tmdb.org/t/p/w500") }}{{ details.backdrop_path ?: details.poster_path }}";
+    const currentRoomId = "{{ room_id }}";
+    const currentWatchingEp = parseInt("{{ e | default(1) }}") || 1;
+    const currentWatchingSeason = parseInt("{{ s | default(1) }}") || 1;
+    let watchSeasonEpisodes = []; 
+
+    let watchEpisodesReqId = 0;
+    async function loadNetflixEpisodes(seasonNumber) {
+        const list = document.getElementById('netflixEpisodesList');
+        if(!list || !tmdbId) return;
+        const searchInp = document.getElementById('watchEpisodeSearchInput');
+        if(searchInp) searchInp.value = '';
+        const myReq = ++watchEpisodesReqId;
+        const epCacheKey = 'cineamit_ep_' + tmdbId + '_' + seasonNumber;
+        try {
+            const cachedRaw = sessionStorage.getItem(epCacheKey);
+            if (cachedRaw) {
+                const cachedArr = JSON.parse(cachedRaw);
+                if (Array.isArray(cachedArr) && cachedArr.length > 0) {
+                    watchSeasonEpisodes = cachedArr;
+                    renderWatchEpisodesList(watchSeasonEpisodes, seasonNumber);
+                    return;
+                }
+            }
+        } catch (_) {}
+        list.innerHTML = `
+            <div class="flex flex-col justify-center items-center py-20 w-full animate-fade-in">
+                <i class="fa-solid fa-spinner fa-spin text-3xl text-red-600 mb-3" aria-hidden="true"></i>
+                <p class="text-gray-400 text-xs font-black uppercase tracking-widest animate-pulse">Assembling Episodes...</p>
+            </div>`;
+        const tryFetch = async (attempt) => {
+            if (myReq !== watchEpisodesReqId) return;
+            let ok = false;
+            let failReason = 'network error';
+            const apiPath = `/api/episodes/${tmdbId}/${seasonNumber}`;
+            try {
+                const response = await fetch(apiPath);
+                if (myReq !== watchEpisodesReqId) return;
+                if (!response.ok) {
+                    let errKind = 'generic';
+                    try {
+                        const errBody = await response.text();
+                        if (/page not found/i.test(errBody)) errKind = 'app-route';
+                        else if (/not found/i.test(errBody)) errKind = 'web-server';
+                        console.error("Episode sync " + response.status + " body: " + errBody.slice(0, 160).replace(/\s+/g, ' '));
+                    } catch (_) {}
+                    failReason = 'server ' + response.status + ' (' + errKind + ')';
+                    console.error("Episode sync HTTP " + response.status + " for " + apiPath);
+                } else {
+                    let payload = await response.json().catch(() => null);
+                    if (myReq !== watchEpisodesReqId) return;
+                    if (payload && !Array.isArray(payload) && Array.isArray(payload.episodes)) payload = payload.episodes;
+                    if (!Array.isArray(payload)) {
+                        failReason = 'bad server response';
+                        console.error("Episode sync returned non-array payload:", typeof payload);
+                    } else {
+                        watchSeasonEpisodes = payload;
+                        if (payload.length > 0) {
+                            try { sessionStorage.setItem(epCacheKey, JSON.stringify(payload)); } catch (_) {}
+                        }
+                        renderWatchEpisodesList(watchSeasonEpisodes, seasonNumber);
+                        ok = true;
+                    }
+                }
+            } catch (e) {
+                console.error("Episode loading crash: ", e);
+            }
+            if (ok || myReq !== watchEpisodesReqId) return;
+            if (attempt === 1) { setTimeout(() => tryFetch(2), 2500); return; }
+            list.innerHTML = `
+                <div class="text-center py-10 px-4 border border-dashed border-red-900/70 rounded-xl">
+                    <i class="fa-solid fa-plug-circle-xmark text-3xl text-red-800 mb-2" aria-hidden="true"></i>
+                    <p class="text-red-400 font-bold text-xs mb-1">Episodes could not be loaded.</p>
+                    <p class="text-red-600/80 font-mono text-[10px] mb-3 break-all">diagnosis: ${failReason} · url: ${apiPath}</p>
+                    <button onclick="loadNetflixEpisodes(${JSON.stringify(String(seasonNumber))})" class="bg-red-600 hover:bg-red-700 text-white text-xs font-black px-4 py-2 rounded-md transition-colors">
+                        <i class="fa-solid fa-rotate-right mr-1" aria-hidden="true"></i> Retry
+                    </button>
+                </div>`;
+        };
+        tryFetch(1);
+    }
+
+    function renderWatchEpisodesList(episodes, seasonNumber) {
+        const list = document.getElementById('netflixEpisodesList');
+        if(!episodes || episodes.length === 0) {
+            list.innerHTML = `
+                <div class="text-center py-12 border border-dashed border-gray-800 rounded-xl">
+                    <i class="fa-solid fa-ghost text-3xl text-gray-700 mb-2" aria-hidden="true"></i>
+                    <p class="text-gray-400 font-bold text-xs">No episodes compiled for this season yet.</p>
+                </div>`;
+            return;
+        }
+        const escHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        let html = '';
+        episodes.forEach((ep, index) => {
+            let imgUrl = fallbackImg;
+            if (ep.still_path && ep.still_path !== 'None' && ep.still_path !== null && ep.still_path !== '') {
+                let cleanPath = ep.still_path.startsWith('/') ? ep.still_path : '/' + ep.still_path;
+                imgUrl = `{{ image_base|default("https://image.tmdb.org/t/p") }}/w500${cleanPath}`;
+            }
+            const epNo = parseInt(ep.episode_number, 10);
+            const epNumber = Number.isFinite(epNo) ? epNo : 0;
+            const isPlaying = (parseInt(seasonNumber) === currentWatchingSeason && ep.episode_number === currentWatchingEp);
+            const borderClass = isPlaying ? 'border-red-600 shadow-[0_0_15px_rgba(220,38,38,0.2)]' : 'border-gray-800/40 group-hover:border-gray-600/60';
+            const bgClass = isPlaying ? 'bg-[#141519]' : 'bg-[#141519]/40 hover:bg-[#141519]/90';
+            const titleColor = isPlaying ? 'text-red-500' : 'text-white group-hover:text-red-500';
+            const rating = ep.vote_average ? `⭐${ep.vote_average.toFixed(1)}` : '';
+            const runtime = ep.runtime ? `${ep.runtime}m` : '';
+            const epName = escHtml(ep.name || `Episode ${ep.episode_number}`);
+            const overview = escHtml(ep.overview ? ep.overview : 'No extra summary logs compiled for this streaming item.');
+            
+            html += `
+            <div class="flex flex-col md:flex-row items-start md:items-center gap-4 ${bgClass} border ${borderClass} p-4 rounded-xl transition-all duration-300 group relative">
+                <div class="hidden md:block w-8 text-center text-lg font-black ${isPlaying ? 'text-red-600' : 'text-gray-500 group-hover:text-white'} transition-colors shrink-0">
+                    ${isPlaying ? '<i class="fa-solid fa-volume-high animate-pulse" aria-hidden="true"></i>' : (index + 1)}
+                </div>
+                <div class="relative w-full md:w-52 aspect-video rounded-md overflow-hidden shrink-0 bg-[#0a0a0c] shadow border border-gray-800/80">
+                    <img src="${escHtml(imgUrl)}" alt="Thumbnail for ${epName}" width="320" height="180" loading="lazy" decoding="async" class="w-full h-full object-cover ${isPlaying ? 'opacity-100' : 'opacity-80 group-hover:opacity-100'} transition-opacity duration-300" onerror="this.onerror=null; this.src='${escHtml(fallbackImg)}';">
+                    <a aria-label="Play Episode ${epNumber}: ${epName}" href="?s=${seasonNumber}&e=${epNumber}&room=${currentRoomId}" class="absolute inset-0 flex items-center justify-center bg-black/40 ${isPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-300 z-10">
+                        <div class="w-10 h-10 rounded-full bg-black/60 border border-white/40 flex items-center justify-center hover:scale-110 transition-transform">
+                            ${isPlaying ? '<i class="fa-solid fa-pause text-red-500 text-xs" aria-hidden="true"></i>' : '<i class="fa-solid fa-play text-white text-xs ml-0.5" aria-hidden="true"></i>'}
+                        </div>
+                    </a>
+                    <span class="absolute bottom-2 left-2 bg-black/80 px-1.5 py-0.5 rounded text-[9px] font-black text-white border border-gray-800 md:hidden z-20">
+                        EP ${epNumber}
+                    </span>
+                </div>
+                <div class="flex-1 min-w-0 flex flex-col gap-1 w-full">
+                    <div class="flex items-center justify-between gap-4 w-full">
+                        <h3 class="${titleColor} font-bold text-sm md:text-base transition-colors truncate">
+                            <span class="md:hidden mr-1">${epNumber}.</span>${epName}
+                        </h3>
+                        <div class="flex items-center gap-2 shrink-0 text-[10px] font-black tracking-wider text-gray-500">
+                            ${rating ? `<span class="text-yellow-600/90">${rating}</span>` : ''}
+                            ${runtime ? `<span>${runtime}</span>` : ''}
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-xs leading-relaxed line-clamp-2 md:line-clamp-3 pr-2 font-medium">
+                        ${overview}
+                    </p>
+                </div>
+            </div>
+            `;
+        });
+        list.innerHTML = html;
+    }
+
+    function filterNetflixEpisodesLocal() {
+        const query = document.getElementById('watchEpisodeSearchInput').value.toLowerCase().trim();
+        const activeSeason = document.getElementById('netflixSeasonSelector').value;
+        if(!query) {
+            renderWatchEpisodesList(watchSeasonEpisodes, activeSeason);
+            return;
+        }
+        const filtered = watchSeasonEpisodes.filter(ep => {
+            const matchesName = (ep.name || '').toLowerCase().includes(query);
+            const matchesNumber = ep.episode_number.toString() === query;
+            const matchesOverview = (ep.overview || '').toLowerCase().includes(query);
+            return matchesName || matchesNumber || matchesOverview;
+        });
+        renderWatchEpisodesList(filtered, activeSeason);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const selector = document.getElementById('netflixSeasonSelector');
+        if(selector && selector.value) {
+            loadNetflixEpisodes(selector.value);
+        }
+    });
+
+    const username = "{{ (current_user.is_authenticated) ? (current_user.username) : ('Guest') }}";
+    const room = "{{ room_id }}";
+    const partyLoggedIn = {% if current_user.is_authenticated %}true{% else %}false{% endif %};
+    function partyCsrfToken() {
+        const m = document.querySelector('meta[name="csrf-token"]');
+        return (m && m.content) ? m.content : '';
+    }
+    let partyLastId = 0;
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    function renderPartyMessage(data) {
+        const chatBox = document.getElementById('chatBox');
+        if (!chatBox) return;
+        const isMe = data.user === username;
+        const safeMsg = escapeHtml(data.msg);
+        if (data.type === 'system') {
+            chatBox.innerHTML += `<div class="text-center text-[11px] text-gray-500 font-medium my-2 flex items-center justify-center gap-2"><span class="h-px bg-gray-800 flex-1"></span>${safeMsg}<span class="h-px bg-gray-800 flex-1"></span></div>`;
+        } else {
+            chatBox.innerHTML += `
+                <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} animate-fade-in">
+                    <span class="text-[10px] font-bold text-gray-500 mb-0.5 px-1">${escapeHtml(data.user)}</span>
+                    <div class="text-[13px] px-3.5 py-2 rounded-2xl max-w-[85%] shadow-sm ${isMe ? 'bg-purple-600 text-white rounded-tr-none' : 'bg-gray-800 border border-gray-700 text-gray-200 rounded-tl-none'}">
+                        ${safeMsg}
+                    </div>
+                </div>
+            `;
+        }
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    let partyStarted = false;
+    let partyPollTimer = null;
+
+    async function pollPartyMessages() {
+        if (!partyStarted || document.visibilityState !== 'visible') return;
+        try {
+            const res = await fetch(`/api/party/messages?room=${encodeURIComponent(room)}&since=${partyLastId}`);
+            const data = await res.json();
+            (data.messages || []).forEach(renderPartyMessage);
+            if (data.last_id) partyLastId = data.last_id;
+        } catch (err) {}
+    }
+
+    async function startPartyIfNeeded() {
+        if (partyStarted) return;
+        partyStarted = true;
+        try {
+            const res = await fetch('/api/party/join', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRF-Token': partyCsrfToken()},
+                body: JSON.stringify({username: username, room: room})
+            });
+            const data = await res.json();
+            if (data.last_id) partyLastId = Math.max(0, data.last_id - 1);
+            await pollPartyMessages();
+        } catch (err) {}
+        if (!partyPollTimer) {
+            // HIT-LIMIT FIX: pehle har 8 second poll hota tha (ek user 2 ghante party me = ~900 requests!).
+            // Ab 25 second, aur tab hidden hone par poll ruk jata hai (pollPartyMessages me visibility check hai).
+            partyPollTimer = setInterval(pollPartyMessages, 25000);
+        }
+    }
+
+    if (new URLSearchParams(window.location.search).has('room')) {
+        startPartyIfNeeded();
+    }
+    const chatInputEl = document.getElementById('chatInput');
+    if (chatInputEl) {
+        chatInputEl.addEventListener('focus', startPartyIfNeeded, { once: true });
+    }
+
+    document.getElementById('chatForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const input = document.getElementById('chatInput');
+        if (!input || input.value.trim() === '') return;
+        // Chat me spam rokne ke liye server ab login maangta hai (pehle open tha).
+        if (!partyLoggedIn) {
+            renderPartyMessage({ type: 'system', user: 'CineAmit', msg: 'Sign in to send party chat — use the link in the navbar above.' });
+            return;
+        }
+        await startPartyIfNeeded();
+        const msgText = input.value;
+        try {
+            const res = await fetch('/api/party/send', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRF-Token': partyCsrfToken()},
+                body: JSON.stringify({username: username, room: room, msg: msgText})
+            });
+            if (res.status === 401) {
+                renderPartyMessage({ type: 'system', user: 'CineAmit', msg: 'Your session expired — sign in again, then send the message.' });
+                return;
+            }
+            if (!res.ok) {
+                renderPartyMessage({ type: 'system', user: 'CineAmit', msg: 'Message was not sent (server busy or rate limit). Try again in a moment.' });
+                return;
+            }
+            input.value = '';
+            pollPartyMessages();
+        } catch (_) {
+            renderPartyMessage({ type: 'system', user: 'CineAmit', msg: 'Network error — message was not sent.' });
+        }
+    });
+
+    function generateWatchPartyLink() {
+        startPartyIfNeeded();
+        const btn = document.getElementById('inviteBtn');
+        const textSpan = document.getElementById('inviteText');
+        const icon = document.getElementById('inviteIcon');
+        const url = new URL(window.location.href);
+        let roomCode = url.searchParams.get('room');
+        if (!roomCode) {
+            roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            url.searchParams.set('room', roomCode);
+            window.history.pushState({}, '', url);
+        }
+        const fullLink = url.toString();
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (isMobile && navigator.share) {
+            navigator.share({ title: 'CineAmit Watch Party', text: 'Join my room and watch live:', url: fullLink })
+            .catch(() => modernCopy(fullLink, btn, textSpan, icon));
+        } else {
+            modernCopy(fullLink, btn, textSpan, icon);
+        }
+    }
+
+    function modernCopy(text, btn, textSpan, icon) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => showCopySuccess(btn, textSpan, icon)).catch(() => oldSchoolCopy(text, btn, textSpan, icon));
+        } else {
+            oldSchoolCopy(text, btn, textSpan, icon);
+        }
+    }
+
+    function oldSchoolCopy(text, btn, textSpan, icon) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0"; 
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try { document.execCommand('copy'); showCopySuccess(btn, textSpan, icon); } 
+        catch (err) { alert("Copy failed! Share this link manually: " + text); }
+        document.body.removeChild(textArea);
+    }
+
+    function showCopySuccess(btn, textSpan, icon) {
+        const originalText = textSpan.innerText;
+        const originalIcon = icon.className;
+        textSpan.innerText = "Copied!";
+        icon.className = "fa-solid fa-check text-green-400 mr-1.5";
+        btn.classList.add('ring-2', 'ring-green-400');
+        setTimeout(() => { textSpan.innerText = originalText; icon.className = originalIcon; btn.classList.remove('ring-2', 'ring-green-400'); }, 2000);
+    }
+
+    function openJoinModal() {
+        document.getElementById('joinRoomModal').classList.remove('hidden');
+        document.getElementById('roomCodeInput').focus();
+    }
+
+    function submitJoinRoom() {
+        const newRoom = document.getElementById('roomCodeInput').value.trim();
+        const currentRoom = "{{ room_id }}";
+        if (newRoom && newRoom !== currentRoom) {
+            const s = "{{ s | default(1) }}";
+            const e = "{{ e | default(1) }}";
+            window.location.href = `?s=${s}&e=${e}&room=${newRoom}`;
+        } else if (newRoom === currentRoom) {
+            alert("You are already in this room.");
+            document.getElementById('joinRoomModal').classList.add('hidden');
+        }
+    }
+
+    function changeServer(token, clickedBtn) {
+        if ({% if watch_quota is defined and watch_quota.blocked %}true{% else %}false{% endif %}) return;
+        const adBlockContainer = document.getElementById('adBlockerContainer');
+        const adBlockToggle = document.getElementById('adBlockToggle');
+        const clickedServerName = clickedBtn && clickedBtn.querySelector('span')
+            ? clickedBtn.querySelector('span').textContent.trim()
+            : '';
+        const isVipServer = clickedServerName.toLowerCase().includes('vip');
+
+        if (adBlockContainer) {
+            if (isVipServer) {
+                adBlockContainer.classList.remove('hidden');
+                adBlockContainer.classList.add('flex');
+            } else {
+                adBlockContainer.classList.remove('flex');
+                adBlockContainer.classList.add('hidden');
+            }
+        }
+        
+        const oldIframe = document.getElementById('videoPlayer');
+        const parentWrapper = oldIframe.parentNode;
+        const newIframe = document.createElement('iframe');
+        newIframe.id = 'videoPlayer';
+        
+        newIframe.src = '/api/secure_play?token=' + token; 
+        
+        newIframe.title = `Streaming Player`;
+        newIframe.loading = 'eager';
+        newIframe.className = oldIframe.className;
+        newIframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen *; picture-in-picture');
+        newIframe.setAttribute('allowfullscreen', '');
+        
+        if (isVipServer && (!adBlockToggle || adBlockToggle.checked)) {
+            newIframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+        }
+        
+        parentWrapper.replaceChild(newIframe, oldIframe);
+        
+        const allButtons = document.querySelectorAll('.server-btn');
+        allButtons.forEach(btn => {
+            btn.className = "server-btn px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-300 border flex items-center gap-2 whitespace-nowrap group bg-[#0a0a0c] border-gray-700 text-gray-400 hover:bg-gray-800 hover:text-white hover:border-gray-500 cursor-pointer";
+            const icon = btn.querySelector('.fa-play');
+            if (icon) icon.className = "fa-solid fa-play text-[10px] text-gray-400 group-hover:text-white";
+        });
+        
+        if (!clickedBtn) return;
+        clickedBtn.className = "server-btn px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-300 border flex items-center gap-2 whitespace-nowrap group bg-red-600 border-red-600 text-white shadow-[0_0_10px_rgba(220,38,38,0.3)] cursor-pointer";
+        const activeIcon = clickedBtn.querySelector('.fa-play');
+        if (activeIcon) activeIcon.className = "fa-solid fa-play text-[10px] text-white";
+    }
+
+    function toggleAdBlocker() {
+        const activeBtn = document.querySelector('.server-btn.bg-red-600');
+        if(activeBtn) { changeServer(activeBtn.getAttribute('data-server-token'), activeBtn); }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if ({% if watch_quota is defined and watch_quota.blocked %}true{% else %}false{% endif %}) return;
+        const activeServerBtn = document.querySelector('.server-btn.bg-red-600');
+        if (activeServerBtn) { 
+            changeServer(activeServerBtn.getAttribute('data-server-token'), activeServerBtn); 
+        }
+    });
+
+    const autoplayEnabled = {{ autoplay_enabled ? 'true' : 'false' }};
+    const mediaType = "{{ media_type }}";
+    
+    if (autoplayEnabled && mediaType === 'tv') {
+        window.addEventListener('message', function(event) {
+            const playerIframe = document.getElementById('videoPlayer');
+            if (!playerIframe || event.source !== playerIframe.contentWindow) return;
+            if (event.data && (event.data === 'video_ended' || event.data.event === 'ended')) {
+                const nextEpisodeBtn = document.getElementById('nextEpisodeBtn');
+                if (nextEpisodeBtn && !nextEpisodeBtn.disabled) {
+                    window.location.href = nextEpisodeBtn.href;
+                }
+            }
+        });
+    }
+
+    {% if not current_user.is_authenticated %}
+    const authPopupModal = document.getElementById('authPopupModal');
+    const authPopupContent = document.getElementById('authPopupContent');
+    const chatInputElem = document.getElementById('chatInput');
+
+    function openAuthPopup() {
+        if (authPopupModal) {
+            authPopupModal.classList.remove('hidden');
+            setTimeout(() => {
+                authPopupContent.classList.remove('scale-95', 'opacity-0');
+                authPopupContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+    }
+
+    function closeAuthPopup() {
+        if (authPopupModal) {
+            authPopupContent.classList.remove('scale-100', 'opacity-100');
+            authPopupContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                authPopupModal.classList.add('hidden');
+            }, 200);
+        }
+    }
+
+  
+    if (chatInputElem) {
+        chatInputElem.addEventListener('focus', function(e) {
+            e.preventDefault();
+            chatInputElem.blur();
+            openAuthPopup();
+        });
+    }
+
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            openAuthPopup();
+            console.log("Popup triggered successfully!");
+        }, 20000); 
+    });
+    {% endif %}
+
+    let videoPreRollCanSkip = false;
+    let videoPreRollTimer = null;
+
+    function dismissVideoPreRoll() {
+        if (videoPreRollTimer !== null) {
+            clearInterval(videoPreRollTimer);
+            videoPreRollTimer = null;
+        }
+        const overlay = document.getElementById('videoPreRollOverlay');
+        const video = document.getElementById('videoPreRollVideo');
+        if (video) {
+            try { video.pause(); video.removeAttribute('src'); video.load(); } catch (_) {}
+        }
+        if (overlay) overlay.remove();
+    }
+
+    function skipVideoPreRoll() {
+        if (!videoPreRollCanSkip) return;
+        dismissVideoPreRoll();
+    }
+
+    function toggleVideoPreRollMute() {
+        const video = document.getElementById('videoPreRollVideo');
+        const icon = document.getElementById('videoPreRollMuteIcon');
+        if (!video) return;
+        video.muted = !video.muted;
+        if (icon) icon.className = video.muted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high';
+    }
+
+    (function initVideoVastPreRoll() {
+        const overlay = document.getElementById('videoPreRollOverlay');
+        if (!overlay) return;
+
+        /* ===== VAST debug (?adsdebug=1) =====
+           Watch page par URL me ?adsdebug=1 lagao -> console me [CINEAMIT VAST] logs aa jayenge,
+           aur window.__cineVast me state + log milta hai (window.__cineVast.pretty() se poora dump). */
+        const VAST_DEBUG = /[?&]adsdebug=1/.test(location.search);
+        const vastLogLines = [];
+        function vastDebug(msg) {
+            vastLogLines.push(msg);
+            if (VAST_DEBUG && window.console && console.log) console.log('[CINEAMIT VAST] ' + msg);
+        }
+        window.__cineVast = { debug: VAST_DEBUG, status: 'init', log: vastLogLines, tags: {} };
+        window.__cineVast.pretty = function () { return this.log.join('\n'); };
+
+        // VAST sources: HilltopAds primary + optional second VAST tag (kisi bhi network ka).
+        // NOTE: Adsterra publisher dashboard me VAST tag nahi hota — Adsterra apne banner /
+        // native / social bar / popunder formats se lagta hai (wo env.php ki ADSTERRA_* keys hain).
+        const rawHilltopTag = ({{ (hilltopads_vast_url | default('')) | json_encode(constant('JSON_HEX_TAG')) | raw }} || '').trim();
+        const rawFallbackTag = ({{ (vast_fallback_url | default('')) | json_encode(constant('JSON_HEX_TAG')) | raw }} || '').trim();
+        const video = document.getElementById('videoPreRollVideo');
+        const skipButton = document.getElementById('videoPreRollSkipBtn');
+        const skipTimer = document.getElementById('videoPreRollSkipTimer');
+        const clickButton = document.getElementById('videoPreRollClickBtn');
+        const playButton = document.getElementById('videoPreRollPlayBtn');
+        if (!video) { overlay.remove(); return; }
+        if (playButton) {
+            playButton.addEventListener('click', async () => {
+                playButton.disabled = true;
+                video.muted = true;
+                video.defaultMuted = true;
+                video.playsInline = true;
+                video.setAttribute('playsinline', '');
+                try {
+                    const playPromise = video.play();
+                    if (playPromise && typeof playPromise.then === 'function') await playPromise;
+                    playButton.classList.add('hidden');
+                } catch (_) {
+                    playButton.classList.remove('hidden');
+                } finally {
+                    playButton.disabled = false;
+                }
+            });
+        }
+
+        function safeHttpsUrl(value, base) {
+            const candidate = String(value || '').trim();
+            if (!candidate || candidate.length > 2048 || /[<>]/.test(candidate)) return '';
+            try {
+                const url = new URL(candidate, base || location.href);
+                if (url.protocol !== 'https:' || !url.hostname || url.username || url.password || /\.js$/i.test(url.pathname)) return '';
+                return url.href;
+            } catch (_) {
+                return '';
+            }
+        }
+
+        const hilltopTag = safeHttpsUrl(rawHilltopTag);
+        const fallbackTag = safeHttpsUrl(rawFallbackTag);
+        if (!hilltopTag && !fallbackTag) {
+            window.__cineVast.status = 'no-tags';
+            vastDebug('KOI VAST TAG CONFIG NAHI (ya tag invalid hai) -> hilltop="' + rawHilltopTag.slice(0, 60) + '" fallback="' + rawFallbackTag.slice(0, 60) + '"');
+            overlay.remove();
+            return;
+        }
+
+        function getVastElements(root, localName) {
+            if (!root || typeof root.getElementsByTagName !== 'function') return [];
+            const wanted = String(localName || '').toLowerCase();
+            return Array.from(root.getElementsByTagName('*')).filter(node => {
+                const actual = String(node.localName || String(node.nodeName || '').split(':').pop()).toLowerCase();
+                return actual === wanted;
+            });
+        }
+
+        function firstVastElement(root, localName) {
+            return getVastElements(root, localName)[0] || null;
+        }
+
+        function isAdultOrUnsafeCreative(values) {
+            const raw = (Array.isArray(values) ? values : [values]).filter(Boolean).join(' ');
+            let decoded = raw;
+            try { decoded = decodeURIComponent(raw); } catch (_) {}
+            const blob = (raw + ' ' + decoded).normalize('NFKC').replace(/[\u200B-\u200D\uFEFF]/g, '').toLowerCase();
+            return /(?:\b18\s*\+|\b18[\s_-]*plus\b|\badult\b|\bxxx\b|\bporn\w*|\bsex(?:ual|y)?\b|\berotic\w*|\bnsfw\b|\bnudes?\b|\bnaked\b|\bmilf\b|\bhorny\b|\bhook[\s_-]?up\b|\bescort\b|\bcam[\s_-]?girl\b|\bweb[\s_-]?cam\b|\blive[\s_-]?cam\b|\bstrip[\s_-]?chat\b|\bchaturbate\b|\bbonga[\s_-]?cams?\b|\bxvideos?\b|\bxnxx\b|\bonly[\s_-]?fans\b|\bbrazzers\b|\bhentai\b|\bsexahah\b|\bfuck(?:ing|ed)?\b|\bboobs?\b|\bpuss(?:y|ies)\b|\bdicks?\b|\bcocks?\b)/i.test(blob);
+        }
+
+        function parseVastDocument(doc, baseUrl) {
+            const result = { videoUrl: '', clickUrl: '', impressions: [], startTrackings: [], progressTrackings: [], clickTrackings: [], safetyText: '' };
+            if (!doc) return result;
+            const ads = getVastElements(doc, 'Ad');
+            const scope = ads.find(ad => getVastElements(ad, 'MediaFile').length > 0) || ads[0] || doc;
+            const safetyTags = ['AdTitle', 'Description', 'Category', 'Advertiser'];
+            result.safetyText = safetyTags.flatMap(tag => getVastElements(scope, tag).map(node => {
+                const text = (node.textContent || '').trim();
+                const authority = node.getAttribute ? (node.getAttribute('authority') || '') : '';
+                return (text + ' ' + authority).trim();
+            })).filter(Boolean).join(' ');
+            getVastElements(scope, 'Impression').forEach(node => {
+                const url = safeHttpsUrl(cleanTrackingUrl((node.textContent || '').trim()), baseUrl);
+                if (url) result.impressions.push(url);
+            });
+            getVastElements(scope, 'Tracking').forEach(node => {
+                const event = (node.getAttribute('event') || '').toLowerCase();
+                const url = safeHttpsUrl(cleanTrackingUrl((node.textContent || '').trim()), baseUrl);
+                if (!url) return;
+                if (event === 'start' || event === 'creativeview') result.startTrackings.push(url);
+                else if (event === 'progress' || event === 'firstquartile') result.progressTrackings.push(url);
+            });
+            getVastElements(scope, 'ClickTracking').forEach(node => {
+                const url = safeHttpsUrl(cleanTrackingUrl((node.textContent || '').trim()), baseUrl);
+                if (url) result.clickTrackings.push(url);
+            });
+            const clickThrough = firstVastElement(scope, 'ClickThrough');
+            if (clickThrough) result.clickUrl = safeHttpsUrl((clickThrough.textContent || '').trim(), baseUrl);
+
+            const mediaFiles = getVastElements(scope, 'MediaFile');
+            let bestMediaRank = -1;
+            for (const media of mediaFiles) {
+                const framework = (media.getAttribute('apiFramework') || '').toUpperCase();
+                const type = (media.getAttribute('type') || '').toLowerCase();
+                const candidate = (media.textContent || '').trim();
+                if (framework === 'VPAID' || type.includes('javascript') || /\.js(?:[?#]|$)/i.test(candidate)) continue;
+                const mediaUrl = safeHttpsUrl(candidate, baseUrl);
+                const isMp4 = type.includes('mp4') || /\.mp4(?:[?#]|$)/i.test(mediaUrl);
+                const isWebm = type.includes('webm') || /\.webm(?:[?#]|$)/i.test(mediaUrl);
+                const isHls = type.includes('mpegurl') || /\.m3u8(?:[?#]|$)/i.test(mediaUrl);
+                if (!mediaUrl || !(isMp4 || isWebm || isHls || type.includes('video'))) continue;
+                let mime = type.split(';')[0].trim();
+                if (!mime || mime === 'video') mime = isMp4 ? 'video/mp4' : (isWebm ? 'video/webm' : (isHls ? 'application/vnd.apple.mpegurl' : ''));
+                let capability = '';
+                const capabilityType = type.includes('/') ? type : mime;
+                if (mime && typeof video.canPlayType === 'function') {
+                    try { capability = video.canPlayType(capabilityType); } catch (_) {}
+                    if (capability === 'no' || (capability === '' && /^(video\/|application\/.*mpegurl)/.test(mime))) continue;
+                }
+                let rank = isMp4 ? 30 : (isWebm ? 20 : (isHls ? 10 : 1));
+                if (capability === 'probably') rank += 3;
+                else if (capability === 'maybe') rank += 2;
+                if (rank > bestMediaRank) {
+                    bestMediaRank = rank;
+                    result.videoUrl = mediaUrl;
+                }
+            }
+            return result;
+        }
+
+        function cleanTrackingUrl(value) {
+            return String(value || '').trim()
+                .replace(/\[SESSIONTIME\]/g, '')
+                .replace(/\[PLAYBACK\]/g, '&playback=start')
+                .replace(/\[TMA\]/g, '')
+                .replace(/\[CLICKMAP\]/g, '')
+                .replace(/\[COMEBACK\]/g, '0')
+                .replace(/\[BUILD_VERSION\]/g, '&bv=3')
+                .replace(/\[BUILD_TYPE\]/g, '&bt=main')
+                .replace(/\[ERRORCODE\]/g, '0');
+        }
+
+        function fireTrackingPixel(value) {
+            const url = safeHttpsUrl(cleanTrackingUrl(value));
+            if (!url) return;
+            try { const image = new Image(); image.referrerPolicy = 'no-referrer'; image.src = url; } catch (_) {}
+        }
+
+        async function readLimitedText(response, maxBytes) {
+            if (!response.body || typeof response.body.getReader !== 'function') {
+                let text = '';
+                try { text = await response.text(); } catch (_) { return ''; }
+                if (text.length > maxBytes) return '';
+                if (typeof TextEncoder === 'function' && new TextEncoder().encode(text).byteLength > maxBytes) return '';
+                return text;
+            }
+            const reader = response.body.getReader();
+            const chunks = [];
+            let size = 0;
+            while (true) {
+                const part = await reader.read();
+                if (part.done) break;
+                if (!part.value) continue;
+                size += part.value.byteLength;
+                if (size > maxBytes) {
+                    try { await reader.cancel(); } catch (_) {}
+                    return '';
+                }
+                chunks.push(part.value);
+            }
+            const bytes = new Uint8Array(size);
+            let offset = 0;
+            chunks.forEach(chunk => { bytes.set(chunk, offset); offset += chunk.byteLength; });
+            return new TextDecoder('utf-8').decode(bytes);
+        }
+
+        async function fetchWithTimeout(url, opts, ms) {
+            if (typeof AbortController === 'undefined') return fetch(url, opts);
+            const c = new AbortController();
+            const t = setTimeout(function () { c.abort(); }, ms);
+            try { return await fetch(url, Object.assign({}, opts, { signal: c.signal })); }
+            finally { clearTimeout(t); }
+        }
+
+        /* VAST XML laao — pehle same-origin server proxy se (CORS ka jhanjhat hi nahi),
+           aur agar proxy route deploy nahi hua (404/501) to seedha direct fetch try karo. */
+        async function fetchVastXml(url) {
+            try {
+                const p = await fetchWithTimeout('/api/vast_proxy?u=' + encodeURIComponent(url), { credentials: 'same-origin', cache: 'no-store' }, 6000);
+                if (p.ok) {
+                    const t = await readLimitedText(p, 1048576);
+                    if (t && t.trim()) { vastDebug('proxy OK (' + t.length + ' chars)'); return t; }
+                    vastDebug('proxy ne khaali body di');
+                } else {
+                    vastDebug('proxy HTTP ' + p.status + (p.status === 404 ? ' (route deploy nahi hua?)' : (p.status === 501 ? ' (curl missing)' : (p.status === 403 ? ' (host block — SSRF guard)' : (p.status === 429 ? ' (throttled, thoda ruk kar refresh karo)' : '')))));
+                }
+            } catch (e) { vastDebug('proxy fail: ' + ((e && e.name) || 'error')); }
+            try {
+                const d = await fetchWithTimeout(url, { credentials: 'omit', cache: 'no-store' }, 4500);
+                if (d.ok) {
+                    const t = await readLimitedText(d, 1048576);
+                    if (t && t.trim()) { vastDebug('direct fetch OK'); return t; }
+                } else {
+                    vastDebug('direct HTTP ' + d.status);
+                }
+            } catch (e) {
+                vastDebug('direct fetch block (CORS/network): ' + ((e && e.name) || 'error') + ' — yahi asli problem hai to proxy deploy karo');
+            }
+            return '';
+        }
+
+        async function requestVastTag(startUrl) {
+            let currentUrl = startUrl;
+            const visited = new Set();
+            for (let hop = 0; hop < 4; hop++) {
+                if (!currentUrl || visited.has(currentUrl)) return null;
+                visited.add(currentUrl);
+                try {
+                    const xmlText = await fetchVastXml(currentUrl);
+                    if (!xmlText) { vastDebug('hop ' + hop + ': XML nahi mila'); return null; }
+                    const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
+                    if (getVastElements(doc, 'parsererror').length) { vastDebug('hop ' + hop + ': XML parse error (HTML error page mila?) head=' + xmlText.slice(0, 90).replace(/\s+/g, ' ')); return null; }
+                    const safetyText = ['AdTitle', 'Description', 'Category', 'Advertiser'].flatMap(tag => getVastElements(doc, tag).map(node => (node.textContent || '').trim())).join(' ');
+                    if (isAdultOrUnsafeCreative(safetyText)) { vastDebug('hop ' + hop + ': ad safety filter ne block kar diya -> "' + safetyText.slice(0, 90) + '"'); return null; }
+                    const wrapper = firstVastElement(doc, 'VASTAdTagURI') || firstVastElement(doc, 'VASTAdTagURL');
+                    if (wrapper && wrapper.textContent && wrapper.textContent.trim()) {
+                        currentUrl = safeHttpsUrl(wrapper.textContent.trim(), currentUrl);
+                        if (!currentUrl) return null;
+                        continue;
+                    }
+                    const parsed = parseVastDocument(doc, currentUrl);
+                    if (parsed.videoUrl && !isAdultOrUnsafeCreative([parsed.videoUrl, parsed.clickUrl, parsed.safetyText])) {
+                        vastDebug('hop ' + hop + ': creative mil gaya -> ' + parsed.videoUrl.slice(0, 100));
+                        return parsed;
+                    }
+                    vastDebug('hop ' + hop + ': media file nahi mila / samajh nahi aaya' + (parsed.safetyText ? ' | safetyText="' + parsed.safetyText.slice(0, 70) + '"' : ''));
+                    return null;
+                } catch (e) {
+                    vastDebug('hop ' + hop + ': exception ' + ((e && e.name) || 'error'));
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        // NOTE: pehle ye countdown script parse hote hi (VAST fetch se pehle) chalu ho jata tha,
+        // isliye ad load hone se pehle hi 15s kat jaate the aur user ko free skip mil jaata tha.
+        // Ab countdown sirf tab shuru hota hai jab ad actually attach ho jaye (startAdPlayback).
+        let secondsLeft = 15;
+        videoPreRollCanSkip = false;
+        if (skipButton) skipButton.disabled = true;
+        if (skipTimer) skipTimer.textContent = String(secondsLeft);
+
+        function startSkipCountdown() {
+            if (videoPreRollTimer !== null || videoPreRollCanSkip) return;
+            secondsLeft = 15;
+            if (skipTimer) skipTimer.textContent = String(secondsLeft);
+            videoPreRollTimer = setInterval(() => {
+                secondsLeft -= 1;
+                if (secondsLeft <= 0) {
+                    clearInterval(videoPreRollTimer);
+                    videoPreRollTimer = null;
+                    videoPreRollCanSkip = true;
+                    if (skipButton) {
+                        skipButton.disabled = false;
+                        skipButton.innerHTML = 'Skip Ad <i class="fa-solid fa-forward-step ml-1.5" aria-hidden="true"></i>';
+                    }
+                } else if (skipTimer) {
+                    skipTimer.textContent = String(secondsLeft);
+                }
+            }, 1000);
+        }
+
+        let activePlayingHandler = null;
+        let activeProgressHandler = null;
+        let activeVideoClickHandler = null;
+        let activeButtonClickHandler = null;
+        let activeErrorHandler = null;
+        let playbackFallbackUsed = false;
+
+        function clearPlaybackHandlers() {
+            if (activePlayingHandler) video.removeEventListener('playing', activePlayingHandler);
+            if (activeProgressHandler) video.removeEventListener('timeupdate', activeProgressHandler);
+            if (activeVideoClickHandler) video.removeEventListener('click', activeVideoClickHandler);
+            if (activeButtonClickHandler && clickButton) clickButton.removeEventListener('click', activeButtonClickHandler);
+            if (activeErrorHandler) video.removeEventListener('error', activeErrorHandler);
+            activePlayingHandler = null;
+            activeProgressHandler = null;
+            activeVideoClickHandler = null;
+            activeButtonClickHandler = null;
+            activeErrorHandler = null;
+        }
+
+        function startAdPlayback(ad, allowFallback) {
+            if (!overlay.isConnected) return;
+            clearPlaybackHandlers();
+            if (playButton) playButton.classList.add('hidden');
+            video.muted = true;
+            video.defaultMuted = true;
+            video.playsInline = true;
+            video.autoplay = true;
+            video.setAttribute('playsinline', '');
+            video.setAttribute('muted', '');
+            if (clickButton) {
+                clickButton.classList.add('hidden');
+                clickButton.removeAttribute('href');
+            }
+            ad.impressions.forEach(fireTrackingPixel);
+            if (ad.clickUrl && clickButton) {
+                clickButton.href = ad.clickUrl;
+                clickButton.classList.remove('hidden');
+                activeButtonClickHandler = () => ad.clickTrackings.forEach(fireTrackingPixel);
+                clickButton.addEventListener('click', activeButtonClickHandler);
+            }
+            activePlayingHandler = () => ad.startTrackings.forEach(fireTrackingPixel);
+            video.addEventListener('playing', activePlayingHandler, { once: true });
+            if (ad.progressTrackings.length) {
+                activeProgressHandler = function () {
+                    if (video.currentTime >= 5) {
+                        ad.progressTrackings.forEach(fireTrackingPixel);
+                        video.removeEventListener('timeupdate', activeProgressHandler);
+                        activeProgressHandler = null;
+                    }
+                };
+                video.addEventListener('timeupdate', activeProgressHandler);
+            }
+            if (ad.clickUrl) {
+                activeVideoClickHandler = () => {
+                    ad.clickTrackings.forEach(fireTrackingPixel);
+                    window.open(ad.clickUrl, '_blank', 'noopener,noreferrer');
+                };
+                video.addEventListener('click', activeVideoClickHandler);
+            }
+            activeErrorHandler = async () => {
+                if (!overlay.isConnected) return;
+                vastDebug('creative play error (code=' + ((video.error && video.error.code) || '?') + ') -> ' + (video.error && video.error.message ? video.error.message : 'unknown'));
+                if (allowFallback && !playbackFallbackUsed && fallbackTag && fallbackTag !== hilltopTag) {
+                    playbackFallbackUsed = true;
+                    clearPlaybackHandlers();
+                    if (clickButton) {
+                        clickButton.classList.add('hidden');
+                        clickButton.removeAttribute('href');
+                    }
+                    try {
+                        video.pause();
+                        video.removeAttribute('src');
+                        video.load();
+                    } catch (_) {}
+                    const fallbackAd = await requestVastTag(fallbackTag);   // doosra VAST tag (agar set ho)
+                    if (!overlay.isConnected) return;
+                    if (fallbackAd && fallbackAd.videoUrl) {
+                        startAdPlayback(fallbackAd, false);
+                        return;
+                    }
+                }
+                dismissVideoPreRoll();
+            };
+            video.addEventListener('error', activeErrorHandler, { once: true });
+            video.src = ad.videoUrl;
+            startSkipCountdown();   // ad attach hone ke baad hi skip timer chalu hota hai
+            try {
+                const playPromise = video.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch(() => {
+                        if (overlay.isConnected && playButton) playButton.classList.remove('hidden');
+                    });
+                }
+            } catch (_) {
+                if (overlay.isConnected && playButton) playButton.classList.remove('hidden');
+            }
+        }
+
+        (async () => {
+            window.__cineVast.tags = { hilltop: !!hilltopTag, fallback: !!fallbackTag };
+            vastDebug('VAST tags -> hilltop(primary): ' + (hilltopTag ? 'SET' : 'MISSING') + ' | fallback(2nd tag): ' + (fallbackTag ? 'SET' : 'MISSING'));
+            if (!hilltopTag && !fallbackTag) {
+                window.__cineVast.status = 'no-tags';
+                vastDebug('KOI VAST TAG CONFIG NAHI HAI -> env.php me HILLTOPADS_VAST_URL (primary, HilltopAds dashboard -> VAST/VPAID zone) set karo. Optional: VAST_FALLBACK_URL me kisi doosre network ka VAST tag.');
+            }
+            let ad = null;
+            let hilltopAdLoaded = false;
+            if (hilltopTag) {
+                ad = await requestVastTag(hilltopTag);
+                hilltopAdLoaded = !!ad;
+                if (!overlay.isConnected) return;
+            }
+            if (!ad && fallbackTag && fallbackTag !== hilltopTag) {
+                ad = await requestVastTag(fallbackTag);
+                if (!overlay.isConnected) return;
+            }
+            if (!ad || !ad.videoUrl) {
+                window.__cineVast.status = 'no-ad';
+                vastDebug('ad nahi mila -> overlay hata diya (tags: ' + (hilltopTag ? 'hilltop ' : '') + (fallbackTag ? 'fallback' : '') + ')');
+                dismissVideoPreRoll();
+                return;
+            }
+            window.__cineVast.status = 'playing';
+            startAdPlayback(ad, hilltopAdLoaded && !!fallbackTag && fallbackTag !== hilltopTag);
+        })();
+    })();
+</script>
+
+{% if can_track_history %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const button = document.getElementById('trackWatchButton');
+        if (!button) return;
+        const message = document.getElementById('watchHistoryMessage');
+        button.addEventListener('click', async () => {
+            if (button.disabled) return;
+            button.disabled = true;
+            message.textContent = 'Saving…';
+            try {
+                const response = await fetch('/api/watch/confirm', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': document.getElementById('watchHistoryCsrf').value
+                    },
+                    body: JSON.stringify({
+                        tmdb_id: Number(button.dataset.tmdbId),
+                        media_type: button.dataset.mediaType
+                    })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.ok) throw new Error(result.error || 'save_failed');
+                button.textContent = 'Tracked';
+                message.textContent = 'Saved to this profile.';
+            } catch (error) {
+                button.disabled = false;
+                message.textContent = 'Could not save. Please try again.';
+            }
+        });
+    });
+</script>
+{% endif %}
+
+
+<script src="/static/watch-fullscreen.js?v=16.0.11" defer></script>
+<script src="/static/watch-quota.js?v=16.0.12" defer></script>
+{% endblock %}

@@ -1,0 +1,402 @@
+        <div id="tab-economy" class="tab-content hidden animate-fade-in flex flex-col gap-6">
+            {% include 'admin_app_ads_health.html' %}
+            {% include 'admin_app_ads_extras.html' %}
+            <div class="bg-gray-900 border border-amber-800/40 p-6 rounded-2xl shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b border-gray-800 pb-4">
+                    <div>
+                        <h2 class="text-lg font-black text-white flex items-center gap-2">
+                            <i class="fa-solid fa-mobile-screen text-amber-400"></i> Android App — Ads &amp; Points
+                        </h2>
+                        <p class="text-xs text-gray-400 mt-1">Settings apply on the next app bootstrap. Verified ads earn points for ad-free plans; VIP servers remain free for everyone.</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0 {% if app_economy.ads_enabled %}bg-green-500/15 text-green-400 border border-green-500/30{% else %}bg-red-500/15 text-red-400 border border-red-500/30{% endif %}">
+                        App ads {% if not app_economy.settings_available %}status unavailable{% elseif app_economy.ads_enabled %}ON{% else %}OFF{% endif %}
+                    </span>
+                </div>
+                {% if current_user.role in ['owner', 'super_admin'] and app_economy.settings_available %}
+                <form action="/admin/update_app_economy" method="POST" class="space-y-6">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="settings_revision" value="{{ app_economy.settings_revision }}">
+                    <p class="ads-muted">Revision {{ app_economy.settings_revision }}. A stale Save or Restore is rejected; reload to review another admin’s changes.</p>
+
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-amber-400/80 mb-3"><i class="fa-solid fa-rectangle-ad mr-1.5"></i>Ad units</p>
+                        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <label class="bg-[#0a0a0c] border border-gray-800 hover:border-amber-700/40 rounded-xl p-4 flex items-center justify-between gap-3 cursor-pointer transition-colors">
+                                <span>
+                                    <span class="block text-sm font-bold text-white">Master ads</span>
+                                    <span class="block text-[10px] text-gray-500 mt-0.5">OFF = no ads, earning off</span>
+                                </span>
+                                <span class="cine-sw"><input type="checkbox" name="ads_enabled" value="1" {% if app_economy.ads_enabled %}checked{% endif %}><i></i></span>
+                            </label>
+                            <label class="bg-[#0a0a0c] border border-gray-800 hover:border-amber-700/40 rounded-xl p-4 flex items-center justify-between gap-3 cursor-pointer transition-colors">
+                                <span>
+                                    <span class="block text-sm font-bold text-white">Banner</span>
+                                    <span class="block text-[10px] text-gray-500 mt-0.5">Bottom banner</span>
+                                </span>
+                                <span class="cine-sw"><input type="checkbox" name="ads_banner" value="1" {% if app_economy.ads_banner %}checked{% endif %}><i></i></span>
+                            </label>
+                            <label class="bg-[#0a0a0c] border border-gray-800 hover:border-amber-700/40 rounded-xl p-4 flex items-center justify-between gap-3 cursor-pointer transition-colors">
+                                <span>
+                                    <span class="block text-sm font-bold text-white">Interstitial</span>
+                                    <span class="block text-[10px] text-gray-500 mt-0.5">Full-screen beech me</span>
+                                </span>
+                                <span class="cine-sw"><input type="checkbox" name="ads_interstitial" value="1" {% if app_economy.ads_interstitial %}checked{% endif %}><i></i></span>
+                            </label>
+                            <label class="bg-[#0a0a0c] border border-gray-800 hover:border-amber-700/40 rounded-xl p-4 flex items-center justify-between gap-3 cursor-pointer transition-colors">
+                                <span>
+                                    <span class="block text-sm font-bold text-white">Rewarded</span>
+                                    <span class="block text-[10px] text-gray-500 mt-0.5">Watch ad = points</span>
+                                </span>
+                                <span class="cine-sw"><input type="checkbox" name="ads_rewarded" value="1" {% if app_economy.ads_rewarded %}checked{% endif %}><i></i></span>
+                            </label>
+                            <label class="bg-[#0a0a0c] border border-amber-800/40 hover:border-amber-600/50 rounded-xl p-4 flex items-center justify-between gap-3 cursor-pointer transition-colors">
+                                <span>
+                                    <span class="block text-sm font-bold text-white">Interstitial har page</span>
+                                    <span class="block text-[10px] text-gray-500 mt-0.5">Har screen open pe full-screen</span>
+                                </span>
+                                <span class="cine-sw"><input type="checkbox" name="ads_inter_every" value="1" {% if app_economy.ads_inter_every %}checked{% endif %}><i></i></span>
+                            </label>
+                            <label class="bg-[#0a0a0c] border border-amber-800/40 hover:border-amber-600/50 rounded-xl p-4 flex items-center justify-between gap-3 cursor-pointer transition-colors">
+                                <span>
+                                    <span class="block text-sm font-bold text-white">Rewarded har page</span>
+                                    <span class="block text-[10px] text-gray-500 mt-0.5">Policy risk — default OFF</span>
+                                </span>
+                                <span class="cine-sw"><input type="checkbox" name="ads_reward_every" value="1" {% if app_economy.ads_reward_every %}checked{% endif %}><i></i></span>
+                            </label>
+                            <label class="bg-[#0a0a0c] border border-gray-800 hover:border-amber-700/40 rounded-xl p-4 flex items-center justify-between gap-3 cursor-pointer transition-colors">
+                                <span>
+                                    <span class="block text-sm font-bold text-white">Home extra banners</span>
+                                    <span class="block text-[10px] text-gray-500 mt-0.5">Home rows ke beech</span>
+                                </span>
+                                <span class="cine-sw"><input type="checkbox" name="ads_home_banners" value="1" {% if app_economy.ads_home_banners %}checked{% endif %}><i></i></span>
+                            </label>
+                            <label class="bg-[#0a0a0c] border border-gray-800 hover:border-amber-700/40 rounded-xl p-4 flex items-center justify-between gap-3 cursor-pointer transition-colors">
+                                <span>
+                                    <span class="block text-sm font-bold text-white">Home top banner</span>
+                                    <span class="block text-[10px] text-gray-500 mt-0.5">In-feed after hero</span>
+                                </span>
+                                <span class="cine-sw"><input type="checkbox" name="ads_banner_top" value="1" {% if app_economy.ads_banner_top %}checked{% endif %}><i></i></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-amber-400/80 mb-3"><i class="fa-solid fa-coins mr-1.5"></i>Points &amp; pricing</p>
+                        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <div class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-4">
+                                <label for="inter_gap_sec" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Ad gap (sec)</label>
+                                <input id="inter_gap_sec" type="number" name="inter_gap_sec" min="0" max="120" required value="{{ app_economy.inter_gap_sec|default(6) }}" class="mt-2 w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-3 py-2.5 text-sm outline-none focus:border-amber-500">
+                                <p class="text-[10px] text-gray-600 mt-1.5">0 ≈ every page. App 2s floor rakhegi.</p>
+                            </div>
+                            <div class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-4">
+                                <label for="ad_points" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Pts / rewarded ad</label>
+                                <input id="ad_points" type="number" name="ad_points" min="1" max="500" required value="{{ app_economy.ad_points }}" class="mt-2 w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-3 py-2.5 text-sm outline-none focus:border-amber-500">
+                            </div>
+                            <div class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-4">
+                                <label for="cost_monthly" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Monthly cost (pts)</label>
+                                <input id="cost_monthly" type="number" name="cost_monthly" min="0" max="100000" required value="{{ app_economy.cost_monthly }}" class="mt-2 w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-3 py-2.5 text-sm outline-none focus:border-amber-500">
+                            </div>
+                            <div class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-4">
+                                <label for="cost_yearly" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Yearly cost (pts)</label>
+                                <input id="cost_yearly" type="number" name="cost_yearly" min="0" max="500000" required value="{{ app_economy.cost_yearly }}" class="mt-2 w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-3 py-2.5 text-sm outline-none focus:border-amber-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-xl border border-cyan-900/50 bg-cyan-950/10 p-4">
+                        <h3 class="text-sm font-bold text-cyan-200 mb-3">Server-enforced earning limits &amp; diagnostics</h3>
+                        <div class="grid sm:grid-cols-3 gap-4">
+                            <div><label for="reward_daily_cap" class="block text-xs text-gray-300 mb-2">Daily rewarded points cap / user (UTC)</label><input id="reward_daily_cap" name="reward_daily_cap" type="number" min="0" max="100000" required value="{{ app_economy.reward_daily_cap|default(1000) }}" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm"><p class="text-[10px] text-gray-500 mt-2">0 = unlimited. Pending tickets reserve room; credit rechecks the cap.</p></div>
+                            <div><label for="reward_cooldown_sec" class="block text-xs text-gray-300 mb-2">Minimum time between reward claims (sec)</label><input id="reward_cooldown_sec" name="reward_cooldown_sec" type="number" min="0" max="86400" required value="{{ app_economy.reward_cooldown_sec|default(60) }}" class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm"><p class="text-[10px] text-gray-500 mt-2">Per account, persisted on the backend. 0 = no extra cooldown.</p></div>
+                            <label class="flex items-center justify-between gap-3"><span class="text-xs text-gray-300">Operational SDK diagnostics<span class="block text-[10px] text-gray-500 mt-2">Android 1.0.73+. No ad/device IDs or raw messages. 7-day retention.</span></span><input type="hidden" name="diagnostics_present" value="1"><span class="cine-sw"><input type="checkbox" name="ads_diagnostics" value="1" {% if app_economy.ads_diagnostics %}checked{% endif %}><i></i></span></label>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-amber-400/80 mb-3"><i class="fa-solid fa-crown mr-1.5"></i>Subscription plans</p>
+                        <div class="grid md:grid-cols-3 gap-3">
+                            <div class="bg-[#0a0a0c] border border-amber-800/40 rounded-xl p-4 flex flex-col gap-3">
+                                <label class="flex items-center justify-between gap-3 cursor-pointer">
+                                    <span>
+                                        <span class="block text-sm font-bold text-white">Free trial</span>
+                                        <span class="block text-[10px] text-gray-500 mt-0.5">OFF = trial card hide</span>
+                                    </span>
+                                    <span class="cine-sw"><input type="checkbox" name="trial_enabled" value="1" {% if app_economy.trial_enabled %}checked{% endif %}><i></i></span>
+                                </label>
+                                <div>
+                                    <label for="trial_days" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Days</label>
+                                    <input id="trial_days" type="number" name="trial_days" min="1" max="90" required value="{{ app_economy.trial_days|default(14) }}" class="mt-1 w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-500">
+                                </div>
+                                <div>
+                                    <label for="label_trial" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Title</label>
+                                    <input id="label_trial" type="text" name="label_trial" maxlength="40" value="{{ app_economy.label_trial }}" class="mt-1 w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-500">
+                                    <input type="text" name="blurb_trial" maxlength="160" value="{{ app_economy.blurb_trial }}" placeholder="Trial blurb" class="mt-2 w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-500">
+                                </div>
+                            </div>
+                            <div class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-4 flex flex-col gap-3">
+                                <label class="flex items-center justify-between gap-3 cursor-pointer">
+                                    <span>
+                                        <span class="block text-sm font-bold text-white">Monthly</span>
+                                        <span class="block text-[10px] text-gray-500 mt-0.5">OFF = hide in the app</span>
+                                    </span>
+                                    <span class="cine-sw"><input type="checkbox" name="monthly_enabled" value="1" {% if app_economy.monthly_enabled %}checked{% endif %}><i></i></span>
+                                </label>
+                                <div>
+                                    <label for="days_monthly" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Days</label>
+                                    <input id="days_monthly" type="number" name="days_monthly" min="1" max="365" required value="{{ app_economy.days_monthly|default(30) }}" class="mt-1 w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-500">
+                                </div>
+                                <div>
+                                    <label for="label_monthly" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Title</label>
+                                    <input id="label_monthly" type="text" name="label_monthly" maxlength="40" value="{{ app_economy.label_monthly }}" class="mt-1 w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-500">
+                                    <input type="text" name="blurb_monthly" maxlength="160" value="{{ app_economy.blurb_monthly }}" placeholder="Monthly blurb" class="mt-2 w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-500">
+                                </div>
+                            </div>
+                            <div class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-4 flex flex-col gap-3">
+                                <label class="flex items-center justify-between gap-3 cursor-pointer">
+                                    <span>
+                                        <span class="block text-sm font-bold text-white">Yearly</span>
+                                        <span class="block text-[10px] text-gray-500 mt-0.5">OFF = hide in the app</span>
+                                    </span>
+                                    <span class="cine-sw"><input type="checkbox" name="yearly_enabled" value="1" {% if app_economy.yearly_enabled %}checked{% endif %}><i></i></span>
+                                </label>
+                                <div>
+                                    <label for="days_yearly" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Days</label>
+                                    <input id="days_yearly" type="number" name="days_yearly" min="1" max="1095" required value="{{ app_economy.days_yearly|default(365) }}" class="mt-1 w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-500">
+                                </div>
+                                <div>
+                                    <label for="label_yearly" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Title</label>
+                                    <input id="label_yearly" type="text" name="label_yearly" maxlength="40" value="{{ app_economy.label_yearly }}" class="mt-1 w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-500">
+                                    <input type="text" name="blurb_yearly" maxlength="160" value="{{ app_economy.blurb_yearly }}" placeholder="Yearly blurb" class="mt-2 w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-500">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <section class="ads-extra" aria-labelledby="adsPreviewHeading">
+                        <h3 id="adsPreviewHeading">Settings Preview</h3>
+                        <p class="ads-muted">Validate proposed values, compare before → after, and calculate verified rewards needed for each plan. Preview does not save settings or create an audit entry.</p>
+                        <button type="button" class="ads-button" id="adsPreviewButton">Preview proposed settings</button>
+                        <div id="adsPreviewOutput" role="status" aria-live="polite"><p class="ads-muted">Change any values, then preview before saving. Calculations are theoretical, not an earning guarantee.</p></div>
+                        <noscript><p class="ads-warning">Interactive preview needs JavaScript. Saving still uses server-side validation and audit.</p></noscript>
+                    </section>
+                    <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-2.5 rounded-lg text-sm cursor-pointer">
+                        <i class="fa-solid fa-floppy-disk mr-2"></i>Save app settings
+                    </button>
+                </form>
+                <form action="/admin/reset_app_economy" method="POST" class="mt-5 pt-4 border-t border-gray-800 flex flex-wrap items-end gap-3">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="settings_revision" value="{{ app_economy.settings_revision }}">
+                    <label class="text-xs text-gray-400">Type RESTORE to reset app settings only<input name="confirm_reset" required pattern="RESTORE" maxlength="7" autocomplete="off" class="block mt-2 bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-white" placeholder="RESTORE"></label>
+                    <button type="submit" class="bg-red-950 border border-red-800 text-red-200 font-bold text-xs rounded-lg px-4 py-2.5">Restore defaults</button>
+                    <p class="text-[10px] text-gray-500">Does not reset balances, accounts, website ads or free VIP server access. Recorded in change history.</p>
+                </form>
+                {% elseif current_user.role in ['owner', 'super_admin'] %}
+                <p role="alert" class="ads-warning">Current app settings could not be read safely. Save and Restore are unavailable to prevent overwriting real settings with defaults. Check database availability and reload.</p>
+                {% else %}
+                <p class="text-sm text-gray-400">Ad points {{ app_economy.ad_points }} · Monthly {{ app_economy.cost_monthly }} pts · Yearly {{ app_economy.cost_yearly }} pts. Only owner/super admin can change this.</p>
+                {% endif %}
+            </div>
+
+            {% if current_user.role in ['owner', 'super_admin'] %}
+            {% include 'admin_app_ads_activity.html' %}
+
+            <div class="bg-gray-900 border border-emerald-800/40 p-6 rounded-2xl shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b border-gray-800 pb-4">
+                    <div>
+                        <h2 class="text-lg font-black text-white flex items-center gap-2">
+                            <i class="fa-brands fa-android text-emerald-400"></i> Website — App download
+                        </h2>
+                        <p class="text-xs text-gray-400 mt-1">Public page <a href="/app" class="text-emerald-400 hover:underline">/app</a>. APK upload ya external HTTPS URL. Nav + footer pe Get App link.</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0 {% if android_app.ready %}bg-green-500/15 text-green-400 border border-green-500/30{% else %}bg-yellow-500/15 text-yellow-400 border border-yellow-500/30{% endif %}">
+                        {% if android_app.ready %}Download live{% else %}APK pending{% endif %}
+                    </span>
+                </div>
+                <form action="/admin/update_app_download" method="POST" class="space-y-4 mb-5">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="grid sm:grid-cols-2 gap-3 max-w-3xl">
+                    <label class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-4 flex items-center justify-between gap-3 cursor-pointer">
+                        <span>
+                            <span class="block text-sm font-bold text-white">Download page ON</span>
+                            <span class="block text-[10px] text-gray-500 mt-0.5">OFF = /app 404, nav phir bhi /app dikhegi (coming soon)</span>
+                        </span>
+                        <input type="checkbox" name="app_download_enabled" value="1" class="w-5 h-5 accent-emerald-500" {% if android_app.enabled %}checked{% endif %}>
+                    </label>
+                    <label class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-4 flex items-center justify-between gap-3 cursor-pointer">
+                        <span>
+                            <span class="block text-sm font-bold text-white">Force in-app update</span>
+                            <span class="block text-[10px] text-gray-500 mt-0.5">Older apps cannot tap Later — Update required</span>
+                        </span>
+                        <input type="checkbox" name="app_apk_force" value="1" class="w-5 h-5 accent-emerald-500" {% if android_app.force %}checked{% endif %}>
+                    </label>
+                    </div>
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="app_apk_version" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Version</label>
+                            <input id="app_apk_version" type="text" name="app_apk_version" maxlength="32" value="{{ android_app.version }}" class="mt-1 w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label for="app_apk_url" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">External APK URL (optional)</label>
+                            <input id="app_apk_url" type="url" name="app_apk_url" placeholder="https://…/CineAmit.apk — local file ho to blank" value="{% if android_app.has_file %}{% else %}{{ android_app.download_url }}{% endif %}" class="mt-1 w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm outline-none focus:border-emerald-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="app_apk_notes" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Changelog / notes</label>
+                        <textarea id="app_apk_notes" name="app_apk_notes" rows="3" maxlength="2000" class="mt-1 w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm outline-none focus:border-emerald-500">{{ android_app.notes }}</textarea>
+                    </div>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-6 py-2.5 rounded-lg text-sm cursor-pointer">
+                        <i class="fa-solid fa-floppy-disk mr-2"></i>Save download settings
+                    </button>
+                </form>
+                <div class="border-t border-gray-800 pt-5">
+                    <p class="text-xs text-gray-400 mb-3">
+                        Local file:
+                        {% if android_app.has_file %}
+                        <span class="text-emerald-400 font-bold">{{ android_app.size_label }}</span>
+                        {% if android_app.sha256 %}<span class="block mt-1 font-mono text-[10px] text-gray-500 break-all">SHA-256 {{ android_app.sha256 }}</span>{% endif %}
+                        {% else %}
+                        <span class="text-yellow-400">missing</span> — upload below or copy to <code class="text-gray-300">cineamit-node/data/app/cineamit.apk</code> on the server.
+                        {% endif %}
+                    </p>
+                    <form id="apkUploadForm" class="flex flex-col sm:flex-row gap-3 items-start sm:items-end" onsubmit="return cineUploadApk(event)">
+                        <div class="flex-1 w-full">
+                            <label for="apkFile" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Upload .apk (max 90 MB)</label>
+                            <input id="apkFile" type="file" name="apk" accept=".apk,application/vnd.android.package-archive" required class="mt-1 w-full text-xs text-gray-300 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-600/20 file:text-emerald-300 file:font-bold">
+                        </div>
+                        <button type="submit" id="apkUploadBtn" class="bg-emerald-700 hover:bg-emerald-600 text-white font-black px-5 py-2.5 rounded-lg text-sm cursor-pointer shrink-0">
+                            <i class="fa-solid fa-cloud-arrow-up mr-2"></i>Upload APK
+                        </button>
+                    </form>
+                    <p id="apkUploadStatus" class="text-[11px] text-gray-500 mt-2"></p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if current_user.role in ['owner', 'super_admin'] %}
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                <div class="p-5 border-b border-gray-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-wallet text-teal-400"></i> Member wallets</h2>
+                        <p class="text-[11px] text-gray-500 mt-1">Name / email / #id se dhundo. Points grant/set, trial · monthly · yearly · custom days, ya Free.</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full lg:w-auto">
+                        <span id="walletMatchCount" class="text-[10px] font-black uppercase tracking-wider text-gray-500 whitespace-nowrap">{{ all_users|length }} members</span>
+                        <div class="relative w-full sm:w-72">
+                            <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none"></i>
+                            <input type="search" id="walletSearchInput" placeholder="Search member — name, email, #id" autocomplete="off" class="w-full bg-[#141519] border border-gray-700 text-white rounded-lg pl-9 pr-4 py-2.5 text-sm outline-none focus:border-teal-500">
+                        </div>
+                    </div>
+                </div>
+                <div class="px-5 py-3 border-b border-gray-800 flex flex-wrap gap-1.5">
+                    <button type="button" class="wallet-plan-btn active text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg border border-gray-700 text-gray-300 bg-[#141519] cursor-pointer" data-plan="all">All</button>
+                    <button type="button" class="wallet-plan-btn text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg border border-gray-700 text-gray-300 bg-[#141519] cursor-pointer" data-plan="free">Free</button>
+                    <button type="button" class="wallet-plan-btn text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg border border-gray-700 text-gray-300 bg-[#141519] cursor-pointer" data-plan="trial">Trial</button>
+                    <button type="button" class="wallet-plan-btn text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg border border-gray-700 text-gray-300 bg-[#141519] cursor-pointer" data-plan="monthly">Monthly</button>
+                    <button type="button" class="wallet-plan-btn text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg border border-gray-700 text-gray-300 bg-[#141519] cursor-pointer" data-plan="yearly">Yearly</button>
+                </div>
+                <div class="overflow-x-auto max-h-[560px] custom-scrollbar">
+                    <table class="w-full text-left text-sm min-w-[920px]" id="walletsTable">
+                        <thead class="sticky top-0 bg-gray-900 text-[10px] uppercase tracking-wider text-gray-400 border-b border-gray-800 z-10">
+                            <tr>
+                                <th class="py-3 px-4">Member</th>
+                                <th class="py-3 px-4">Balance</th>
+                                <th class="py-3 px-4">Plan</th>
+                                <th class="py-3 px-4">Grant / set points</th>
+                                <th class="py-3 px-4">Premium</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800 text-gray-300">
+                            {% for u in all_users %}
+                            {% set wplan = 'free' %}
+                            {% if u.sub_plan is defined and u.sub_until and u.sub_until > 0 %}
+                              {% if u.sub_plan == 'yearly' %}{% set wplan = 'yearly' %}
+                              {% elseif u.sub_plan == 'monthly' %}{% set wplan = 'monthly' %}
+                              {% elseif u.sub_plan == 'trial' %}{% set wplan = 'trial' %}
+                              {% endif %}
+                            {% endif %}
+                            <tr class="wallet-row hover:bg-gray-800/40" data-uid="{{ u.id }}" data-plan="{{ wplan }}">
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-9 h-9 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-black text-xs flex items-center justify-center shrink-0">{{ u.username|first|upper }}</span>
+                                        <div class="min-w-0">
+                                            <div class="font-bold text-white search-name truncate">{{ u.username }}</div>
+                                            <div class="text-[10px] text-gray-500 search-email truncate">#{{ u.id }} · {{ u.email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center gap-1 font-black text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-full px-2.5 py-0.5 text-xs">{{ u.points|default(0) }} pts</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    {% if wplan == 'yearly' %}
+                                    <span class="text-[10px] font-black uppercase text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">Yearly</span>
+                                    {% elseif wplan == 'monthly' %}
+                                    <span class="text-[10px] font-black uppercase text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-full">Monthly</span>
+                                    {% elseif wplan == 'trial' %}
+                                    <span class="text-[10px] font-black uppercase text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">Trial</span>
+                                    {% else %}
+                                    <span class="text-[10px] font-bold uppercase text-gray-500 bg-gray-800 border border-gray-700 px-2 py-0.5 rounded-full">Free</span>
+                                    {% endif %}
+                                    {% if u.trial_used %}<span class="block text-[9px] text-gray-600 mt-1">trial used</span>{% endif %}
+                                </td>
+                                <td class="py-3 px-4">
+                                    <form action="/admin/wallet_points" method="POST" class="flex flex-wrap items-center gap-1.5 m-0">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <input type="hidden" name="user_id" value="{{ u.id }}">
+                                        <input type="number" name="amount" value="50" class="w-20 bg-[#141519] border border-gray-700 text-white rounded-md px-2 py-1.5 text-xs outline-none focus:border-amber-500">
+                                        <button type="submit" name="mode" value="grant" class="text-[10px] font-black uppercase bg-teal-600/15 text-teal-300 border border-teal-600/30 rounded-md px-2 py-1.5 cursor-pointer">+ Grant</button>
+                                        <button type="submit" name="mode" value="set" class="text-[10px] font-black uppercase bg-gray-700/40 text-gray-200 border border-gray-600 rounded-md px-2 py-1.5 cursor-pointer">Set</button>
+                                    </form>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <form action="/admin/wallet_plan" method="POST" class="flex flex-wrap items-center gap-1.5 m-0">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <input type="hidden" name="user_id" value="{{ u.id }}">
+                                        <button type="submit" name="plan" value="trial" class="text-[10px] font-black uppercase bg-emerald-600/15 text-emerald-300 border border-emerald-600/30 rounded-md px-2 py-1.5 cursor-pointer">Trial</button>
+                                        <button type="submit" name="plan" value="monthly" class="text-[10px] font-black uppercase bg-purple-600/15 text-purple-300 border border-purple-600/30 rounded-md px-2 py-1.5 cursor-pointer">+{{ app_economy.days_monthly|default(30) }}d</button>
+                                        <button type="submit" name="plan" value="yearly" class="text-[10px] font-black uppercase bg-amber-600/15 text-amber-300 border border-amber-600/30 rounded-md px-2 py-1.5 cursor-pointer">+{{ app_economy.days_yearly|default(365) }}d</button>
+                                        <input type="number" name="days" min="1" max="1095" placeholder="N" class="w-14 bg-[#141519] border border-gray-700 text-white rounded-md px-2 py-1.5 text-xs outline-none focus:border-amber-500">
+                                        <button type="submit" name="plan" value="custom" class="text-[10px] font-black uppercase bg-sky-600/15 text-sky-300 border border-sky-600/30 rounded-md px-2 py-1.5 cursor-pointer">Nd</button>
+                                        <button type="submit" name="plan" value="reset_trial" class="text-[10px] font-black uppercase bg-gray-700/40 text-gray-300 border border-gray-600 rounded-md px-2 py-1.5 cursor-pointer">Reset trial</button>
+                                        <button type="submit" name="plan" value="free" class="text-[10px] font-black uppercase bg-red-600/10 text-red-300 border border-red-600/30 rounded-md px-2 py-1.5 cursor-pointer">Free</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="px-4 py-6 text-center text-gray-500 text-xs italic">No users.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <p id="walletEmpty" class="hidden px-4 py-8 text-center text-gray-500 text-xs italic">No member matched. Clear the search.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div id="editServerModal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
+    <div class="bg-[#141519] border border-gray-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-fade-in">
+        <button aria-label="Close Edit Modal" type="button" data-action="close-edit-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors cursor-pointer">
+            <i class="fa-solid fa-xmark text-xl w-5 text-center"></i>
+        </button>
+        <h2 class="text-xl font-black text-white mb-6 flex items-center gap-2">
+            <i class="fa-solid fa-pen text-blue-500"></i> Edit Server
+        </h2>
+        <form id="editServerForm" method="POST" class="flex flex-col gap-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="flex flex-col gap-1.5">
+                <label for="edit_server_name" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Server Name</label>
+                <input type="text" name="server_name" id="edit_server_name" required class="w-full bg-[#0a0a0c] border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm outline-none focus:border-blue-500 shadow-inner">
+            </div>
+            <div class="flex flex-col gap-1.5">
+                <label for="edit_movie_pattern" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Movie Pattern</label>
+                <input type="text" name="movie_pattern" id="edit_movie_pattern" required class="w-full bg-[#0a0a0c] border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm outline-none focus:border-blue-500 shadow-inner">
+            </div>
+            <div class="flex flex-col gap-1.5">
+                <label for="edit_tv_pattern" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">TV Pattern</label>
+                <input type="text" name="tv_pattern" id="edit_tv_pattern" required class="w-full bg-[#0a0a0c] border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm outline-none focus:border-blue-500 shadow-inner">
+            </div>
+            <button aria-label="Save Edited Server Changes" type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-lg text-sm transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] mt-2 cursor-pointer">
+                Save Changes
+            </button>
+        </form>
+    </div>

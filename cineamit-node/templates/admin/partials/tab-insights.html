@@ -1,0 +1,191 @@
+        {% if current_user.role in ['owner', 'super_admin'] %}
+        <div id="tab-insights" class="tab-content hidden animate-fade-in flex-col gap-6">
+            <h2 class="text-2xl font-black text-white"><i class="fa-solid fa-chart-line text-teal-400 mr-2"></i>Insights &amp; Content</h2>
+
+            <div class="bg-[#141519] border border-green-800/40 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-tower-broadcast text-green-500"></i> Live Pulse — Who's Online Now</h3>
+                    <span class="text-[11px] font-bold text-green-500 bg-green-500/10 border border-green-500/30 rounded-full px-3 py-1"><span id="pulseCount2">—</span> online</span>
+                </div>
+                <div id="pulseList" class="divide-y divide-gray-800 max-h-96 overflow-y-auto">
+                    <p class="text-gray-500 text-sm py-4 text-center">Syncing… (auto-refresh har 10 second)</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 shadow-xl">
+                    <h3 class="text-lg font-bold text-white mb-1"><i class="fa-solid fa-fire text-orange-500 mr-2"></i>Activity Heatmap</h3>
+                    <p class="text-gray-500 text-xs mb-4">Last 28 days — when your users watch the most (from watch history).</p>
+                    {% if heat_max > 0 %}
+                    <div class="flex flex-col gap-1.5">
+                        {% set dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] %}
+                        {% for row in 0..6 %}
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-8 text-[10px] font-bold text-gray-500 flex-none">{{ dayNames[row] }}</span>
+                            <div class="flex gap-1 flex-1">
+                                {% for col in 0..23 %}
+                                {% set c = heat_matrix[row][col]|default(0) %}
+                                <div class="flex-1 h-5 rounded-sm transition-colors" title="{{ dayNames[row] }} {{ col }}:00 — {{ c }} views"
+                                     style="background-color: rgba(239,68,68,{% if c > 0 %}{{ (0.15 + 0.85 * (c / heat_max))|round(2) }}{% else %}0.06{% endif %});"></div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div class="flex items-center gap-1.5 mt-1">
+                            <span class="w-8 flex-none"></span>
+                            <div class="flex gap-1 flex-1">
+                                {% for col in 0..23 %}<span class="flex-1 text-center text-[8px] text-gray-600">{{ col % 6 == 0 ? col : '' }}</span>{% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% if heat_peak.c > 0 %}
+                    <p class="text-xs text-gray-400 mt-4 font-bold"><i class="fa-solid fa-bolt text-amber-500 mr-1"></i>Peak: {{ ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][heat_peak.dw] }} ~{{ heat_peak.hr }}:00 ({{ heat_peak.c }} views)</p>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-gray-500 text-sm py-6 text-center">Not enough watch data yet — the heatmap will fill in.</p>
+                    {% endif %}
+                </div>
+
+                <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 shadow-xl">
+                    <h3 class="text-lg font-bold text-white mb-1"><i class="fa-solid fa-users-viewfinder text-purple-400 mr-2"></i>User Insights</h3>
+                    <p class="text-gray-500 text-xs mb-4">Dormant users, top bingers, and profile mix.</p>
+                    <div class="grid grid-cols-3 gap-3 mb-5 text-center">
+                        <div class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-3">
+                            <p class="text-2xl font-black text-white">{{ insights_profiles }}</p>
+                            <p class="text-[10px] font-bold text-gray-500 uppercase mt-1">Total Profiles</p>
+                        </div>
+                        <div class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-3">
+                            <p class="text-2xl font-black text-sky-400">{{ insights_kids }}</p>
+                            <p class="text-[10px] font-bold text-gray-500 uppercase mt-1">Kids Profiles</p>
+                        </div>
+                        <div class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-3">
+                            <p class="text-2xl font-black text-red-400">{{ insights_dormant_count }}</p>
+                            <p class="text-[10px] font-bold text-gray-500 uppercase mt-1">Dormant (30d+)</p>
+                        </div>
+                    </div>
+                    <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2"><i class="fa-solid fa-trophy text-amber-500 mr-1"></i>Top Bingers (30 days)</p>
+                    {% if insights_bingers %}
+                    <div class="space-y-1.5 mb-4">
+                        {% for b in insights_bingers %}
+                        <div class="flex items-center justify-between text-sm bg-[#0a0a0c] border border-gray-800 rounded-lg px-3 py-1.5">
+                            <span class="font-bold text-gray-300 truncate">{{ b.username }}</span>
+                            <span class="font-black text-teal-400 flex-none ml-3">{{ b.views }} views</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-500 text-xs mb-4">No watch activity in 30 days.</p>
+                    {% endif %}
+                    <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2"><i class="fa-solid fa-moon text-indigo-400 mr-1"></i>Dormant Users (30+ din inactive)</p>
+                    {% if insights_dormant %}
+                    <div class="space-y-1.5">
+                        {% for u in insights_dormant %}
+                        <div class="flex items-center justify-between text-xs bg-[#0a0a0c] border border-gray-800 rounded-lg px-3 py-1.5">
+                            <span class="font-bold text-gray-300">{{ u.username }}</span>
+                            <span class="text-gray-600 flex-none ml-3">{% if u.last_login %}{{ u.last_login|date('d M Y') }}{% else %}never signed in{% endif %}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-500 text-xs">All users are active! 🎉</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-bug text-red-500 mr-2"></i>Error Monitor</h3>
+                        <span class="text-[11px] font-bold rounded-full px-3 py-1 {% if error_total > 0 %}text-red-400 bg-red-500/10 border border-red-500/30{% else %}text-green-400 bg-green-500/10 border border-green-500/30{% endif %}">{{ error_total }} errors (14 din)</span>
+                    </div>
+                    {% if error_total > 0 %}
+                    <div class="flex items-end gap-1 h-24 mb-4" id="errorBars">
+                        {% for d in error_days %}
+                        <div class="flex-1 flex flex-col items-center justify-end h-full" title="{{ d.label }}: {{ d.count }}">
+                            <div class="w-full rounded-t bg-red-500/70 transition-all" style="height: {{ (d.count / error_max * 100)|round(0) }}%;"></div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="flex justify-between text-[8px] text-gray-600 mb-4"><span>{{ error_days|first.label }}</span><span>{{ error_days|last.label }}</span></div>
+                    <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Recent Errors</p>
+                    <div class="space-y-1.5 max-h-48 overflow-y-auto">
+                        {% for e in error_recent %}
+                        <div class="bg-[#0a0a0c] border border-gray-800 rounded-lg px-3 py-2 text-xs">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="font-mono text-red-400 truncate">{{ e.url }}</span>
+                                <span class="text-gray-600 flex-none">{{ e.created_at|date('d M H:i') }}</span>
+                            </div>
+                            <p class="text-gray-500 truncate mt-0.5" title="{{ e.message }}">{{ e.message }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-500 text-sm py-8 text-center"><i class="fa-solid fa-circle-check text-green-500 text-2xl block mb-2"></i>No 500 errors in 14 days — all healthy! 🎉</p>
+                    {% endif %}
+                </div>
+
+                <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                        <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-heart-pulse text-green-500 mr-2"></i>Source Health Monitor</h3>
+                        <button type="button" onclick="runSourceHealth()" id="healthCheckBtn" class="text-[11px] font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg px-3 py-1.5 transition-colors cursor-pointer"><i class="fa-solid fa-rotate mr-1"></i>Check Now</button>
+                    </div>
+                    {% if source_health %}
+                    <div class="space-y-3">
+                        {% for s in source_health %}
+                        <div class="bg-[#0a0a0c] border border-gray-800 rounded-xl p-4">
+                            <div class="flex items-center justify-between gap-3 flex-wrap">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="w-2.5 h-2.5 rounded-full flex-none {% if s.ok is null %}bg-gray-600{% elseif s.ok %}bg-green-500 animate-pulse{% else %}bg-red-500{% endif %}"></span>
+                                    <span class="font-bold text-white text-sm truncate">{{ s.name }}</span>
+                                    {% if s.ok is null %}<span class="text-[9px] font-bold text-gray-500 uppercase">not checked</span>
+                                    {% elseif s.ok %}<span class="text-[9px] font-bold text-green-400 uppercase">ACTIVE · {{ s.ms }}ms</span>
+                                    {% else %}<span class="text-[9px] font-bold text-red-400 uppercase">DEAD · {{ s.note }}</span>{% endif %}
+                                </div>
+                                {% set pts = s.points %}
+                                {% set pmax = s.pmax|default(0) %}
+                                <svg width="98" height="28" class="flex-none" viewBox="0 0 98 28">
+                                    {% if pmax > 0 %}
+                                    <polyline fill="none" stroke="#22c55e" stroke-width="1.5" points="{% for i, p in pts %}{{ i * 14 + 4 }},{{ (26 - (p / pmax * 20))|round(1) }}{% if not loop.last %} {% endif %}{% endfor %}"/>
+                                    {% else %}
+                                    <line x1="4" y1="26" x2="94" y2="26" stroke="#374151" stroke-width="1.5" stroke-dasharray="3 3"/>
+                                    {% endif %}
+                                </svg>
+                            </div>
+                            {% if s.checked_at %}<p class="text-[10px] text-gray-600 mt-1.5">Last check: {{ s.checked_at|date('d M Y, H:i') }} · 7-day avg latency sparkline (0 = no data)</p>{% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-500 text-sm py-6 text-center">No active Xtream server — add one in the Servers tab.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 shadow-xl">
+                <h3 class="text-lg font-bold text-white mb-1"><i class="fa-solid fa-satellite-dish text-teal-400 mr-2"></i>TMDB Trending Radar (This Week)</h3>
+                <p class="text-gray-500 text-xs mb-4">TMDB ke trending titles vs aapke users ki local demand (views + watchlist, 90 din). High trend + low demand = opportunity.</p>
+                {% if trending_radar %}
+                <div class="flex gap-4 overflow-x-auto pb-3 hide-scrollbar">
+                    {% for t in trending_radar %}
+                    <div class="w-32 flex-none flex flex-col">
+                        <div class="w-32 h-48 rounded-xl overflow-hidden bg-[#0a0a0c] border border-gray-800 relative">
+                            {% if t.poster %}
+                            <img src="{{ t.poster }}" alt="{{ t.title }}" width="40" height="56" loading="lazy" class="w-full h-full object-cover">
+                            {% else %}
+                            <div class="w-full h-full flex items-center justify-center text-gray-600"><i class="fa-solid fa-film text-3xl"></i></div>
+                            {% endif %}
+                            <span class="absolute top-1.5 left-1.5 text-[9px] font-black uppercase px-1.5 py-0.5 rounded {% if t.type == 'tv' %}bg-purple-600 text-white{% else %}bg-blue-600 text-white{% endif %}">{{ t.type }}</span>
+                            {% if t.demand > 0 %}
+                            <span class="absolute top-1.5 right-1.5 text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-500 text-black" title="{{ t.demand }} local interest (views+watchlist)"><i class="fa-solid fa-fire mr-0.5"></i>{{ t.demand }}</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-[11px] font-bold text-gray-300 mt-2 leading-tight line-clamp-2" title="{{ t.title }}">{{ t.title }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-gray-500 text-sm py-6 text-center">No trending data (TMDB key/quota) — try again later.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}

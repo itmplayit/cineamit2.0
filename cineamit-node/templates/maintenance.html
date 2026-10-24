@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CINEAMIT — Under Maintenance</title>
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; }
+        body {
+            font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #09090b;
+            background-image: radial-gradient(1200px 600px at 50% -10%, rgba(147,51,234,0.18), transparent 60%),
+                              radial-gradient(800px 400px at 90% 110%, rgba(239,68,68,0.10), transparent 60%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px;
+        }
+        .wrap { max-width: 460px; width: 100%; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(147,51,234,0.12); color: #c084fc;
+            border: 1px solid rgba(192,132,252,0.3);
+            padding: 6px 14px; border-radius: 999px;
+            font-size: 11px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase;
+        }
+        .logo {
+            font-size: 44px; font-weight: 900; letter-spacing: 0.04em; margin: 26px 0 10px;
+            background: linear-gradient(90deg, #a855f7, #ef4444);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+        .emoji { font-size: 64px; line-height: 1; margin-bottom: 8px; }
+        h1 { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+        p { color: #9ca3af; font-size: 14px; line-height: 1.7; margin-bottom: 22px; }
+        .card {
+            background: rgba(17,17,20,0.7); border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 18px; padding: 30px 26px; backdrop-filter: blur(6px);
+            box-shadow: 0 30px 80px -30px rgba(0,0,0,0.8);
+        }
+        .spinner {
+            width: 34px; height: 34px; border-radius: 50%;
+            border: 3px solid rgba(168,85,247,0.25); border-top-color: #a855f7;
+            margin: 0 auto 20px; animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .login {
+            display: inline-block; margin-top: 6px; text-decoration: none;
+            background: #a855f7; color: #fff; font-weight: 800; font-size: 13px;
+            padding: 11px 22px; border-radius: 10px; transition: background 0.2s;
+        }
+        .login:hover { background: #9333ea; }
+        small { display: block; margin-top: 18px; color: #6b7280; font-size: 11px; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="card">
+            <div class="spinner"></div>
+            <div class="badge"><i>🛠️</i> System Update</div>
+            <div class="emoji">🎬</div>
+            <div class="logo">CINEAMIT</div>
+            <h1>We're upgrading the theater.</h1>
+            <p>
+                CINEAMIT is down for a short maintenance window. Our team is
+                making things faster and smoother. We'll be back online in a few minutes —
+                please check back shortly.
+            </p>
+            <a class="login" href="/login">I'm an admin → Login</a>
+            <small>Errors? Try again in a minute. Your watchlist is safe.</small>
+        </div>
+    </div>
+</body>
+</html>

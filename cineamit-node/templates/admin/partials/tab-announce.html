@@ -1,0 +1,92 @@
+        {% if current_user.role in ['owner', 'super_admin'] %}
+        <div id="tab-announce" class="tab-content hidden animate-fade-in flex-col gap-6">
+            <h2 class="text-2xl font-black text-white"><i class="fa-solid fa-bullhorn text-amber-400 mr-2"></i>Announcements</h2>
+            <p class="text-gray-500 text-xs -mt-4">Send a site-wide message — banner or modal. You can schedule start/end. Read receipts are tracked.</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 shadow-xl">
+                    <h3 class="text-lg font-bold text-white mb-4"><i class="fa-solid fa-plus text-amber-500 mr-2"></i>New Announcement</h3>
+                    <form action="{{ url_for('routes.admin_announcement_add') }}" method="POST" class="space-y-4">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <div>
+                            <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1.5" for="ann_title">Title</label>
+                            <input id="ann_title" name="title" type="text" required maxlength="150" placeholder="e.g. Server maintenance tonight 11 PM" class="w-full bg-[#0a0a0c] border border-gray-700 text-white text-sm rounded-lg px-4 py-3 focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1.5" for="ann_message">Message</label>
+                            <textarea id="ann_message" name="message" required maxlength="2000" rows="4" placeholder="Full announcement text…" class="w-full bg-[#0a0a0c] border border-gray-700 text-white text-sm rounded-lg px-4 py-3 focus:outline-none focus:border-amber-500"></textarea>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1.5" for="ann_type">Display</label>
+                                <select id="ann_type" name="display_type" class="w-full bg-[#0a0a0c] border border-gray-700 text-white text-sm rounded-lg px-4 py-3 focus:outline-none focus:border-amber-500">
+                                    <option value="banner">Banner (bottom)</option>
+                                    <option value="modal">Modal (full popup)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1.5" for="ann_start">Start (optional)</label>
+                                <input id="ann_start" name="start_at" type="datetime-local" class="w-full bg-[#0a0a0c] border border-gray-700 text-white text-sm rounded-lg px-4 py-3 focus:outline-none focus:border-amber-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1.5" for="ann_end">End (optional)</label>
+                            <input id="ann_end" name="end_at" type="datetime-local" class="w-full bg-[#0a0a0c] border border-gray-700 text-white text-sm rounded-lg px-4 py-3 focus:outline-none focus:border-amber-500">
+                        </div>
+                        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-lg transition-colors cursor-pointer"><i class="fa-solid fa-paper-plane mr-2"></i>Publish Announcement</button>
+                    </form>
+                </div>
+
+                <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-list text-amber-500 mr-2"></i>Active &amp; Past</h3>
+                        <span class="text-[11px] font-bold text-gray-500">{{ total_users_for_ann }} total users</span>
+                    </div>
+                    {% if announcements_list %}
+                    <div class="space-y-3 max-h-[480px] overflow-y-auto pr-1">
+                        {% for a in announcements_list %}
+                        <div class="bg-[#0a0a0c] border {% if a.is_active %}border-amber-700/40{% else %}border-gray-800{% endif %} rounded-xl p-4">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="font-bold text-white text-sm">{{ a.title }}</span>
+                                        <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded {% if a.display_type == 'modal' %}bg-purple-600/20 text-purple-400{% else %}bg-amber-600/20 text-amber-400{% endif %}">{{ a.display_type }}</span>
+                                        <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded {% if a.is_active %}bg-green-600/20 text-green-400{% else %}bg-gray-700 text-gray-400{% endif %}">{% if a.is_active %}ON{% else %}OFF{% endif %}</span>
+                                    </div>
+                                    <p class="text-gray-400 text-xs mt-1.5 line-clamp-2">{{ a.message }}</p>
+                                    <p class="text-[10px] text-gray-600 mt-1.5">
+                                        {% if a.start_at %}from {{ a.start_at|date('d M, H:i') }}{% endif %}
+                                        {% if a.start_at and a.end_at %} · {% endif %}
+                                        {% if a.end_at %}to {{ a.end_at|date('d M, H:i') }}{% endif %}
+                                        {% if not a.start_at and not a.end_at %}open-ended{% endif %}
+                                        · {{ a.created_at|date('d M Y') }}
+                                    </p>
+                                    <div class="mt-2.5">
+                                        {% set pct = total_users_for_ann > 0 ? (a.reads / total_users_for_ann * 100)|round(0) : 0 %}
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-amber-500 transition-all" style="width: {{ pct }}%;"></div></div>
+                                            <span class="text-[10px] font-bold text-gray-400 flex-none">{{ a.reads }}/{{ total_users_for_ann }} seen ({{ pct }}%)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-2 flex-none">
+                                    <form action="{{ url_for('routes.admin_announcement_toggle', id=a.id) }}" method="POST">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button type="submit" title="Toggle ON/OFF" class="text-xs w-8 h-8 rounded-lg flex items-center justify-center border transition-colors cursor-pointer {% if a.is_active %}text-green-400 border-green-700/50 hover:bg-green-600/10{% else %}text-gray-500 border-gray-700 hover:bg-gray-700/30{% endif %}"><i class="fa-solid fa-power-off"></i></button>
+                                    </form>
+                                    <form action="{{ url_for('routes.admin_announcement_delete', id=a.id) }}" method="POST" onsubmit="return confirm('Delete this announcement?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button type="submit" title="Delete" class="text-xs w-8 h-8 rounded-lg flex items-center justify-center border border-red-800/50 text-red-400 hover:bg-red-600/10 transition-colors cursor-pointer"><i class="fa-solid fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-500 text-sm py-8 text-center">No announcement yet — publish the first one from the left.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}

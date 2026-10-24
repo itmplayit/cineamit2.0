@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0A0612">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <include layout="@layout/include_cine_header" />
+
+        <HorizontalScrollView
+            android:id="@+id/kindsScroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            android:clipToPadding="false"
+            android:paddingStart="16dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="16dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/kindsRow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <EditText
+            android:id="@+id/query"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/glass_panel"
+            android:hint="Find a channel"
+            android:inputType="text"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textColor="#F4F1EA"
+            android:textColorHint="#9C9C9C"
+            android:textSize="15sp" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:paddingStart="16dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="16dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/filtersRow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingStart="8dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="88dp" />
+
+            <ProgressBar
+                android:id="@+id/progress"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:indeterminateTint="@color/highlight"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:padding="24dp"
+                android:textColor="@color/text_sub"
+                android:visibility="gone" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/btnLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="22dp"
+        android:background="@drawable/watch_hex"
+        android:fontFamily="@font/custom"
+        android:gravity="center"
+        android:paddingStart="22dp"
+        android:paddingEnd="22dp"
+        android:text="Go to login"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+</FrameLayout>

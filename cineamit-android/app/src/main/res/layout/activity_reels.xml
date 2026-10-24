@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/reels"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:overScrollMode="never" />
+
+    <ImageView
+        android:id="@+id/btnBack"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="top|start"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/chip_bg"
+        android:contentDescription="@string/app_name"
+        android:padding="8dp"
+        android:rotation="180"
+        android:src="@drawable/ic_arrow" />
+
+    <ProgressBar
+        android:id="@+id/progress"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminateTint="#C4B5FD"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:padding="24dp"
+        android:textColor="#9C9C9C"
+        android:visibility="gone" />
+</FrameLayout>

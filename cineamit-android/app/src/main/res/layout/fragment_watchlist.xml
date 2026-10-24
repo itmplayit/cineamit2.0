@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0A0612">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/cineHeaderTop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="6dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/custom"
+                android:text="CineAmit"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:layout_marginStart="6dp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_spark" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-condensed"
+            android:includeFontPadding="false"
+            android:letterSpacing="-0.03"
+            android:paddingStart="20dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="8dp"
+            android:text="Watchlist"
+            android:textAllCaps="true"
+            android:textColor="#F4F1EA"
+            android:textSize="34sp"
+            android:textStyle="bold" />
+
+        <include
+            layout="@layout/row_recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <include
+        layout="@layout/layout_include_login"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</FrameLayout>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/homeRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0A0612">
+
+    <ProgressBar
+        android:id="@+id/progressBar1"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminateTint="#A78BFA"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/lyt_not_found"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/ic_no_item"
+            app:tint="@color/white" />
+
+        <TextView
+            android:id="@+id/textNotFound"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/no_item_found"
+            android:textColor="@color/white" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_home"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        android:paddingBottom="88dp" />
+
+    <LinearLayout
+        android:id="@+id/homeSearchOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F20A0612"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="vertical"
+        android:paddingBottom="88dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/homeSearchBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="8dp">
+
+            <EditText
+                android:id="@+id/homeQuery"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="@drawable/glass_panel_purple"
+                android:hint="Search movies, series, anime…"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#F4F1EA"
+                android:textColorHint="#9C9C9C"
+                android:textSize="15sp"
+                android:importantForAutofill="no" />
+
+            <TextView
+                android:id="@+id/btnCloseSearch"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginStart="10dp"
+                android:gravity="center"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:text="Close"
+                android:textColor="#C4B5FD"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/homeSearchGrid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:overScrollMode="never"
+                android:paddingStart="10dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="16dp" />
+
+            <ProgressBar
+                android:id="@+id/homeSearchProgress"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:indeterminateTint="#A78BFA"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/homeSearchStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:padding="24dp"
+                android:text="Type a title — results appear live."
+                android:textColor="#9C9C9C"
+                android:textSize="14sp" />
+        </FrameLayout>
+    </LinearLayout>
+</FrameLayout>

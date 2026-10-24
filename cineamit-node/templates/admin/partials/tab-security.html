@@ -1,0 +1,77 @@
+        <div id="tab-security" class="tab-content hidden animate-fade-in">
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl shadow-2xl overflow-hidden p-6 relative">
+                <div class="absolute top-0 right-6 transform -translate-y-1/2 bg-green-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-md">
+                    🔐 Security
+                </div>
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-5 mt-2">
+                    <div>
+                        <h3 class="text-xl font-black text-white flex items-center gap-2">
+                            <i class="fa-solid fa-shield-halved text-green-500"></i> Security Event Log
+                        </h3>
+                        <p class="text-xs text-gray-400 mt-1">Logins, 2FA events, role changes, deletions and CSRF attacks — last 200 events, stored for 30 days.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <form method="GET" action="/cineamit-admin" class="m-0 flex flex-wrap items-center gap-2">
+                            <select aria-label="Filter security events" name="sec_filter" class="bg-[#141519] border border-gray-700 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-green-500 cursor-pointer">
+                                <option value="">All Events</option>
+                                {% for se in sec_events %}
+                                <option value="{{ se.event }}" {% if sec_filter == se.event %}selected{% endif %}>{{ se.event }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 text-[10px]"></i>
+                                <input type="text" name="sec_search" value="{{ sec_search|default('') }}" placeholder="IP or username..." maxlength="80" class="w-40 bg-[#141519] border border-gray-700 text-white text-xs rounded-lg pl-7 pr-3 py-2 outline-none focus:border-green-500">
+                            </div>
+                            <button type="submit" class="bg-green-600 hover:bg-green-500 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors cursor-pointer"><i class="fa-solid fa-filter mr-1"></i>Apply</button>
+                        </form>
+                        {% if current_user.role == 'owner' or current_user.role == 'super_admin' %}
+                        <a href="/admin/export_security_csv" title="Download security log as CSV" class="inline-flex items-center gap-1.5 bg-green-600/10 border border-green-600/30 text-green-400 hover:bg-green-600 hover:text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors">
+                            <i class="fa-solid fa-file-csv"></i> CSV
+                        </a>
+                        <form action="/admin/clear_security_log" method="POST" class="m-0" onsubmit="return confirm('Delete the ENTIRE security log? This cannot be undone.');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit" class="bg-red-600/10 border border-red-600/30 text-red-400 hover:bg-red-600 hover:text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors">
+                                <i class="fa-solid fa-trash mr-1"></i>Clear Log
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="overflow-x-auto -mx-6 px-6">
+                    <table class="w-full text-left text-sm min-w-[640px]">
+                        <thead>
+                            <tr class="text-[10px] uppercase tracking-widest text-gray-500 border-b border-gray-800">
+                                <th class="py-3 pr-4">Time</th>
+                                <th class="py-3 pr-4">Event</th>
+                                <th class="py-3 pr-4">User</th>
+                                <th class="py-3 pr-4">IP</th>
+                                <th class="py-3">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ev in security_log %}
+                            <tr class="border-b border-gray-800/50 hover:bg-gray-900/40">
+                                <td class="py-2.5 pr-4 text-gray-400 text-xs whitespace-nowrap">{{ ev.created_at|date('d M, H:i') }}</td>
+                                <td class="py-2.5 pr-4">
+                                    {% set e = ev.event %}
+                                    <!-- (absolute expiry, account lockout, reset) ab bhi generic yellow bucket me nahi padte -->
+                                    {% if e in ['login','login_2fa','registered','oauth_login_google','oauth_login_github','totp_enabled','password_reset'] %}
+                                        <span class="bg-green-600/10 text-green-400 border border-green-700/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase">{{ e }}</span>
+                                    {% elseif e in ['login_failed','totp_failed','totp_locked','csrf_failed','totp_disable_blocked','totp_verify_failed','session_killed_pw_change','session_expired_absolute','login_account_locked','setup_failed','user_deleted','account_deleted'] %}
+                                        <span class="bg-red-600/10 text-red-400 border border-red-700/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase">{{ e }}</span>
+                                    {% else %}
+                                        <span class="bg-yellow-600/10 text-yellow-400 border border-yellow-700/30 px-2 py-0.5 rounded text-[10px] font-bold uppercase">{{ e }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-2.5 pr-4 text-gray-300 text-xs">{{ ev.s_username|default(ev.user_id|default('—')) }}</td>
+                                <td class="py-2.5 pr-4 text-gray-400 text-xs font-mono">{{ ev.ip }}</td>
+                                <td class="py-2.5 text-gray-400 text-xs break-all">{{ ev.details|default('') }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="py-8 text-center text-gray-500 text-sm">No security events logged yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ seo.title }}{% endblock %}
+{% block meta_desc %}{{ seo.description }}{% endblock %}
+{% block content %}
+<div class="px-4 md:px-12 pt-5">{% include "seo_breadcrumbs.html" %}</div>
+<div class="bg-[#0f1014] min-h-screen pb-16">
+    <div class="w-full h-[40vh] md:h-[60vh] relative bg-black flex items-end">
+        {% if post.image_url %}
+        <img src="{{ post.image_url }}" alt="Banner for {{ post.title }}" width="1280" height="720" fetchpriority="high" loading="eager" decoding="async" class="absolute inset-0 w-full h-full object-cover opacity-40">
+        {% endif %}
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0f1014] via-[#0f1014]/60 to-transparent"></div>
+        <div class="relative z-10 p-6 md:p-12 max-w-4xl mx-auto w-full text-center">
+            <span class="text-red-500 font-bold tracking-widest uppercase text-xs">{{ post.created_at|date('F d, Y') }}</span>
+            <h1 class="text-3xl md:text-5xl font-black text-white mt-4 leading-tight">{{ post.title }}</h1>
+        </div>
+    </div>
+    <div class="max-w-4xl mx-auto px-6 mt-8 flex flex-col lg:flex-row gap-10">
+        <article class="flex-1 text-gray-300 prose prose-invert prose-red max-w-none">
+            {{ post.content | raw }}
+        </article>
+        <aside class="w-full lg:w-80 shrink-0">
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 sticky top-24">
+                <h2 class="text-white font-bold text-lg mb-4 border-b border-gray-800 pb-2">Recent Articles</h2>
+                <div class="flex flex-col gap-4">
+                    {% for rec in recent %}
+                    <a aria-label="Read recent article: {{ rec.title }}" href="/blog/{{ rec.slug }}" class="group flex gap-3">
+                        <img src="{{ rec.image_url ?: '/static/assets/logo-192.png' }}" alt="{{ rec.title }} Thumbnail" width="64" height="64" loading="lazy" decoding="async" class="w-16 h-16 rounded-lg object-cover border border-gray-800 group-hover:border-red-500 transition-colors">
+                        <div class="flex-1">
+                            <h3 class="text-sm font-bold text-gray-300 group-hover:text-white line-clamp-2 leading-tight">{{ rec.title }}</h3>
+                            <p class="text-[10px] text-gray-400 mt-1">{{ rec.created_at|date('d M Y') }}</p>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}

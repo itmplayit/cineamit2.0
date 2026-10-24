@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Cine-Match - Find Common Movies with Friends | CINEAMIT{% endblock %}
+{% block meta_desc %}Generate your Cine-Match invite link and discover what movies and TV shows you and your friends have in common!{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-[#0f1014] text-white p-6 md:p-12 animate-fade-in">
+    <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-black bg-gradient-to-r from-pink-500 to-red-500 bg-clip-text text-transparent uppercase tracking-wider">
+                <i class="fa-solid fa-heart-crack mr-2 text-red-500" aria-hidden="true"></i> Cine-Match
+            </h1>
+            <p class="text-gray-400 mt-2 text-sm font-bold">Generate your invite link and discover what movies you and your friends have in common!</p>
+        </div>
+        {% if not friend and not pending_friend %}
+        <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 shadow-2xl mb-8 max-w-xl mx-auto text-center">
+            <div class="w-16 h-16 bg-red-600/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-link" aria-hidden="true"></i>
+            </div>
+            <h2 class="text-lg font-bold text-white mb-2">Your Magic Match Link</h2>
+            <p class="text-gray-400 text-xs mb-4">Send this link to a friend. They will review a consent screen before any watch history is compared.</p>
+            <div class="flex gap-2 bg-[#0a0a0c] p-2 rounded-xl border border-gray-800">
+                <label for="shareUrl" class="sr-only">Your Match Link</label>
+                <input type="text" id="shareUrl" aria-label="Share URL" readonly 
+                      value="{{ request.url_root }}cine-match/compare?code={{ current_user.match_code }}"
+                       class="bg-transparent border-0 text-gray-300 text-xs flex-1 px-2 outline-none font-mono truncate">
+                <button onclick="copyMatchLink()" id="copyBtn" aria-label="Copy Match Link" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors whitespace-nowrap cursor-pointer">
+                    <i class="fa-solid fa-copy mr-1" aria-hidden="true"></i> Copy Link
+                </button>
+            </div>
+        </div>
+        {% endif %}
+        {% if pending_friend %}
+        <div class="bg-[#141519] border border-amber-500/30 rounded-2xl p-6 shadow-2xl mb-8 max-w-xl mx-auto">
+            <h2 class="text-lg font-bold text-white mb-2">Review before you match</h2>
+            <p class="text-gray-300 text-sm mb-3"><b>{{ pending_friend.username }}</b> invited you to compare watch history.</p>
+            <p class="text-gray-400 text-xs leading-relaxed mb-5">If you continue, a mutual Cine-Match connection will be created. This comparison uses your active profile and the inviter's primary non-Kids profile only; Kids profiles are excluded. Only continue if you agree to compare these profile histories.</p>
+            <form method="POST" action="/cine-match/compare" class="flex flex-col sm:flex-row gap-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="code" value="{{ friend_code }}">
+                <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-bold text-sm px-5 py-3 rounded-xl transition-colors cursor-pointer">Agree &amp; Compare</button>
+                <a href="/cine-match" class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-sm px-5 py-3 rounded-xl text-center transition-colors">Cancel</a>
+            </form>
+        </div>
+        {% endif %}
+        {% if friend %}
+        <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 shadow-2xl mb-8">
+            <div class="flex items-center gap-4 border-b border-gray-800 pb-4 mb-6">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-pink-500 to-red-600 flex items-center justify-center font-black text-white text-lg shadow-md">
+                    {{ friend.username|first|upper }}
+                </div>
+                <div>
+                    <h2 class="text-xl font-black text-white">Matching with {{ friend.username }}!</h2>
+                    <p class="text-xs text-gray-400">Checking intersection between your watch histories...</p>
+                </div>
+                <a href="/cine-match" aria-label="Start a New Match" class="ml-auto text-xs font-bold text-gray-400 hover:text-white bg-gray-800 px-3 py-1.5 rounded-lg transition-all">
+                    <i class="fa-solid fa-rotate-left mr-1" aria-hidden="true"></i> New Match
+                </a>
+            </div>
+            {% if matched_movies %}
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {% for movie in matched_movies %}
+                <a href="/details/{{ movie.media_type }}/{{ movie.tmdb_id }}" aria-label="View details for {{ movie.title }}" class="group block bg-[#0a0a0c] border border-gray-800/60 rounded-xl overflow-hidden hover:border-red-500 transition-all shadow-lg will-change-transform">
+                    <div class="relative aspect-[2/3] overflow-hidden">
+                        <img src="{{ image_base_url|default("https://image.tmdb.org/t/p/w500") }}{{ movie.poster_path }}" 
+                             alt="Poster of {{ movie.title }}" 
+                             width="300" height="450"
+                             {% if loop.index0 < 4 %}
+                                loading="eager" fetchpriority="high"
+                             {% else %}
+                                loading="lazy" decoding="async"
+                             {% endif %}
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 will-change-transform">
+                    </div>
+                    <div class="p-3">
+                        <h3 class="text-white text-xs font-bold truncate group-hover:text-red-500 transition-colors">{{ movie.title }}</h3>
+                        <span class="text-[9px] text-gray-400 uppercase font-black mt-1 inline-block bg-gray-900 px-1.5 py-0.5 rounded border border-gray-850">{{ movie.media_type }}</span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <i class="fa-solid fa-heart-crack text-5xl text-gray-600 mb-4 animate-pulse" aria-hidden="true"></i>
+                <h3 class="text-lg font-bold text-gray-300">No Common Matches Yet!</h3>
+                <p class="text-gray-400 text-xs mt-1">You two have not watched any of the same movies or series yet.</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+<script>
+    function copyMatchLink() {
+        const copyText = document.getElementById("shareUrl");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); 
+        navigator.clipboard.writeText(copyText.value);
+        const copyBtn = document.getElementById("copyBtn");
+        copyBtn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Copied!';
+        copyBtn.classList.remove("bg-red-600", "hover:bg-red-700");
+        copyBtn.classList.add("bg-green-600");
+        setTimeout(() => {
+            copyBtn.innerHTML = '<i class="fa-solid fa-copy mr-1"></i> Copy Link';
+            copyBtn.classList.remove("bg-green-600");
+            copyBtn.classList.add("bg-red-600", "hover:bg-red-700");
+        }, 2000);
+    }
+</script>
+{% endblock %}

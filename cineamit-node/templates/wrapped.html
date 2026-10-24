@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}My Cine-Wrapped - All Time Streaming Stats | CINEAMIT{% endblock %}
+{% block meta_desc %}Check out my all-time binge-watching statistics on CINEAMIT. Movies, TV shows, and streaming timeline!{% endblock %}
+{% block content %}
+<script src="/static/assets/vendor/chart.umd.min.js?v=4.5.1" defer></script>
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+        opacity: 0;
+        animation: fadeIn 0.6s ease-out forwards;
+        will-change: transform, opacity;
+    }
+</style>
+<div class="min-h-screen bg-[#09090b] text-white p-6 md:p-12 animate-fade-in relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-96 h-96 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
+    <main class="max-w-6xl mx-auto relative z-10">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-6xl font-black tracking-wider bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-clip-text text-transparent uppercase">
+                <i class="fa-solid fa-chart-pie mr-3 text-white" aria-hidden="true"></i> Cine-Wrapped
+            </h1>
+            <p class="text-gray-400 mt-3 text-sm md:text-base font-bold">Your all-time binge-watching statistics, {{ current_user.username }}!</p>
+        </div>
+        {% if wrap_total and wrap_total > 0 %}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 flex flex-col items-center justify-center shadow-2xl transform hover:scale-105 transition-transform">
+                <i class="fa-solid fa-eye text-4xl text-blue-500 mb-4 animate-bounce" aria-hidden="true"></i>
+                <h2 class="text-5xl font-black text-white">{{ total }}</h2>
+                <p class="text-gray-400 font-bold uppercase tracking-widest text-xs mt-2">Total Titles Watched</p>
+            </div>
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 flex flex-col items-center justify-center shadow-2xl transform hover:scale-105 transition-transform">
+                <i class="fa-solid fa-film text-4xl text-red-500 mb-4" aria-hidden="true"></i>
+                <h2 class="text-5xl font-black text-white">{{ movies }}</h2>
+                <p class="text-gray-400 font-bold uppercase tracking-widest text-xs mt-2">Movies Enjoyed</p>
+            </div>
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 flex flex-col items-center justify-center shadow-2xl transform hover:scale-105 transition-transform">
+                <i class="fa-solid fa-tv text-4xl text-purple-500 mb-4" aria-hidden="true"></i>
+                <h2 class="text-5xl font-black text-white">{{ tv }}</h2>
+                <p class="text-gray-400 font-bold uppercase tracking-widest text-xs mt-2">Series Binged</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 shadow-2xl">
+                <h2 class="text-lg font-bold text-gray-300 mb-4 border-b border-gray-800 pb-2">Movies vs TV Shows</h2>
+                <div class="relative h-64 w-full flex justify-center">
+                    <canvas id="mediaTypeChart" role="img" aria-label="Doughnut chart comparing movies and TV shows watched"></canvas>
+                </div>
+            </div>
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 shadow-2xl">
+                <h2 class="text-lg font-bold text-gray-300 mb-4 border-b border-gray-800 pb-2">Your Binge-Watching Timeline</h2>
+                <div class="relative h-64 w-full">
+                    <canvas id="monthlyActivityChart" role="img" aria-label="Bar chart showing watch activity per month"></canvas>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="flex flex-col items-center justify-center py-20 bg-[#141519] border border-gray-800 rounded-2xl">
+            <i class="fa-solid fa-ghost text-6xl text-gray-600 mb-6 animate-pulse" aria-hidden="true"></i>
+            <h2 class="text-2xl font-bold text-white mb-2">No Data Found!</h2>
+            <p class="text-gray-400">You have not watched a movie or series yet. Start watching to build stats!</p>
+            <a href="/" aria-label="Start Watching Movies and Shows" class="mt-6 bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full font-bold transition-colors">Start Watching</a>
+        </div>
+        {% endif %}
+    </main>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        {% if wrap_total and wrap_total > 0 %}
+        if (typeof Chart === 'undefined') return;
+        Chart.defaults.color = '#9ca3af';
+        Chart.defaults.font.family = "'Segoe UI', sans-serif";
+        const ctxPie = document.getElementById('mediaTypeChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: ['Movies', 'TV Shows'],
+                datasets: [{
+                    data: [{{ movies }}, {{ tv }}],
+                    backgroundColor: ['rgba(220, 38, 38, 0.8)', 'rgba(147, 51, 234, 0.8)'],
+                    borderColor: ['#141519', '#141519'],
+                    borderWidth: 4,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                cutout: '70%'
+            }
+        });
+        const ctxBar = document.getElementById('monthlyActivityChart').getContext('2d');
+        let gradient = ctxBar.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
+        gradient.addColorStop(1, 'rgba(59, 130, 246, 0.1)');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: {{ months_labels |raw }},
+                datasets: [{
+                    label: 'Titles Watched',
+                    data: {{ months_data |raw }},
+                    backgroundColor: gradient,
+                    borderRadius: 6,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+        {% endif %}
+    });
+</script>
+{% endblock %}

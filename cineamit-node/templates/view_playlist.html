@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+        opacity: 0;
+        animation: fadeIn 0.4s ease-out forwards;
+        will-change: transform, opacity;
+    }
+</style>
+<div class="min-h-screen bg-[#09090b] text-white p-6 md:p-12 animate-fade-in relative overflow-hidden">
+    <div class="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-purple-900/30 to-[#09090b] z-0"></div>
+    <div class="max-w-7xl mx-auto relative z-10">
+        <div class="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 mb-12 border-b border-gray-800/50 pb-10">
+            <div class="w-40 h-40 md:w-56 md:h-56 bg-[#141519] border border-gray-800 rounded-2xl flex flex-col items-center justify-center shadow-2xl">
+                <i class="fa-solid fa-layer-group text-6xl md:text-8xl text-purple-600/50" aria-hidden="true"></i>
+            </div>
+            <div class="flex-1 text-center md:text-left mt-4 md:mt-0 flex flex-col justify-end h-full">
+                <span class="text-xs font-bold uppercase tracking-widest text-purple-500 mb-2">Public Collection</span>
+                <h1 class="text-4xl md:text-6xl font-black tracking-wider mb-4">{{ playlist.name }}</h1>
+                <p class="text-gray-400 mb-6 max-w-2xl text-sm md:text-base">{{ playlist.description ?: "A curated collection of amazing movies and shows." }}</p>
+                <div class="flex items-center justify-center md:justify-start gap-3 text-sm text-gray-500 font-bold">
+                    <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-white">
+                        <i class="fa-solid fa-user text-xs" aria-hidden="true"></i>
+                    </div>
+                    <span>Created by <span class="text-gray-300">{{ owner.username }}</span></span>
+                    <span class="mx-2">•</span>
+                    <span>{{ items|length }} Items</span>
+                </div>
+            </div>
+        </div>
+        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4 md:gap-6">
+            {% for item in items %}
+            <a aria-label="Watch {{ item.title }}" href="{{ url_for('routes.details', media_type=item.media_type, tmdb_id=item.tmdb_id, title=item.title) }}" class="group relative rounded-xl overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105 hover:shadow-purple-600/30">
+                {% if item.poster_path %}
+                <img src="{{ image_base_url|default("https://image.tmdb.org/t/p/w500") }}{{ item.poster_path }}" 
+                     alt="Poster of {{ item.title }}" 
+                     width="300" height="450"
+                     {% if loop.index0 < 6 %}
+                        fetchpriority="high" loading="eager"
+                     {% else %}
+                        loading="lazy" decoding="async"
+                     {% endif %}
+                     class="w-full h-auto aspect-[2/3] object-cover border border-gray-800 group-hover:border-purple-500 transition-colors will-change-transform">
+                {% else %}
+                <div class="w-full aspect-[2/3] bg-gray-900 border border-gray-800 flex items-center justify-center">
+                    <i class="fa-solid fa-film text-3xl text-gray-700" aria-hidden="true"></i>
+                </div>
+                {% endif %}
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+                    <p class="text-white font-bold text-xs truncate">{{ item.title }}</p>
+                    <p class="text-gray-400 text-[10px] uppercase mt-1">{{ item.media_type }}</p>
+                </div>
+            </a>
+            {% else %}
+            <div class="col-span-full text-center py-12">
+                <p class="text-gray-500 font-bold text-lg">This collection is empty.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

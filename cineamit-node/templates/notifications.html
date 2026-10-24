@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.4s ease-out forwards;
+        will-change: transform, opacity;
+    }
+</style>
+<div class="min-h-screen bg-[#09090b] text-white p-6 md:p-12 animate-fade-in">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex items-center justify-between mb-8 border-b border-gray-800 pb-4">
+            <h1 class="text-3xl font-black flex items-center tracking-wide">
+                <i class="fa-solid fa-bell text-red-600 mr-3 animate-pulse" aria-hidden="true"></i> Notifications
+            </h1>
+            {% if notifications %}
+            <form action="{{ url_for('routes.clear_notifications') }}" method="POST" class="m-0">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" aria-label="Clear all notifications" class="text-sm font-bold text-gray-500 hover:text-white transition-colors bg-gray-900 px-4 py-2 rounded-lg border border-gray-800 hover:border-red-500 cursor-pointer">
+                    Clear All
+                </button>
+            </form>
+            {% endif %}
+        </div>
+        <div class="flex flex-col gap-4">
+            {% for notif in notifications %}
+            <div class="bg-[#141519] border {% if not notif.is_read %}border-red-500/50 shadow-[0_0_15px_rgba(220,38,38,0.15)]{% else %}border-gray-800{% endif %} rounded-xl p-5 flex gap-4 transition-all group relative overflow-hidden">
+                {% if not notif.is_read %}
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-600"></div>
+                {% endif %}
+                <div class="w-12 h-12 flex-none rounded-full flex items-center justify-center {% if not notif.is_read %}bg-red-600/20 text-red-500{% else %}bg-gray-800 text-gray-500{% endif %}">
+                    <i class="fa-solid fa-bolt text-xl" aria-hidden="true"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-start mb-1">
+                        <h2 class="font-bold text-lg {% if not notif.is_read %}text-white{% else %}text-gray-400{% endif %}">{{ notif.title }}</h2>
+                        <span class="text-[10px] uppercase tracking-widest text-gray-400 font-bold ml-2">{{ notif.created_at|date('d M, H:i') }}</span>
+                    </div>
+                    <p class="text-sm text-gray-400 leading-relaxed">{{ notif.message }}</p>
+                    {% if not notif.is_read %}
+                    <form action="{{ url_for('routes.mark_notification_read', notif_id=notif.id) }}" method="POST" class="inline-block mt-4 m-0">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button type="submit" aria-label="Mark notification as read" class="text-xs font-bold text-red-500 hover:text-red-400 uppercase tracking-widest cursor-pointer bg-transparent border-0 p-0">
+                            Mark as Read <i class="fa-solid fa-check ml-1" aria-hidden="true"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="flex flex-col items-center justify-center py-20 text-center">
+                <i class="fa-regular fa-bell-slash text-6xl text-gray-700 mb-6" aria-hidden="true"></i>
+                <h2 class="text-xl font-bold text-gray-400 mb-2">You're all caught up!</h2>
+                <p class="text-sm text-gray-400">No new notifications right now.</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% if notif_total_pages is defined and notif_total_pages > 1 %}
+        <div class="flex items-center justify-center gap-4 mt-10">
+            {% if notif_page > 1 %}
+            <a href="/notifications?page={{ notif_page - 1 }}" class="text-xs font-bold uppercase tracking-widest text-white bg-gray-900 border border-gray-800 hover:border-red-500 px-4 py-2 rounded-lg transition-colors">
+                <i class="fa-solid fa-chevron-left mr-1" aria-hidden="true"></i> Prev
+            </a>
+            {% endif %}
+            <span class="text-[11px] font-bold uppercase tracking-widest text-gray-400">
+                Page {{ notif_page }} / {{ notif_total_pages }} · {{ notif_total }} total
+            </span>
+            {% if notif_page < notif_total_pages %}
+            <a href="/notifications?page={{ notif_page + 1 }}" class="text-xs font-bold uppercase tracking-widest text-white bg-gray-900 border border-gray-800 hover:border-red-500 px-4 py-2 rounded-lg transition-colors">
+                Next <i class="fa-solid fa-chevron-right ml-1" aria-hidden="true"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    @keyframes fadeIn { 
+        from { transform: translateY(10px); } 
+        to { transform: translateY(0); } 
+    }
+    .animate-fade-in { 
+        animation: fadeIn 0.35s ease-out forwards; 
+    }
+</style>
+
+<div class="pt-6 md:pt-8 pb-12 px-4 sm:px-6 md:px-12 max-w-[1800px] mx-auto min-h-screen">
+    {% include "seo_breadcrumbs.html" %}
+    <div class="flex items-center justify-between mb-6 md:mb-8 border-b border-gray-800 pb-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white border-l-4 border-red-600 pl-4 tracking-wide">
+                {{ title }}
+            </h1>
+            <p class="text-gray-400 mt-2 pl-5 text-xs sm:text-sm">{{ seo.intro }}</p>
+        </div>
+        <a aria-label="Go Back to Home" href="/" class="hidden md:flex items-center text-sm font-bold text-gray-400 hover:text-white transition-colors bg-gray-900 px-4 py-2 rounded-lg border border-gray-800 hover:border-gray-600">
+            <i class="fa-solid fa-arrow-left mr-2" aria-hidden="true"></i> Back to Home
+        </a>
+    </div>
+    
+    {% if items and items|length > 0 %}
+    <div id="contentGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6">
+        {% for item in items %}
+            {% set item_img = item.poster_path ?: item.profile_path %}
+            {% if item_img %}
+                {% set raw_media = item.media_type ?: media_type %}
+                {% set item_title = item.title ?: item.name %}
+
+                <div class="relative transition-all duration-300 hover:z-[100] animate-fade-in {% if raw_media != 'person' %}movie-preview-card{% endif %}" 
+                     data-id="{{ item.id }}" 
+                     data-type="{{ raw_media }}"
+                     {% if raw_media != 'person' %}
+                     data-title="{{ item_title }}"
+                     data-backdrop="{{ image_base|default("https://image.tmdb.org/t/p") }}/w500{{ item.backdrop_path ?: item_img }}"
+                     data-watch="{{ url_for('player.watch', media_type=raw_media, tmdb_id=item.id, title=item_title) }}"
+                     data-rating="{{ (item.vote_average) ? ((item.vote_average | round(1))) : ('NR') }}"
+                     data-year="{{ ((item.release_date ?: item.first_air_date)) ? ((item.release_date ?: item.first_air_date)[:4]) : ('N/A') }}"
+                     {% endif %}>
+                    
+                    {% if raw_media == 'person' %}
+                        {% set target_url = url_for('routes.actor', slug=(item_title|lower|replace({' ': '-'}) ~ '-' ~ item.id)) %}
+                    {% else %}
+                        {% set target_url = url_for('routes.details', media_type=raw_media, tmdb_id=item.id, title=item_title) %}
+                    {% endif %}
+
+                    <a aria-label="View Details for {{ item_title }}" href="{{ target_url }}" class="block relative rounded-lg overflow-hidden shadow-lg border border-gray-800 aspect-[2/3] transition-all duration-500 hover:scale-105 hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(220,38,38,0.4)] hover:border-red-500/50 group bg-gray-900">
+                        {% if loop.index0 < 4 %}
+                        <img src="{{ image_base|default("https://image.tmdb.org/t/p") }}/w342{{ item_img }}" 
+                             alt="Poster of {{ item_title }}" 
+                             width="300" height="450"
+                             {% if loop.index0 < 2 %}loading="eager" fetchpriority="high" decoding="sync"{% else %}loading="eager" decoding="async"{% endif %}
+                             class="w-full h-full object-cover">
+                        {% else %}
+                        <img src="{{ image_base|default("https://image.tmdb.org/t/p") }}/w342{{ item_img }}" loading="lazy" alt="Poster of {{ item_title }}" 
+                             width="300" height="450"
+                             decoding="async"
+                             class="w-full h-full object-cover">
+                        {% endif %}
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-100 group-hover:opacity-0 transition-opacity duration-500"></div>
+
+                        {% set badge_text = 'Movie' %}
+                        {% set badge_color = 'bg-red-600' %}
+                        {% if raw_media == 'tv' %}
+                            {% set badge_text = 'TV Show' %}
+                            {% set badge_color = 'bg-blue-600' %}
+                            {% if item.original_language == 'ja' and (item.genre_ids and 16 in item.genre_ids) %}
+                                {% set badge_text = 'Anime' %}
+                                {% set badge_color = 'bg-purple-600' %}
+                            {% endif %}
+                        {% elseif raw_media == 'movie' %}
+                            {% set badge_text = 'Movie' %}
+                            {% set badge_color = 'bg-red-600' %}
+                        {% elseif raw_media == 'person' %}
+                            {% set badge_text = 'Actor' %}
+                            {% set badge_color = 'bg-amber-600' %}
+                        {% endif %}
+                        
+                        <div class="absolute top-2 left-2 {{ badge_color }}/90 px-2 py-1 rounded text-[10px] text-white font-bold backdrop-blur-md shadow-lg uppercase tracking-wider z-20">
+                            {{ badge_text }}
+                        </div>
+
+                        {% if item.vote_average and raw_media != 'person' %}
+                        <div class="absolute top-2 right-2 bg-black bg-opacity-80 px-2 py-1 rounded text-[11px] text-green-400 font-bold border border-green-500/30 backdrop-blur-md shadow-lg z-20">
+                            <i class="fa-solid fa-star text-[10px] mr-1"></i>{{ item.vote_average | round(1) }}
+                        </div>
+                        {% endif %}
+                    </a>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    
+    <div class="w-full max-w-5xl mx-auto my-6 bg-gray-900 border border-gray-800 rounded-lg flex items-center justify-center min-h-[100px] overflow-hidden relative">
+        <span data-adsterra-smartlink class="text-[10px] text-gray-400 uppercase tracking-widest absolute top-2 right-4">Sponsored</span>
+        <div class="ad-slot-728 text-gray-400 text-sm py-2"></div>
+    </div>
+
+    {% set cur_page = seo.page %}
+    {% set max_page = seo.total_pages %}
+    {% set page_base = seo.pagination_base %}
+    {% set max_minus_1 = max_page - 1 %}
+    {% set start_p = cur_page - 2 %}
+    {% if start_p < 2 %}
+        {% set start_p = 2 %}
+    {% endif %}
+    {% set end_p = cur_page + 2 %}
+    {% if cur_page <= 3 and max_page > 5 %}
+        {% set end_p = 5 %}
+    {% endif %}
+    {% if end_p > max_minus_1 %}
+        {% set end_p = max_minus_1 %}
+    {% endif %}
+    <nav aria-label="Pagination" class="w-full flex flex-col items-center justify-center py-10 gap-3 select-none">
+        <div class="flex flex-wrap items-center justify-center gap-2">
+            {% if cur_page > 1 %}
+            <a href="{{ page_base }}page={{ cur_page - 1 }}" class="px-4 py-2.5 rounded-xl bg-[#141519] hover:bg-gray-800 text-gray-200 hover:text-white border border-gray-800 hover:border-gray-600 text-xs md:text-sm font-bold transition-all flex items-center gap-1.5 shadow-md">
+                <i class="fa-solid fa-chevron-left text-[11px]"></i> Prev
+            </a>
+            {% else %}
+            <span class="px-4 py-2.5 rounded-xl bg-[#141519]/50 text-gray-600 border border-gray-800/50 text-xs md:text-sm font-bold flex items-center gap-1.5 cursor-not-allowed">
+                <i class="fa-solid fa-chevron-left text-[11px]"></i> Prev
+            </span>
+            {% endif %}
+
+            <a href="{{ page_base }}page=1" class="min-w-[40px] h-10 px-3 rounded-xl flex items-center justify-center text-xs md:text-sm font-extrabold transition-all border {% if cur_page == 1 %}bg-red-600 text-white border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.45)]{% else %}bg-[#141519] text-gray-300 border-gray-800 hover:bg-gray-800 hover:text-white hover:border-gray-600{% endif %}">
+                1
+            </a>
+
+            {% if start_p > 2 %}
+            <span class="px-1.5 text-gray-500 font-bold text-sm">…</span>
+            {% endif %}
+
+            {% if end_p >= start_p %}
+                {% for p in range(start_p, end_p) %}
+                <a href="{{ page_base }}page={{ p }}" class="min-w-[40px] h-10 px-3 rounded-xl flex items-center justify-center text-xs md:text-sm font-extrabold transition-all border {% if p == cur_page %}bg-red-600 text-white border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.45)]{% else %}bg-[#141519] text-gray-300 border-gray-800 hover:bg-gray-800 hover:text-white hover:border-gray-600{% endif %}">
+                    {{ p }}
+                </a>
+                {% endfor %}
+            {% endif %}
+
+            {% if end_p < max_minus_1 %}
+            <span class="px-1.5 text-gray-500 font-bold text-sm">…</span>
+            {% endif %}
+
+            {% if max_page > 1 %}
+            <a href="{{ page_base }}page={{ max_page }}" class="min-w-[40px] h-10 px-3 rounded-xl flex items-center justify-center text-xs md:text-sm font-extrabold transition-all border {% if cur_page == max_page %}bg-red-600 text-white border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.45)]{% else %}bg-[#141519] text-gray-300 border-gray-800 hover:bg-gray-800 hover:text-white hover:border-gray-600{% endif %}">
+                {{ max_page }}
+            </a>
+            {% endif %}
+
+            {% if cur_page < max_page %}
+            <a href="{{ page_base }}page={{ cur_page + 1 }}" class="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white border border-red-500 text-xs md:text-sm font-bold transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(220,38,38,0.35)]">
+                Next <i class="fa-solid fa-chevron-right text-[11px]"></i>
+            </a>
+            {% else %}
+            <span class="px-4 py-2.5 rounded-xl bg-[#141519]/50 text-gray-600 border border-gray-800/50 text-xs md:text-sm font-bold flex items-center gap-1.5 cursor-not-allowed">
+                Next <i class="fa-solid fa-chevron-right text-[11px]"></i>
+            </span>
+            {% endif %}
+        </div>
+        <p class="text-[11px] text-gray-500 font-bold uppercase tracking-widest">
+            Page <span class="text-gray-300">{{ cur_page }}</span> of <span class="text-gray-300">{{ max_page }}</span>
+        </p>
+    </nav>
+    
+    {% else %}
+    <div class="flex flex-col items-center justify-center py-20 text-center">
+        <i class="fa-solid fa-film text-6xl text-gray-700 mb-4" aria-hidden="true"></i>
+        <h2 class="text-2xl font-bold text-white mb-2">No content found</h2>
+        <p class="text-gray-500">We couldn't find any items in this category.</p>
+        <a aria-label="Return to Home" href="/" class="mt-6 text-red-500 hover:text-white font-bold transition-colors">Go Back Home</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

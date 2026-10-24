@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/islandNav"
+    android:layout_width="wrap_content"
+    android:layout_height="60dp"
+    android:background="@drawable/island_bg"
+    android:elevation="18dp"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:paddingStart="10dp"
+    android:paddingEnd="10dp">
+
+    <FrameLayout
+        android:id="@+id/islandHomeSlot"
+        android:layout_width="48dp"
+        android:layout_height="48dp">
+
+        <View
+            android:id="@+id/islandHomeOn"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/island_tab_on"
+            android:visibility="invisible" />
+
+        <ImageView
+            android:id="@+id/islandHome"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/menu_home"
+            android:src="@drawable/island_ic_home" />
+
+        <View
+            android:id="@+id/islandHomeDot"
+            android:layout_width="5dp"
+            android:layout_height="5dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/dot_coral"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/islandPlusSlot"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp">
+
+        <View
+            android:id="@+id/islandPlusOn"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/island_tab_on"
+            android:visibility="invisible" />
+
+        <ImageView
+            android:id="@+id/islandPlus"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/ic_add" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/islandProfileSlot"
+        android:layout_width="48dp"
+        android:layout_height="48dp">
+
+        <View
+            android:id="@+id/islandProfileOn"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/island_tab_on"
+            android:visibility="invisible" />
+
+        <ImageView
+            android:id="@+id/islandProfile"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/account"
+            android:src="@drawable/island_ic_user" />
+    </FrameLayout>
+</LinearLayout>

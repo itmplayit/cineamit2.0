@@ -1,0 +1,968 @@
+{% extends "base.html" %}
+{% block title %}Live TV - 50,000+ Channels Pro Cinema Player{% endblock %}
+{% block meta_desc %}Stream live television channels with DPlayer live cinema UI, 10-second zero-buffering auto-reload watchdog, and direct stream playback.{% endblock %}
+{% block content %}
+<script defer src="/static/assets/vendor/DPlayer.min.js?v=1.27.1"></script>
+<script defer src="/static/assets/vendor/hls.min.js?v=1.5.17"></script>
+<script defer src="/static/assets/vendor/mpegts.min.js?v=1.7.3"></script>
+<!-- dash.js (~780KB) sirf .mpd streams ke liye chahiye — isliye on-demand load hota hai (ensureDash) -->
+<style>
+    @keyframes cardFadeUp { 
+        from { opacity: 0; transform: translateY(12px); } 
+        to { opacity: 1; transform: translateY(0); } 
+    }
+    .card-animate { 
+        animation: cardFadeUp 0.3s ease-out forwards; 
+        will-change: transform, opacity;
+    }
+    .glass-panel {
+        background: rgba(18, 20, 26, 0.88);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card {
+        background: rgba(20, 21, 28, 0.75);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .glass-card:hover {
+        background: rgba(30, 32, 42, 0.95);
+        border-color: rgba(239, 68, 68, 0.45);
+        box-shadow: 0 0 25px rgba(220, 38, 38, 0.18);
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #ef4444; }
+    .dplayer {
+        border-radius: 1rem !important;
+        overflow: hidden !important;
+        background: #000 !important;
+        font-family: inherit !important;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.9) !important;
+    }
+    .dplayer-video-wrap {
+        background: #000 !important;
+    }
+    .dplayer-video {
+        object-fit: contain !important;
+    }
+        content-visibility: auto;
+        contain-intrinsic-size: 800px;
+    }
+</style>
+<div class="p-4 pt-4 md:pt-6 pb-24 max-w-7xl mx-auto min-h-screen">
+    <div class="mb-8 glass-panel rounded-2xl p-4 md:p-6 shadow-2xl relative overflow-hidden z-10">
+        <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-4/5 h-1 bg-gradient-to-r from-transparent via-red-600 to-transparent opacity-80 blur-[1px]"></div>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-2xl bg-red-600/10 border border-red-500/30 flex items-center justify-center text-red-500 shadow-[0_0_20px_rgba(220,38,38,0.25)]">
+                        <i class="fa-solid fa-satellite-dish text-xl animate-pulse"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-black text-white tracking-wide flex items-center gap-2">
+                            Live TV <span class="text-[10px] bg-red-600 text-white font-black px-2 py-0.5 rounded uppercase tracking-widest shadow-sm">ZERO BUFFER</span>
+                        </h1>
+                        <p class="text-gray-400 text-xs mt-0.5">Direct Stream by Default • Database Proxies • 10s Seamless Auto-Reload.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <div class="relative w-full sm:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs pointer-events-none"></i>
+                    <input aria-label="Search Channel" type="text" id="searchInput" placeholder="Search channels..." class="w-full bg-[#0a0a0c] border border-gray-700/80 text-white rounded-xl pl-10 pr-8 py-2.5 text-xs focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition-all placeholder-gray-400">
+                    <button aria-label="Clear Search" id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white text-xs cursor-pointer">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="relative w-full sm:w-52">
+                    <i class="fa-solid fa-layer-group absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs pointer-events-none"></i>
+                    <select aria-label="Filter Channel Category" id="categoryFilter" class="w-full bg-[#0a0a0c] border border-gray-700/80 text-white rounded-xl pl-10 pr-8 py-2.5 text-xs outline-none cursor-pointer focus:border-red-500 transition-all appearance-none">
+                        <option value="all">All Categories</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat | lower | trim }}" class="bg-gray-900">{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-3.5 top-1/2 transform -translate-y-1/2 text-gray-500 text-[10px] pointer-events-none"></i>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-gray-800/80 flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1">
+            <button onclick="setQuickFilter('all', this)" class="quick-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-red-600 text-white whitespace-nowrap transition-colors border border-red-500/50">All Channels</button>
+            <button onclick="setQuickFilter('india', this)" class="quick-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-800/80 text-gray-300 hover:bg-gray-700 hover:text-white whitespace-nowrap transition-colors border border-gray-700/50">🇮🇳 India</button>
+            <button onclick="setQuickFilter('usa', this)" class="quick-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-800/80 text-gray-300 hover:bg-gray-700 hover:text-white whitespace-nowrap transition-colors border border-gray-700/50">🇺🇸 USA</button>
+            <button onclick="setQuickFilter('uk', this)" class="quick-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-800/80 text-gray-300 hover:bg-gray-700 hover:text-white whitespace-nowrap transition-colors border border-gray-700/50">🇬🇧 UK</button>
+            <button onclick="setQuickFilter('canada', this)" class="quick-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-800/80 text-gray-300 hover:bg-gray-700 hover:text-white whitespace-nowrap transition-colors border border-gray-700/50">🇨🇦 Canada</button>
+            <button onclick="setQuickFilter('pakistan', this)" class="quick-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-800/80 text-gray-300 hover:bg-gray-700 hover:text-white whitespace-nowrap transition-colors border border-gray-700/50">🇵🇰 Pakistan</button>
+            <button onclick="setQuickFilter('bangladesh', this)" class="quick-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-800/80 text-gray-300 hover:bg-gray-700 hover:text-white whitespace-nowrap transition-colors border border-gray-700/50">🇧🇩 Bangladesh</button>
+        </div>
+        <div class="mt-3 pt-3 border-t border-gray-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-400">
+            <div class="flex items-center gap-3">
+                <span class="flex items-center gap-1.5 text-green-400">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
+                    <span class="font-semibold" id="channelCountBadge">Building channels cache...</span>
+                </span>
+                <span class="text-gray-600">|</span>
+                <span class="text-gray-300 flex items-center gap-1.5 font-bold">
+                    <i class="fa-solid fa-bolt text-yellow-400"></i> Direct Stream Mode (Default)
+                </span>
+                <span class="text-gray-600">|</span>
+                <span class="text-green-400 flex items-center gap-1.5 font-bold">
+                    <i class="fa-solid fa-rotate"></i> 10s Zero-Buffer Watchdog Active
+                </span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-[10px] text-gray-500 font-mono">Controls: [Space] Play/Pause • [F] Fullscreen</span>
+            </div>
+        </div>
+    </div>
+    <div id="channelsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4"></div>
+    {% if ads_enabled and adsterra_native_banner %}
+    <div class="w-full max-w-6xl mx-auto my-6 adsterra-native-wrap">
+        <div class="bg-[#0f1014] border border-gray-800/80 rounded-2xl p-4 relative overflow-hidden">
+            <span class="text-[10px] text-amber-400 font-black uppercase tracking-widest mb-2 block"><i class="fa-solid fa-sparkles mr-1"></i> Sponsored Live Partners</span>
+            <div class="ad-slot-native w-full min-h-[90px]"></div>
+        </div>
+    </div>
+    {% endif %}
+    {% if ads_enabled and adsterra_banner_available %}
+    <div class="w-full flex flex-col items-center justify-center my-6">
+        <span data-adsterra-smartlink class="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Sponsored</span>
+        <div class="ad-slot-728 text-gray-400 text-sm py-2"></div>
+    </div>
+    {% endif %}
+    <div id="noResultsMsg" class="hidden flex-col items-center justify-center py-16 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-gray-800/50 border border-gray-700 flex items-center justify-center text-gray-400 text-2xl mb-3">
+            <i class="fa-solid fa-tv" aria-hidden="true"></i>
+        </div>
+        <h2 class="text-white font-bold text-base">No Channels Found</h2>
+        <p class="text-gray-400 text-xs mt-1 max-w-sm">Try searching with a different channel name or category.</p>
+        <button onclick="clearSearch()" class="mt-4 px-4 py-2 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/40 rounded-xl text-xs font-bold transition-all cursor-pointer">
+            Reset Filter
+        </button>
+    </div>
+    <div id="scrollLoader" class="hidden justify-center items-center py-8 gap-2">
+        <div class="w-2.5 h-2.5 bg-red-600 rounded-full animate-bounce"></div>
+        <div class="w-2.5 h-2.5 bg-red-600 rounded-full animate-bounce [animation-delay:0.15s]"></div>
+        <div class="w-2.5 h-2.5 bg-red-600 rounded-full animate-bounce [animation-delay:0.3s]"></div>
+    </div>
+    <div id="scrollSentinel" class="h-4 w-full"></div>
+</div>
+<div id="playerModal" class="fixed inset-0 z-[1000] hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/85 backdrop-blur-md transition-opacity" onclick="closePlayerModal()"></div>
+    <div class="glass-panel border border-gray-700/80 rounded-2xl p-6 shadow-[0_0_50px_rgba(0,0,0,0.9)] z-10 w-full max-w-sm transform scale-95 opacity-0 transition-all duration-300 relative" id="playerModalContent">
+        <div class="flex justify-between items-start mb-5">
+            <div class="flex items-center gap-3 overflow-hidden">
+                <div class="w-12 h-12 shrink-0 bg-[#0a0a0c] border border-gray-700 rounded-2xl flex items-center justify-center p-1.5 shadow-inner">
+                    <img id="modalLogo" src="" alt="Channel Logo" width="48" height="48" class="w-full h-full object-contain" loading="lazy">
+                </div>
+                <div class="overflow-hidden">
+                    <h2 id="modalName" class="text-white font-bold text-sm truncate leading-snug">Channel Name</h2>
+                    <span id="modalFormatBadge" class="text-[9px] text-green-400 uppercase tracking-widest font-black flex items-center gap-1.5 mt-1">
+                        <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> READY
+                    </span>
+                </div>
+            </div>
+            <button aria-label="Close Options" onclick="closePlayerModal()" class="text-gray-400 hover:text-white shrink-0 w-8 h-8 rounded-full bg-gray-800/60 hover:bg-gray-700 flex items-center justify-center transition-colors cursor-pointer">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+        <p class="text-gray-400 text-[10px] mb-4 text-center font-bold tracking-widest uppercase border-b border-gray-800 pb-2.5">
+            Select Playback Mode
+        </p>
+        <div class="flex flex-col gap-2.5">
+            {% if web_player_enabled == 'true' %}
+            <button onclick="triggerPlay('web')" class="w-full bg-gradient-to-r from-red-950/40 via-[#141519] to-[#141519] hover:from-red-900/60 text-white border border-red-500/40 hover:border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.15)] hover:shadow-[0_0_20px_rgba(220,38,38,0.3)] p-3.5 rounded-xl transition-all flex items-center justify-between font-bold text-xs group cursor-pointer">
+                <span class="flex items-center gap-3">
+                    <i class="fa-solid fa-play text-red-500 text-base group-hover:scale-110 transition-transform"></i>
+                    <span>Cinema Web Player</span>
+                </span>
+                <span class="text-[9px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded border border-green-500/30 font-black">NO BUFFER</span>
+            </button>
+            {% endif %}
+            <button onclick="triggerPlay('mx')" class="w-full bg-[#0a0a0c] hover:bg-blue-950/30 text-blue-400 hover:text-blue-300 border border-gray-800 hover:border-blue-500/60 p-3 rounded-xl transition-all flex items-center justify-between font-bold text-xs group cursor-pointer">
+                <span class="flex items-center gap-3">
+                    <i class="fa-solid fa-mobile-screen text-blue-400 text-sm group-hover:scale-110 transition-transform"></i>
+                    <span>MX Player</span>
+                </span>
+                <span class="text-[9px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">Real Stream</span>
+            </button>
+            <button onclick="triggerPlay('mediaplayer')" class="w-full bg-[#0a0a0c] hover:bg-teal-950/30 text-teal-400 hover:text-teal-300 border border-gray-800 hover:border-teal-500/60 p-3 rounded-xl transition-all flex items-center justify-between font-bold text-xs group cursor-pointer">
+                <span class="flex items-center gap-3">
+                    <i class="fa-solid fa-circle-play text-teal-400 text-sm group-hover:scale-110 transition-transform"></i>
+                    <span>Media Player</span>
+                </span>
+                <span class="text-[9px] bg-teal-500/10 text-teal-400 px-2 py-0.5 rounded border border-teal-500/20">PC & Mobile</span>
+            </button>
+        </div>
+    </div>
+</div>
+<div id="videoPlayerModal" class="fixed inset-0 z-[2000] hidden items-center justify-center bg-black/95 backdrop-blur-2xl opacity-0 transition-opacity duration-300 p-2 sm:p-4 md:p-6">
+    <div class="absolute inset-0 bg-black/80" onclick="closeVideoPlayer()"></div>
+    <button aria-label="Close Player" onclick="closeVideoPlayer()" class="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 md:top-6 md:right-8 z-[2050] text-white bg-red-600 hover:bg-red-500 border border-red-400/50 px-3 sm:px-4 py-1.5 rounded-full flex items-center gap-1.5 shadow-[0_0_20px_rgba(220,38,38,0.6)] cursor-pointer hover:scale-105 transition-all text-xs font-bold" title="Close Player (Esc)">
+        <i class="fa-solid fa-xmark text-sm"></i>
+        <span class="font-black uppercase tracking-wider text-[10px] sm:text-[11px]">Close</span>
+    </button>
+    <div class="w-full max-w-5xl flex flex-col items-center relative z-10 mt-6 sm:mt-0">
+        <div class="w-full flex flex-wrap sm:flex-nowrap justify-between items-center gap-2 mb-2.5 sm:mb-3 px-1 pr-16 sm:pr-24">
+            <div class="flex items-center gap-2 sm:gap-3 overflow-hidden min-w-0">
+                <span id="playerStatusDot" class="w-2.5 h-2.5 bg-yellow-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(234,179,8,0.8)] shrink-0"></span>
+                <h2 id="nativeTitleText" class="text-white font-black text-xs sm:text-sm md:text-base truncate drop-shadow-md">Channel Name</h2>
+                <span id="engineBadge" class="px-2 py-0.5 bg-red-600/20 border border-red-500/30 text-[9px] text-red-400 uppercase tracking-wider rounded font-black hidden sm:inline-block shrink-0">LIVE CINEMA</span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <div class="relative">
+                    <select aria-label="Select Proxy Node" id="proxyNodeSelector" onchange="manualSwitchProxy(this.value)" class="bg-gray-900 border border-gray-700 text-gray-300 text-[10px] font-bold rounded-lg px-2 sm:px-2.5 py-1 sm:py-1.5 outline-none cursor-pointer hover:border-red-500 transition-colors max-w-[180px] sm:max-w-none">
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div id="videoPlayerContainer" class="w-full aspect-video bg-black border border-gray-800 rounded-xl sm:rounded-2xl overflow-hidden shadow-[0_0_60px_rgba(220,38,38,0.2)] relative flex items-center justify-center max-h-[75dvh] sm:max-h-[82dvh]">
+            <div id="dplayerMount" class="w-full h-full"></div>
+
+            <div id="playerInternalLoader" class="absolute inset-0 flex flex-col items-center justify-center bg-[#0a0a0c]/90 z-[60] backdrop-blur-sm pointer-events-none">
+                <div class="relative w-14 h-14 mb-4">
+                    <div class="absolute inset-0 rounded-full border-4 border-gray-800"></div>
+                    <div class="absolute inset-0 rounded-full border-4 border-red-600 border-t-transparent animate-spin"></div>
+                    <i class="fa-solid fa-satellite-dish absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-red-500 text-sm animate-pulse"></i>
+                </div>
+                <p id="playerLoaderText" class="text-white text-xs font-bold uppercase tracking-widest text-center px-4">Starting Live Stream...</p>
+                <p id="playerLoaderSubtext" class="text-gray-400 text-[10px] mt-1 text-center font-mono">Zero-Buffer Low-Latency Mode Active...</p>
+            </div>
+            <div id="playerErrorOverlay" class="absolute inset-0 hidden flex-col items-center justify-center bg-[#0a0a0c]/95 z-[70] p-6 text-center">
+                <div class="w-12 h-12 rounded-full bg-red-600/10 border border-red-500/30 flex items-center justify-center text-red-500 text-xl mb-3">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h3 class="text-white font-bold text-sm mb-1">Live Stream Notice</h3>
+                <p id="playerErrorMsg" class="text-gray-400 text-xs mb-5 max-w-md">Stream dropped or node timed out. Select a recovery action:</p>
+                <div class="flex flex-wrap items-center justify-center gap-3">
+                    <button onclick="retryWithNextProxy()" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold transition-all shadow-[0_0_15px_rgba(220,38,38,0.4)] flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-rotate"></i> Try Proxy Node
+                    </button>
+                    <button onclick="triggerPlay('mx')" class="px-4 py-2 bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/40 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-mobile-screen"></i> Open in MX Player
+                    </button>
+                    <button onclick="triggerPlay('mediaplayer')" class="px-4 py-2 bg-teal-600/20 hover:bg-teal-600 text-teal-400 hover:text-white border border-teal-500/40 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-circle-play"></i> Open in Media Player
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="w-full mt-3 flex flex-wrap items-center justify-between gap-2 px-1 text-[10px] text-gray-500">
+            <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                <span id="playerLiveEdgeText">Secure Server Relay • 10s Zero-Buffer Watchdog Active</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="forceSyncLive()" class="hover:text-red-400 font-bold transition-colors cursor-pointer flex items-center gap-1 text-red-500">
+                    <i class="fa-solid fa-bolt"></i> Resync Live Edge
+                </button>
+                <button onclick="triggerPlay('mx')" class="hover:text-blue-400 transition-colors cursor-pointer flex items-center gap-1">
+                    <i class="fa-solid fa-mobile-screen"></i> MX Player
+                </button>
+                <button onclick="triggerPlay('mediaplayer')" class="hover:text-teal-400 transition-colors cursor-pointer flex items-center gap-1">
+                    <i class="fa-solid fa-circle-play"></i> Media Player
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="toastNotification" class="fixed bottom-6 right-6 z-[3000] transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="glass-panel border border-red-500/40 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-green-400"></i>
+        <span id="toastMessage">Notification</span>
+    </div>
+</div>
+<script id="channel-data" type="application/json">
+    {{ channels_json | raw }}
+</script>
+<script>
+    let allChannelsData = [];
+
+    function toAbsoluteUrl(url) {
+        if (!url) return '';
+        try {
+            return new URL(url, window.location.origin).href;
+        } catch(e) {
+            return url;
+        }
+    }
+    // Provider URLs remain server-side; all channel and HLS requests use the authenticated relay.
+    const PROXY_POOL = [
+        { name: "🔐 Secure Server Relay", url: "" }
+    ];
+
+    function getStreamType(url) {
+        if (!url) return 'ts';
+        const clean = url.toLowerCase();
+        if (clean.includes('.mpd') || clean.includes('extension=mpd') || clean.includes('format=mpd')) return 'mpd';
+        if (clean.includes('.m3u8') || clean.includes('extension=m3u8') || clean.includes('format=m3u8') || clean.includes('.m3u')) return 'm3u8';
+        if (clean.includes('.flv') || clean.includes('extension=flv')) return 'flv';
+        if (clean.includes('.ts') || clean.includes('extension=ts') || clean.includes('format=ts') || clean.includes('extension%3dts') || clean.includes('stream=') || clean.includes('stalker') || clean.includes('mag.')) return 'ts';
+        try {
+            const path = url.split('?')[0];
+            const ext = path.split('.').pop().toLowerCase();
+            if (['m3u8', 'm3u'].includes(ext)) return 'm3u8';
+            if (['mpd'].includes(ext)) return 'mpd';
+            if (['ts', 'flv'].includes(ext)) return ext;
+        } catch(e) {}
+        return 'ts';
+    }
+
+    function getRealStreamUrl(rawUrl) {
+        // Kept as a harmless URL normalizer for legacy player callbacks; never unwrap ?url= targets.
+        return rawUrl ? toAbsoluteUrl(rawUrl) : '';
+    }
+
+    let currentProxyIndex = 0;
+    let activeChannelUrl = "";
+    let activeChannelName = "";
+
+    window.setQuickFilter = function(keyword, btnElement) {
+        document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+            btn.classList.remove('bg-red-600', 'text-white', 'border-red-500/50');
+            btn.classList.add('bg-gray-800/80', 'text-gray-300', 'border-gray-700/50');
+        });
+        if (btnElement) {
+            btnElement.classList.remove('bg-gray-800/80', 'text-gray-300', 'border-gray-700/50');
+            btnElement.classList.add('bg-red-600', 'text-white', 'border-red-500/50');
+        }
+        const catSelect = document.getElementById('categoryFilter');
+        const searchInput = document.getElementById('searchInput');
+        if (keyword === 'all') {
+            catSelect.value = 'all';
+            searchInput.value = '';
+        } else {
+            let foundCat = false;
+            for(let i=0; i<catSelect.options.length; i++) {
+                if(catSelect.options[i].value.toLowerCase().includes(keyword.toLowerCase())) {
+                    catSelect.value = catSelect.options[i].value;
+                    searchInput.value = ''; 
+                    foundCat = true;
+                    break;
+                }
+            }
+            if(!foundCat) {
+                catSelect.value = 'all';
+                searchInput.value = keyword;
+            }
+        }
+        const event = new Event('input');
+        searchInput.dispatchEvent(event);
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const grid = document.getElementById('channelsGrid');
+        const searchInput = document.getElementById('searchInput');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const scrollLoader = document.getElementById('scrollLoader');
+        const noResultsMsg = document.getElementById('noResultsMsg');
+        const sentinel = document.getElementById('scrollSentinel');
+        const clearBtn = document.getElementById('clearSearchBtn');
+        const countBadge = document.getElementById('channelCountBadge');
+        const loadBatchSize = 24;
+        let currentlyDisplayed = 0;
+        let filteredChannels = [];
+        let livePage = 1;
+        let liveTotalPages = 1;
+        let liveLoading = false;
+        let liveKnownTotal = 0; 
+
+        const nodeSelector = document.getElementById('proxyNodeSelector');
+        if (nodeSelector) {
+            nodeSelector.innerHTML = '';
+            PROXY_POOL.forEach((p, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx.toString();
+                opt.textContent = p.name;
+                if (idx === 0) opt.selected = true;
+                nodeSelector.appendChild(opt);
+            });
+        }
+
+        function escapeHTML(str) {
+            if (!str) return "";
+            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
+        }
+
+        function createChannelCard(channel) {
+            const safeName = escapeHTML(channel.name);
+            const safeCat = escapeHTML(channel.category || 'Live TV');
+            let rawLogo = (channel.logo || "").trim();
+            let safeLogo = "";
+            if (rawLogo !== "") {
+                if (rawLogo.includes('weserv.nl')) {
+                    safeLogo = escapeHTML(rawLogo);
+                } else if (rawLogo.startsWith('http://') || rawLogo.startsWith('https://')) {
+                    safeLogo = 'https://images.weserv.nl/?url=' + encodeURIComponent(rawLogo) + '&default=' + encodeURIComponent('/static/assets/default-tv.png');
+                } else {
+                    safeLogo = escapeHTML(rawLogo);
+                }
+            }
+            const safeUrl = escapeHTML(channel.url);
+            const playAttrs = safeUrl ? 'onclick="openPlayerModal(this)"' : 'disabled aria-disabled="true" title="Stream unavailable through the secure relay"';
+            const logoHtml = safeLogo 
+                ? `<img src="${safeLogo}" alt="${safeName} Logo" width="56" height="56" loading="lazy" decoding="async" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\\'fa-solid fa-tv text-2xl text-red-500/80\\\'></i>'" class="w-full h-full object-contain relative z-10 transition-transform duration-300 group-hover:scale-110">`
+                : `<i class="fa-solid fa-tv text-2xl text-red-500/80 group-hover:text-red-400 group-hover:scale-110 transition-transform relative z-10"></i>`;
+            return `
+            <button aria-label="Play ${safeName}" data-url="${safeUrl}" data-name="${safeName}" data-logo="${safeLogo}" ${playAttrs} class="card-animate glass-card cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 flex flex-col items-center text-center rounded-2xl p-4 transition-all duration-300 group relative overflow-hidden">
+                <div class="w-14 h-14 mb-3 rounded-2xl bg-[#0a0a0c] border border-gray-800 flex items-center justify-center p-2 shadow-inner relative overflow-hidden group-hover:border-red-500/40 transition-colors">
+                    <div class="absolute inset-0 bg-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    ${logoHtml}
+                </div>
+                <h3 class="text-white font-bold text-xs w-full line-clamp-2 leading-tight h-8 overflow-hidden group-hover:text-red-400 transition-colors">${safeName}</h3>
+                <span class="text-[9px] font-black text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full uppercase tracking-wider mt-2 border border-red-500/20 truncate max-w-full">${safeCat}</span>
+            </button>`;
+        }
+
+        function applyFilters() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const selectedCat = categoryFilter.value.toLowerCase().trim();
+            if (clearBtn) {
+                if (searchTerm !== '') clearBtn.classList.remove('hidden');
+                else clearBtn.classList.add('hidden');
+            }
+            filteredChannels = allChannelsData.filter(channel => {
+                const matchesSearch = (channel.name || "").toLowerCase().includes(searchTerm);
+                const matchesCat = (selectedCat === 'all' || (channel.category || "").toLowerCase().trim() === selectedCat);
+                return matchesSearch && matchesCat;
+            });
+            grid.innerHTML = ''; 
+            currentlyDisplayed = 0;
+            if (filteredChannels.length === 0) {
+                noResultsMsg.classList.remove('hidden'); 
+                noResultsMsg.classList.add('flex'); 
+                scrollLoader.classList.add('hidden');
+            } else {
+                noResultsMsg.classList.add('hidden'); 
+                noResultsMsg.classList.remove('flex'); 
+                loadNextBatch(); 
+            }
+        }
+
+        function loadNextBatch() {
+            const nextBatch = filteredChannels.slice(currentlyDisplayed, currentlyDisplayed + loadBatchSize);
+            if (nextBatch.length === 0) return;
+            let htmlString = '';
+            nextBatch.forEach(channel => htmlString += createChannelCard(channel));
+            grid.insertAdjacentHTML('beforeend', htmlString);
+            currentlyDisplayed += nextBatch.length;
+            if (currentlyDisplayed < filteredChannels.length || livePage < liveTotalPages) {
+                scrollLoader.classList.remove('hidden'); 
+                scrollLoader.classList.add('flex');
+            } else {
+                scrollLoader.classList.add('hidden'); 
+                scrollLoader.classList.remove('flex');
+            }
+        }
+
+        function mapApiChannel(ch) {
+            const name = (ch && (ch.name || ch.title) || '').replace(/\[.*?\]/g, '').replace(/\s+/g, ' ').trim();
+            return {
+                name,
+                logo: (ch && (ch.logo || '')) || '',
+                category: (ch && (ch.category || 'Live TV')) || 'Live TV',
+                url: (ch && (ch.play || ch.url || '')) || '',
+                source: (ch && (ch.source || '')) || ''
+            };
+        }
+
+        function fillCategories(cats) {
+            if (!categoryFilter || !Array.isArray(cats)) return;
+            const have = {};
+            for (let i = 0; i < categoryFilter.options.length; i++) have[categoryFilter.options[i].value] = true;
+            cats.forEach((c) => {
+                const label = String(c || '').trim();
+                if (!label) return;
+                const val = label.toLowerCase();
+                if (have[val]) return;
+                have[val] = true;
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = label;
+                opt.className = 'bg-gray-900';
+                categoryFilter.appendChild(opt);
+            });
+        }
+
+        async function fetchLivePage(reset) {
+            liveLoading = false;
+            if (countBadge) countBadge.textContent = 'Android app · loads on device';
+            if (scrollLoader) {
+                scrollLoader.classList.add('hidden');
+                scrollLoader.classList.remove('flex');
+            }
+            if (noResultsMsg) {
+                noResultsMsg.classList.remove('hidden');
+                noResultsMsg.innerHTML = '<div class="text-center py-16 px-6">'
+                    + '<p class="text-white text-lg font-black mb-2">Live TV does not load on the website</p>'
+                    + '<p class="text-gray-400 text-sm max-w-md mx-auto">21,000+ channels and the VLC player run in the <b class="text-white">Android app</b> — catalog and stream both on your phone. Nothing is pulled on the website server.</p>'
+                    + '<a href="/app" class="inline-flex items-center gap-2 mt-6 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm px-5 py-2.5 rounded-xl">Get Android App <i class="fa-brands fa-android"></i></a>'
+                    + '</div>';
+            }
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            if (!entries[0].isIntersecting) return;
+            if (currentlyDisplayed < filteredChannels.length) {
+                loadNextBatch();
+                return;
+            }
+            if (!liveLoading && livePage < liveTotalPages) {
+                livePage += 1;
+                fetchLivePage(false);
+            }
+        }, { rootMargin: '0px 0px 200px 0px' });
+        observer.observe(sentinel);
+
+        let liveSearchTimer = null;
+        function scheduleLiveReload() {
+            clearTimeout(liveSearchTimer);
+            liveSearchTimer = setTimeout(() => fetchLivePage(true), 280);
+        }
+        searchInput.addEventListener('input', scheduleLiveReload);
+        categoryFilter.addEventListener('change', () => fetchLivePage(true));
+
+        fetchLivePage(true);
+    });
+
+    function clearSearch() {
+        const input = document.getElementById('searchInput');
+        const cat = document.getElementById('categoryFilter');
+        if (input) input.value = '';
+        if (cat) cat.value = 'all';
+
+        document.querySelectorAll('.quick-filter-btn').forEach((btn, index) => {
+            if(index === 0) {
+                btn.classList.remove('bg-gray-800/80', 'text-gray-300', 'border-gray-700/50');
+                btn.classList.add('bg-red-600', 'text-white', 'border-red-500/50');
+            } else {
+                btn.classList.remove('bg-red-600', 'text-white', 'border-red-500/50');
+                btn.classList.add('bg-gray-800/80', 'text-gray-300', 'border-gray-700/50');
+            }
+        });
+        const event = new Event('input');
+        if (input) input.dispatchEvent(event);
+    }
+
+    function openPlayerModal(element) {
+        selectedStreamUrl = element.getAttribute('data-url'); 
+        selectedChannelName = element.getAttribute('data-name');
+        const logo = element.getAttribute('data-logo');
+        document.getElementById('modalName').textContent = selectedChannelName;
+        const modalLogo = document.getElementById('modalLogo');
+        if (modalLogo) {
+            modalLogo.src = logo || '/static/assets/default-tv.png';
+            modalLogo.onerror = function() { this.src = '/static/assets/default-tv.png'; };
+        }
+        const streamType = getStreamType(selectedStreamUrl);
+        let badgeText = "STREAM READY";
+        if (streamType === 'ts' || streamType === 'flv') badgeText = "MPEG-TS LIVE";
+        else if (streamType === 'mpd') badgeText = "DASH LIVE";
+        else if (streamType === 'm3u8') badgeText = "HLS LIVE";
+        document.getElementById('modalFormatBadge').innerHTML = `<span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> ${badgeText}`;
+        const modal = document.getElementById('playerModal');
+        const content = document.getElementById('playerModalContent');
+        modal.classList.remove('hidden'); 
+        modal.classList.add('flex');
+        setTimeout(() => { 
+            content.classList.remove('scale-95', 'opacity-0'); 
+            content.classList.add('scale-100', 'opacity-100'); 
+        }, 10);
+    }
+    
+    function closePlayerModal() {
+        const modal = document.getElementById('playerModal');
+        const content = document.getElementById('playerModalContent');
+        content.classList.remove('scale-100', 'opacity-100'); 
+        content.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => { 
+            modal.classList.add('hidden'); 
+            modal.classList.remove('flex'); 
+        }, 250);
+    }
+
+    function showToast(msg, isSuccess = true) {
+        const toast = document.getElementById('toastNotification');
+        const icon = document.getElementById('toastIcon');
+        const text = document.getElementById('toastMessage');
+        if (!toast) return;
+        text.textContent = msg;
+        icon.className = isSuccess ? "fa-solid fa-circle-check text-green-400" : "fa-solid fa-circle-exclamation text-yellow-400";
+        toast.classList.remove('translate-y-20', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+        setTimeout(() => {
+            toast.classList.remove('translate-y-0', 'opacity-100');
+            toast.classList.add('translate-y-20', 'opacity-0');
+        }, 3000);
+    }
+
+    function triggerPlay(appType) {
+        const streamUrl = selectedStreamUrl || activeChannelUrl;
+        const channelName = selectedChannelName || activeChannelName || document.getElementById('modalName').textContent;
+        if (appType !== 'web') {
+            closePlayerModal();
+            showToast('Protected Live-TV streams can only play in the authenticated web player.', false);
+            return;
+        }
+        closePlayerModal();
+        openDPlayerCinema(streamUrl, channelName, 0);
+    }
+
+    let dpInstance = null;
+    let liveWatchdogInterval = null;
+    let lastProgressTime = 0;
+    let bufferStallSeconds = 0;
+
+    function hideAllOverlays() {
+        const internalLoader = document.getElementById('playerInternalLoader');
+        const errorOverlay = document.getElementById('playerErrorOverlay');
+        const statusDot = document.getElementById('playerStatusDot');
+        if (internalLoader) {
+            internalLoader.classList.add('hidden');
+            internalLoader.classList.remove('flex');
+        }
+        if (errorOverlay) {
+            errorOverlay.classList.add('hidden');
+            errorOverlay.classList.remove('flex');
+        }
+        if (statusDot) {
+            statusDot.className = "w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.8)]";
+        }
+    }
+
+    function destroyAllPlayers() {
+        if (liveWatchdogInterval) {
+            clearInterval(liveWatchdogInterval);
+            liveWatchdogInterval = null;
+        }
+        if (dpInstance) {
+            try { dpInstance.destroy(); } catch(e) {}
+            dpInstance = null;
+        }
+        const mount = document.getElementById('dplayerMount');
+        if (mount) mount.innerHTML = '';
+        lastProgressTime = 0;
+        bufferStallSeconds = 0;
+    }
+
+    function buildProxiedUrl(originalUrl, proxyIdx) {
+        // The server minted this opaque same-origin route; never unwrap or forward provider URLs.
+        return originalUrl ? toAbsoluteUrl(originalUrl) : '';
+    }
+
+    function startLiveWatchdog() {
+        if (liveWatchdogInterval) clearInterval(liveWatchdogInterval);
+        lastProgressTime = 0;
+        bufferStallSeconds = 0;
+        liveWatchdogInterval = setInterval(() => {
+            if (!dpInstance || !dpInstance.video) return;
+            const video = dpInstance.video;
+            if (video.paused || video.ended) return;
+            const cur = video.currentTime;
+
+            if (cur > 0 && Math.abs(cur - lastProgressTime) < 0.1) {
+                bufferStallSeconds++;
+
+                if (bufferStallSeconds >= 2) {
+                    if (video.buffered && video.buffered.length > 0) {
+                        try {
+                            const liveEnd = video.buffered.end(video.buffered.length - 1);
+                            if (liveEnd > cur + 0.2) {
+                                video.currentTime = liveEnd - 0.05;
+                                video.play().catch(() => {});
+                                bufferStallSeconds = 0;
+                                return;
+                            }
+                        } catch(e) {}
+                    }
+                }
+
+                if (bufferStallSeconds >= 4) {
+                    console.log("[Zero-Buffer Watchdog] 10s auto-resync triggered.");
+                    bufferStallSeconds = 0;
+                    forceSyncLive();
+                }
+            } else {
+                bufferStallSeconds = 0;
+                lastProgressTime = cur;
+                hideAllOverlays();
+            }
+        }, 1000);
+    }
+
+    function forceSyncLive() {
+        if (!dpInstance || !dpInstance.video) return;
+        const video = dpInstance.video;
+        try {
+            if (video.buffered && video.buffered.length > 0) {
+                const end = video.buffered.end(video.buffered.length - 1);
+                video.currentTime = Math.max(0, end - 0.05);
+                video.play().catch(() => {});
+            } else if (dpInstance.mpegts) {
+                dpInstance.mpegts.unload();
+                dpInstance.mpegts.load();
+                dpInstance.mpegts.play().then(hideAllOverlays).catch(() => {});
+            } else {
+                openDPlayerCinema(activeChannelUrl, activeChannelName, currentProxyIndex);
+            }
+        } catch(e) {
+            openDPlayerCinema(activeChannelUrl, activeChannelName, currentProxyIndex);
+        }
+    }
+
+    // dash.js ko ek hi baar load karta hai (local file, pinned version)
+    let dashJsPromise = null;
+    function ensureDash() {
+        if (typeof dashjs !== 'undefined') return Promise.resolve();
+        if (dashJsPromise) return dashJsPromise;
+        dashJsPromise = new Promise(function (resolve) {
+            const sc = document.createElement('script');
+            sc.src = '/static/assets/vendor/dash.all.min.js?v=4.7.4';
+            sc.async = true;
+            sc.onload = function () { resolve(); };
+            sc.onerror = function () { console.warn('[livetv] dash.js load fail — MPD stream native fallback pe'); resolve(); };
+            document.head.appendChild(sc);
+        });
+        return dashJsPromise;
+    }
+
+    function openDPlayerCinema(url, name, proxyIdx = 0) {
+        activeChannelUrl = url;
+        activeChannelName = name;
+        const absRawUrl = toAbsoluteUrl(url);
+        if (proxyIdx === 0 && window.location.protocol === 'https:' && absRawUrl.toLowerCase().startsWith('http://') && PROXY_POOL.length > 1) {
+            proxyIdx = 1;
+        }
+        currentProxyIndex = proxyIdx;
+        const modal = document.getElementById('videoPlayerModal');
+        const internalLoader = document.getElementById('playerInternalLoader');
+        const loaderText = document.getElementById('playerLoaderText');
+        const loaderSubtext = document.getElementById('playerLoaderSubtext');
+        const statusDot = document.getElementById('playerStatusDot');
+        const errorOverlay = document.getElementById('playerErrorOverlay');
+        const nodeSelector = document.getElementById('proxyNodeSelector');
+        const engineBadge = document.getElementById('engineBadge');
+        destroyAllPlayers(); 
+        document.getElementById('nativeTitleText').textContent = name;
+        if (nodeSelector) nodeSelector.value = proxyIdx.toString();
+        modal.classList.remove('hidden'); 
+        modal.classList.add('flex');
+        setTimeout(() => modal.classList.add('opacity-100'), 10);
+        if (errorOverlay) {
+            errorOverlay.classList.add('hidden');
+            errorOverlay.classList.remove('flex');
+        }
+        if (internalLoader) {
+            internalLoader.classList.remove('hidden'); 
+            internalLoader.classList.add('flex');
+        }
+        const streamType = getStreamType(url);
+        const proxiedUrl = buildProxiedUrl(url, proxyIdx);
+        const currentNode = PROXY_POOL[proxyIdx] || { name: 'Direct Feed' };
+        if (engineBadge) {
+            engineBadge.textContent = streamType === 'ts' ? 'MPEG-TS ZERO-BUFFER' : (streamType === 'm3u8' ? 'HLS DPLAYER' : 'LIVE CINEMA');
+        }
+        loaderText.textContent = `Connecting via ${currentNode.name}...`;
+        loaderSubtext.textContent = `Zero-Buffer Mode • Low Latency ${streamType.toUpperCase()} Engine`;
+        statusDot.className = "w-2.5 h-2.5 bg-yellow-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(234,179,8,0.8)]";
+        try {
+            dpInstance = new DPlayer({
+                container: document.getElementById('dplayerMount'),
+                live: true,
+                autoplay: true,
+                theme: '#ef4444',
+                video: {
+                    url: proxiedUrl,
+                    type: streamType === 'ts' ? 'customMpegts' : (streamType === 'm3u8' ? 'customHls' : (streamType === 'mpd' ? 'customDash' : 'normal')),
+                    customType: {
+                        customMpegts: function (video, player) {
+                            if (typeof mpegts !== 'undefined' && mpegts.isSupported()) {
+                                const mpegtsPlayer = mpegts.createPlayer({
+                                    type: 'mpegts',
+                                    isLive: true,
+                                    url: video.src,
+                                    cors: true
+                                }, {
+                                    enableWorker: false,
+                                    lazyLoad: false,
+                                    stashInitialSize: 16,
+                                    enableStashBuffer: false,
+                                    autoCleanupSourceBuffer: true,
+                                    autoCleanupMaxBackwardDuration: 6,
+                                    autoCleanupMinBackwardDuration: 1,
+                                    fixAudioTimestampGap: true,
+                                    accurateSeek: false,
+                                    liveBufferLatencyChasing: true,
+                                    liveBufferLatencyMaxLatency: 1.0,
+                                    liveBufferLatencyMinRemain: 0.2
+                                });
+                                mpegtsPlayer.attachMediaElement(video);
+                                mpegtsPlayer.load();
+                                const p = mpegtsPlayer.play();
+                                if (p !== undefined) {
+                                    p.then(() => {
+                                        hideAllOverlays();
+                                        startLiveWatchdog();
+                                    }).catch(err => {
+                                        hideAllOverlays();
+                                    });
+                                }
+                                mpegtsPlayer.on(mpegts.Events.MEDIA_INFO, hideAllOverlays);
+                                mpegtsPlayer.on(mpegts.Events.RECOVERED_EARLY_EOF, () => {
+                                    console.log("[mpegts] Chunk edge. Instant live resync...");
+                                    forceSyncLive();
+                                });
+                                mpegtsPlayer.on(mpegts.Events.ERROR, (errType, errDetail) => {
+                                    console.warn("mpegts error notice:", errType, errDetail);
+                                    setTimeout(() => {
+                                        if (video.currentTime === 0 || video.paused) {
+                                            fallbackToNextProxyOrError(url, name, proxyIdx);
+                                        }
+                                    }, 2500);
+                                });
+                                player.mpegts = mpegtsPlayer;
+                            } else {
+                                video.src = proxiedUrl;
+                            }
+                        },
+                        customHls: function (video, player) {
+                            if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+                                const realBaseStreamUrl = getRealStreamUrl(absRawUrl);
+                                const hls = new Hls({ 
+                                    maxMaxBufferLength: 10, 
+                                    enableWorker: true, 
+                                    lowLatencyMode: true,
+                                    backBufferLength: 3,
+                                    xhrSetup: function(xhr, segUrl) {
+                                        if (proxyIdx > 0 && segUrl && !segUrl.includes('?url=') && !segUrl.includes('&url=')) {
+                                            try {
+                                                const activeProxyBase = toAbsoluteUrl(PROXY_POOL[proxyIdx].url.trim());
+                                                const proxyOriginObj = new URL(activeProxyBase);
+                                                const segUrlObj = new URL(segUrl, window.location.origin);
+                                                let resolvedSeg = segUrl;
+                                                if (segUrlObj.origin === proxyOriginObj.origin && !segUrlObj.pathname.includes('stalker_play')) {
+                                                    const relPath = segUrlObj.pathname.replace(/^\/+/, '') + (segUrlObj.search || '');
+                                                    resolvedSeg = new URL(relPath, realBaseStreamUrl).toString();
+                                                }
+                                                xhr.open('GET', buildProxiedUrl(resolvedSeg, proxyIdx), true);
+                                            } catch(e) {}
+                                        }
+                                    }
+                                });
+                                hls.loadSource(video.src);
+                                hls.attachMedia(video);
+                                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                                    hideAllOverlays();
+                                    video.play().then(startLiveWatchdog).catch(() => {});
+                                });
+                                hls.on(Hls.Events.FRAG_BUFFERED, hideAllOverlays);
+                                hls.on(Hls.Events.ERROR, (event, data) => {
+                                    if (data.fatal) fallbackToNextProxyOrError(url, name, proxyIdx);
+                                });
+                                player.hls = hls;
+                            } else {
+                                video.src = proxiedUrl;
+                            }
+                        },
+                        customDash: function (video, player) {
+                            // dash.js lazily load hota hai (780KB sirf MPD streams ke liye waste nahi karte)
+                            ensureDash().then(function () {
+                                if (typeof dashjs !== 'undefined') {
+                                    const dash = dashjs.MediaPlayer().create();
+                                    dash.initialize(video, video.src, true);
+                                    player.dash = dash;
+                                    hideAllOverlays();
+                                } else {
+                                    video.src = proxiedUrl;   // dash load fail -> native play fallback
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+            dpInstance.on('canplay', hideAllOverlays);
+            dpInstance.on('playing', () => {
+                hideAllOverlays();
+                startLiveWatchdog();
+            });
+            dpInstance.on('timeupdate', () => {
+                if (dpInstance.video && dpInstance.video.currentTime > 0) hideAllOverlays();
+            });
+        } catch (e) {
+            console.error("DPlayer init exception:", e);
+            fallbackToNextProxyOrError(url, name, proxyIdx);
+        }
+    }
+
+    function fallbackToNextProxyOrError(url, name, currentIndex) {
+        if (dpInstance && dpInstance.video && dpInstance.video.currentTime > 0 && !dpInstance.video.paused) {
+            hideAllOverlays();
+            return;
+        }
+        if ((currentIndex + 1) < PROXY_POOL.length) {
+            const nextIdx = currentIndex + 1;
+            console.log(`Auto-failover to next node [${nextIdx}]: ${PROXY_POOL[nextIdx].name}`);
+            showToast(`Trying ${PROXY_POOL[nextIdx].name}...`, false);
+            openDPlayerCinema(url, name, nextIdx);
+        } else {
+            const internalLoader = document.getElementById('playerInternalLoader');
+            const errorOverlay = document.getElementById('playerErrorOverlay');
+            const statusDot = document.getElementById('playerStatusDot');
+            if (internalLoader) {
+                internalLoader.classList.remove('flex');
+                internalLoader.classList.add('hidden');
+            }
+            if (errorOverlay) {
+                errorOverlay.classList.remove('hidden');
+                errorOverlay.classList.add('flex');
+            }
+            if (statusDot) {
+                statusDot.className = "w-2.5 h-2.5 bg-red-500 rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]";
+            }
+        }
+    }
+
+    function retryWithNextProxy() {
+        let nextIndex = (currentProxyIndex + 1) % PROXY_POOL.length;
+        openDPlayerCinema(activeChannelUrl, activeChannelName, nextIndex);
+    }
+
+    function manualSwitchProxy(indexStr) {
+        const idx = parseInt(indexStr, 10);
+        showToast(`Switched to: ${PROXY_POOL[idx].name}`);
+        openDPlayerCinema(activeChannelUrl, activeChannelName, idx);
+    }
+
+    function closeVideoPlayer() {
+        const modal = document.getElementById('videoPlayerModal');
+        modal.classList.remove('opacity-100'); 
+        modal.classList.add('opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden'); 
+            modal.classList.remove('flex');
+            destroyAllPlayers();
+        }, 300);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        const videoModal = document.getElementById('videoPlayerModal');
+        if (videoModal && !videoModal.classList.contains('hidden')) {
+            if (e.key === 'Escape') {
+                closeVideoPlayer();
+            } else if (e.key === ' ' || e.key === 'k' || e.key === 'K') {
+                e.preventDefault();
+                if (dpInstance) dpInstance.toggle();
+            } else if (e.key === 'f' || e.key === 'F') {
+                e.preventDefault();
+                if (dpInstance) dpInstance.fullScreen.toggle();
+            } else if (e.key === 'l' || e.key === 'L') {
+                e.preventDefault();
+                forceSyncLive();
+            }
+        }
+    });
+</script>
+{% endblock %}

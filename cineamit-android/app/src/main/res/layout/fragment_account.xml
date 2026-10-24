@@ -1,0 +1,984 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <ImageView
+        android:id="@+id/loginBg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/app_name"
+        android:scaleType="centerCrop"
+        android:src="@drawable/login_bg"
+        android:visibility="gone" />
+
+    <View
+        android:id="@+id/loginDim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#E00A0612"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/guestHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="8dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/guestTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/custom"
+                android:text="Account"
+                android:textColor="#F4F1EA"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btnSkip"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:fontFamily="@font/custom"
+                android:gravity="center"
+                android:paddingStart="12dp"
+                android:paddingEnd="4dp"
+                android:text="Skip"
+                android:textColor="#C4B5FD"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <include
+            android:id="@+id/loggedHeader"
+            layout="@layout/view_toolbar" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:fillViewport="true"
+            android:overScrollMode="never"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="16dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="108dp">
+
+                <TextView
+                    android:id="@+id/message"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/glass_panel_purple"
+                    android:padding="12dp"
+                    android:textColor="#E9D5FF"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
+
+                <!-- ===== LOGGED IN ===== -->
+                <LinearLayout
+                    android:id="@+id/loggedInBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/glass_panel_purple"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/avatarLetter"
+                            android:layout_width="58dp"
+                            android:layout_height="58dp"
+                            android:background="@drawable/acc_avatar"
+                            android:fontFamily="@font/custom"
+                            android:gravity="center"
+                            android:text="A"
+                            android:textColor="@color/white"
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="14dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/signedAs"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:ellipsize="end"
+                                android:fontFamily="@font/custom"
+                                android:maxLines="1"
+                                android:textColor="#F4F1EA"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/kidsBadge"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:background="@drawable/chip_glass_purple"
+                                android:paddingStart="8dp"
+                                android:paddingTop="2dp"
+                                android:paddingEnd="8dp"
+                                android:paddingBottom="2dp"
+                                android:text="Kids"
+                                android:textColor="#C4B5FD"
+                                android:textSize="11sp"
+                                android:visibility="gone" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/rowSub"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/glass_panel_purple"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="16dp">
+
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="@drawable/acc_icon_bg"
+                            android:contentDescription="@string/app_name"
+                            android:padding="8dp"
+                            android:src="@drawable/ic_subscribe"
+                            android:tint="#F5D0A6" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/rowSubText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/custom"
+                                android:text="Free"
+                                android:textColor="#F4F1EA"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/rowSubMeta"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="0 pts"
+                                android:textColor="#C4B5FD"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:contentDescription="@string/app_name"
+                            android:src="@drawable/ic_arrow"
+                            android:tint="#88FFFFFF" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/rowWhoWatching"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="18dp"
+                        android:fontFamily="@font/custom"
+                        android:letterSpacing="0.12"
+                        android:text="Who's watching"
+                        android:textAllCaps="true"
+                        android:textColor="#A78BFA"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/profilesLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Switch profile"
+                        android:textColor="#9C9C9C"
+                        android:textSize="12sp"
+                        android:visibility="gone" />
+
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:clipToPadding="false"
+                        android:overScrollMode="never"
+                        android:scrollbars="none">
+
+                        <LinearLayout
+                            android:id="@+id/profilesRow"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal" />
+                    </HorizontalScrollView>
+
+                    <EditText
+                        android:id="@+id/pin"
+                        style="@style/Field"
+                        android:layout_marginTop="8dp"
+                        android:hint="PIN"
+                        android:inputType="numberPassword"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/btnUnlock"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/gradient_btn"
+                        android:paddingStart="22dp"
+                        android:paddingTop="10dp"
+                        android:paddingEnd="22dp"
+                        android:paddingBottom="10dp"
+                        android:text="Unlock"
+                        android:textColor="@color/white"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="22dp"
+                        android:fontFamily="@font/custom"
+                        android:letterSpacing="0.12"
+                        android:text="Library"
+                        android:textAllCaps="true"
+                        android:textColor="#A78BFA"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/glass_panel"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:id="@+id/rowDownloads"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="14dp">
+
+                            <ImageView
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:background="@drawable/acc_icon_bg"
+                                android:contentDescription="@string/app_name"
+                                android:padding="8dp"
+                                android:src="@drawable/ic_download"
+                                android:tint="#C4B5FD" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/custom"
+                                    android:text="Downloads"
+                                    android:textColor="#F4F1EA"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Offline titles on this phone"
+                                    android:textColor="#9C9C9C"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:contentDescription="@string/app_name"
+                                android:src="@drawable/ic_arrow"
+                                android:tint="#66FFFFFF" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginStart="62dp"
+                            android:background="#14FFFFFF" />
+
+                        <LinearLayout
+                            android:id="@+id/rowHistory"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="14dp">
+
+                            <ImageView
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:background="@drawable/acc_icon_bg"
+                                android:contentDescription="@string/app_name"
+                                android:padding="8dp"
+                                android:src="@drawable/ic_replay_10"
+                                android:tint="#C4B5FD" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/custom"
+                                    android:text="History"
+                                    android:textColor="#F4F1EA"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Continue watching"
+                                    android:textColor="#9C9C9C"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:contentDescription="@string/app_name"
+                                android:src="@drawable/ic_arrow"
+                                android:tint="#66FFFFFF" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginStart="62dp"
+                            android:background="#14FFFFFF" />
+
+                        <LinearLayout
+                            android:id="@+id/rowPlaylists"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="14dp">
+
+                            <ImageView
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:background="@drawable/acc_icon_bg"
+                                android:contentDescription="@string/app_name"
+                                android:padding="8dp"
+                                android:src="@drawable/ic_play_list_episode"
+                                android:tint="#C4B5FD" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/custom"
+                                    android:text="Playlists"
+                                    android:textColor="#F4F1EA"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Your collections"
+                                    android:textColor="#9C9C9C"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:contentDescription="@string/app_name"
+                                android:src="@drawable/ic_arrow"
+                                android:tint="#66FFFFFF" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginStart="62dp"
+                            android:background="#14FFFFFF" />
+
+                        <LinearLayout
+                            android:id="@+id/rowNotifications"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="14dp">
+
+                            <ImageView
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:background="@drawable/acc_icon_bg"
+                                android:contentDescription="@string/app_name"
+                                android:padding="8dp"
+                                android:src="@drawable/ic_email"
+                                android:tint="#C4B5FD" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/custom"
+                                    android:text="Notifications"
+                                    android:textColor="#F4F1EA"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Alerts and requests"
+                                    android:textColor="#9C9C9C"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:contentDescription="@string/app_name"
+                                android:src="@drawable/ic_arrow"
+                                android:tint="#66FFFFFF" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginStart="62dp"
+                            android:background="#14FFFFFF" />
+
+                        <LinearLayout
+                            android:id="@+id/rowMatch"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="14dp">
+
+                            <ImageView
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:background="@drawable/acc_icon_bg"
+                                android:contentDescription="@string/app_name"
+                                android:padding="8dp"
+                                android:src="@drawable/ic_spark"
+                                android:tint="#C4B5FD" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/custom"
+                                    android:text="Cine Match"
+                                    android:textColor="#F4F1EA"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Compare taste with a friend"
+                                    android:textColor="#9C9C9C"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:contentDescription="@string/app_name"
+                                android:src="@drawable/ic_arrow"
+                                android:tint="#66FFFFFF" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginStart="62dp"
+                            android:background="#14FFFFFF" />
+
+                        <LinearLayout
+                            android:id="@+id/rowWrapped"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="14dp">
+
+                            <ImageView
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:background="@drawable/acc_icon_bg"
+                                android:contentDescription="@string/app_name"
+                                android:padding="8dp"
+                                android:src="@drawable/ic_constellation"
+                                android:tint="#C4B5FD" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/custom"
+                                    android:text="Cine Wrapped"
+                                    android:textColor="#F4F1EA"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Your year in movies"
+                                    android:textColor="#9C9C9C"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:contentDescription="@string/app_name"
+                                android:src="@drawable/ic_arrow"
+                                android:tint="#66FFFFFF" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="22dp"
+                        android:fontFamily="@font/custom"
+                        android:letterSpacing="0.12"
+                        android:text="Settings"
+                        android:textAllCaps="true"
+                        android:textColor="#A78BFA"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/glass_panel"
+                        android:orientation="vertical">
+
+                        <CheckBox
+                            android:id="@+id/autoplayBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:buttonTint="#C4B5FD"
+                            android:fontFamily="@font/custom"
+                            android:padding="14dp"
+                            android:text="Autoplay next episode"
+                            android:textColor="#F4F1EA"
+                            android:textSize="15sp" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginStart="16dp"
+                            android:background="#14FFFFFF" />
+
+                        <LinearLayout
+                            android:id="@+id/rowTotp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="14dp">
+
+                            <ImageView
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:background="@drawable/acc_icon_bg"
+                                android:contentDescription="@string/app_name"
+                                android:padding="8dp"
+                                android:src="@drawable/ic_password"
+                                android:tint="#C4B5FD" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/rowTotpText"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/custom"
+                                    android:text="Two-factor authentication"
+                                    android:textColor="#F4F1EA"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Authenticator app lock"
+                                    android:textColor="#9C9C9C"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:contentDescription="@string/app_name"
+                                android:src="@drawable/ic_arrow"
+                                android:tint="#66FFFFFF" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginStart="62dp"
+                            android:background="#14FFFFFF" />
+
+                        <LinearLayout
+                            android:id="@+id/rowRequest"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="14dp">
+
+                            <ImageView
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:background="@drawable/acc_icon_bg"
+                                android:contentDescription="@string/app_name"
+                                android:padding="8dp"
+                                android:src="@drawable/ic_movie"
+                                android:tint="#C4B5FD" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/custom"
+                                    android:text="Request a title"
+                                    android:textColor="#F4F1EA"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Ask us to add a movie or show"
+                                    android:textColor="#9C9C9C"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:contentDescription="@string/app_name"
+                                android:src="@drawable/ic_arrow"
+                                android:tint="#66FFFFFF" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/btnLogout"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="18dp"
+                        android:background="@drawable/acc_logout"
+                        android:fontFamily="@font/custom"
+                        android:gravity="center"
+                        android:text="Log out"
+                        android:textColor="#FE1A63"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- ===== GUEST ===== -->
+                <LinearLayout
+                    android:id="@+id/loggedOutBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/glass_panel_purple"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/custom"
+                            android:text="Watch more with an account"
+                            android:textColor="#F4F1EA"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:lineSpacingExtra="3dp"
+                            android:text="Movies and shows work as a guest. Sign in for watchlist, profiles, Live TV, and Premium."
+                            android:textColor="#C4B5FD"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/btnLogin"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:layout_marginTop="16dp"
+                            android:background="@drawable/gradient_btn"
+                            android:fontFamily="@font/custom"
+                            android:gravity="center"
+                            android:text="Sign in"
+                            android:textColor="@color/white"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/toggleSignup"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:gravity="center"
+                            android:text="New here?  Create account"
+                            android:textColor="#C4B5FD"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/rowDownloadsGuest"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:background="@drawable/glass_panel"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="14dp">
+
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="@drawable/acc_icon_bg"
+                            android:contentDescription="@string/app_name"
+                            android:padding="8dp"
+                            android:src="@drawable/ic_download"
+                            android:tint="#C4B5FD" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/custom"
+                                android:text="Downloads"
+                                android:textColor="#F4F1EA"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Offline titles on this phone"
+                                android:textColor="#9C9C9C"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:contentDescription="@string/app_name"
+                            android:src="@drawable/ic_arrow"
+                            android:tint="#66FFFFFF" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="22dp"
+                    android:fontFamily="@font/custom"
+                    android:letterSpacing="0.12"
+                    android:text="Browse"
+                    android:textAllCaps="true"
+                    android:textColor="#A78BFA"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/glass_panel"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/rowStudios"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="14dp">
+
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="@drawable/acc_icon_bg"
+                            android:contentDescription="@string/app_name"
+                            android:padding="8dp"
+                            android:src="@drawable/ic_movie"
+                            android:tint="#C4B5FD" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/custom"
+                            android:text="Studios"
+                            android:textColor="#F4F1EA"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:contentDescription="@string/app_name"
+                            android:src="@drawable/ic_arrow"
+                            android:tint="#66FFFFFF" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="62dp"
+                        android:background="#14FFFFFF" />
+
+                    <LinearLayout
+                        android:id="@+id/rowProviders"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="14dp">
+
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="@drawable/acc_icon_bg"
+                            android:contentDescription="@string/app_name"
+                            android:padding="8dp"
+                            android:src="@drawable/ic_tv_show"
+                            android:tint="#C4B5FD" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/custom"
+                            android:text="OTT Providers"
+                            android:textColor="#F4F1EA"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:contentDescription="@string/app_name"
+                            android:src="@drawable/ic_arrow"
+                            android:tint="#66FFFFFF" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+</FrameLayout>

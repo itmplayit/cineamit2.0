@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Download CINEAMIT Android App{% endblock %}
+{% block meta_desc %}Download the official CINEAMIT Android app — movies, series, anime, Live TV on your phone with VLC player, offline downloads and ad-points premium.{% endblock %}
+{% block og_title %}CINEAMIT Android App{% endblock %}
+{% block og_desc %}Official APK. Live TV, offline, watchlist — on your phone.{% endblock %}
+{% block content %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "CINEAMIT",
+  "operatingSystem": "Android",
+  "applicationCategory": "EntertainmentApplication",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" }
+}
+</script>
+<div class="relative overflow-hidden">
+    <div class="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2 w-[720px] h-[720px] rounded-full bg-red-600/15 blur-[120px]"></div>
+    <div class="pointer-events-none absolute top-40 -left-20 w-72 h-72 rounded-full bg-purple-600/10 blur-[90px]"></div>
+    <div class="max-w-6xl mx-auto px-5 md:px-8 py-12 md:py-20 relative">
+        <div class="grid lg:grid-cols-[1.15fr_0.85fr] gap-10 lg:gap-16 items-center">
+            <div>
+                <p class="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-red-400 mb-4">
+                    <i class="fa-brands fa-android" aria-hidden="true"></i> Official Android app
+                </p>
+                <h1 class="text-4xl md:text-6xl font-black tracking-tight text-white leading-[1.05] mb-5">
+                    CINE<span class="italic text-red-500">AMIT</span><br>
+                    <span class="text-gray-200">on your phone, VLC-like.</span>
+                </h1>
+                <p class="text-gray-400 text-base md:text-lg leading-relaxed max-w-xl mb-8">
+                    Movies, series, anime, Live TV — the same catalog as the website, player on your device.
+                    Watch ads for points, redeem points for Premium. No Play Store billing.
+                </p>
+                <div class="flex flex-wrap items-center gap-3 mb-6">
+                    {% if android_app.ready %}
+                    <a href="{{ android_app.download_url }}" class="inline-flex items-center gap-3 bg-red-600 hover:bg-red-500 text-white font-black text-base md:text-lg px-7 py-3.5 rounded-2xl shadow-[0_0_30px_rgba(254,26,99,0.45)] hover:-translate-y-0.5 transition-all" {% if android_app.has_file %}download="CineAmit-{{ android_app.version }}.apk"{% endif %}>
+                        <i class="fa-solid fa-download" aria-hidden="true"></i>
+                        Download APK
+                        {% if android_app.version %}<span class="text-white/80 text-sm font-bold">v{{ android_app.version }}</span>{% endif %}
+                    </a>
+                    {% else %}
+                    <span class="inline-flex items-center gap-3 bg-white/10 border border-white/15 text-gray-200 font-black text-base px-7 py-3.5 rounded-2xl">
+                        <i class="fa-solid fa-clock" aria-hidden="true"></i> APK coming soon
+                    </span>
+                    {% endif %}
+                    <a href="/home" class="inline-flex items-center gap-2 text-sm font-bold text-gray-300 hover:text-white px-4 py-3">
+                        Watch in browser <i class="fa-solid fa-arrow-right text-[11px]" aria-hidden="true"></i>
+                    </a>
+                </div>
+                <div class="flex flex-wrap gap-x-5 gap-y-2 text-xs text-gray-500 font-medium">
+                    <span><i class="fa-solid fa-mobile-screen mr-1.5 text-red-400"></i>{{ android_app.min_android }}</span>
+                    {% if android_app.size_label %}<span><i class="fa-solid fa-file-zipper mr-1.5 text-red-400"></i>{{ android_app.size_label }}</span>{% endif %}
+                    <span><i class="fa-solid fa-shield-halved mr-1.5 text-red-400"></i>{{ android_app.package }}</span>
+                </div>
+            </div>
+            <div class="relative mx-auto w-[240px] md:w-[280px]">
+                <div class="absolute inset-6 rounded-[2.5rem] bg-gradient-to-br from-red-600/40 to-purple-700/30 blur-2xl"></div>
+                <div class="relative rounded-[2.4rem] border border-white/15 bg-[#12131a] p-3 shadow-[0_30px_80px_rgba(0,0,0,0.65)]">
+                    <div class="rounded-[1.9rem] overflow-hidden bg-black aspect-[9/19] flex flex-col">
+                        <div class="h-8 flex items-center justify-center">
+                            <span class="w-16 h-1.5 rounded-full bg-white/20"></span>
+                        </div>
+                        <div class="flex-1 px-4 py-3 flex flex-col gap-3">
+                            <div class="flex items-center gap-2">
+                                <span class="w-8 h-8 rounded-xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center"><i class="fa-solid fa-play text-white text-[10px] ml-0.5"></i></span>
+                                <span class="text-sm font-black italic tracking-tighter">CINE<span class="text-white not-italic">AMIT</span></span>
+                            </div>
+                            <div class="rounded-xl overflow-hidden aspect-video bg-gradient-to-br from-red-900/50 to-gray-900 border border-white/10 flex items-center justify-center">
+                                <img src="/static/assets/logo-192.png" alt="CINEAMIT" class="w-14 h-14 object-contain opacity-90" width="192" height="192">
+                            </div>
+                            <div class="grid grid-cols-3 gap-1.5">
+                                <span class="aspect-[2/3] rounded-lg bg-white/10"></span>
+                                <span class="aspect-[2/3] rounded-lg bg-white/10"></span>
+                                <span class="aspect-[2/3] rounded-lg bg-white/10"></span>
+                            </div>
+                            <div class="mt-auto flex justify-around text-[9px] font-bold text-gray-400 pb-2">
+                                <span class="text-red-400">Home</span><span>List</span><span>Live</span><span>Me</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-16">
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-5 hover:border-red-600/40 transition-colors">
+                <i class="fa-solid fa-satellite-dish text-red-500 text-xl mb-3" aria-hidden="true"></i>
+                <h2 class="font-black text-white mb-1">Live TV on device</h2>
+                <p class="text-gray-400 text-sm leading-relaxed">21,000+ channels. Catalog and stream on your phone — nothing is loaded on the website server.</p>
+            </div>
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-5 hover:border-purple-600/40 transition-colors">
+                <i class="fa-solid fa-film text-purple-400 text-xl mb-3" aria-hidden="true"></i>
+                <h2 class="font-black text-white mb-1">Watch + offline</h2>
+                <p class="text-gray-400 text-sm leading-relaxed">Embed watch, LibVLC player, downloads folder, watchlist, history.</p>
+            </div>
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-5 hover:border-amber-500/40 transition-colors">
+                <i class="fa-solid fa-coins text-amber-400 text-xl mb-3" aria-hidden="true"></i>
+                <h2 class="font-black text-white mb-1">Premium with points</h2>
+                <p class="text-gray-400 text-sm leading-relaxed">Rewarded ads = points. Unlock Monthly / Yearly. No rupee billing.</p>
+            </div>
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-5 hover:border-green-600/40 transition-colors">
+                <i class="fa-solid fa-shield-halved text-green-500 text-xl mb-3" aria-hidden="true"></i>
+                <h2 class="font-black text-white mb-1">Same account</h2>
+                <p class="text-gray-400 text-sm leading-relaxed">Sign in with your website account. Kids profiles are ads-free.</p>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 mt-16">
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-7">
+                <h2 class="text-xl font-black text-white mb-4"><i class="fa-solid fa-list-ol text-red-500 mr-2"></i>How to install</h2>
+                <ol class="space-y-3 text-sm text-gray-300 leading-relaxed">
+                    <li class="flex gap-3"><span class="w-6 h-6 rounded-full bg-red-600 text-white text-xs font-black flex items-center justify-center shrink-0">1</span><span>Tap <b class="text-white">Download APK</b> above. The file saves to Downloads.</span></li>
+                    <li class="flex gap-3"><span class="w-6 h-6 rounded-full bg-red-600 text-white text-xs font-black flex items-center justify-center shrink-0">2</span><span>Chrome notification → <b class="text-white">Open</b>. The first time, allow “Install unknown apps”.</span></li>
+                    <li class="flex gap-3"><span class="w-6 h-6 rounded-full bg-red-600 text-white text-xs font-black flex items-center justify-center shrink-0">3</span><span>Install → Open. Server URL default <b class="text-white">cineamit.qzz.io</b> hai.</span></li>
+                </ol>
+                <p class="text-[11px] text-gray-500 mt-4">Play Protect may warn (sideload). Download only from this official page.</p>
+            </div>
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-7">
+                <h2 class="text-xl font-black text-white mb-4"><i class="fa-solid fa-clipboard-check text-red-500 mr-2"></i>Version</h2>
+                <dl class="text-sm space-y-2 text-gray-400">
+                    <div class="flex justify-between gap-4 border-b border-white/5 pb-2"><dt>Version</dt><dd class="text-white font-bold">{{ android_app.version }}</dd></div>
+                    {% if android_app.size_label %}<div class="flex justify-between gap-4 border-b border-white/5 pb-2"><dt>Size</dt><dd class="text-white font-bold">{{ android_app.size_label }}</dd></div>{% endif %}
+                    <div class="flex justify-between gap-4 border-b border-white/5 pb-2"><dt>Package</dt><dd class="text-white font-mono text-xs">{{ android_app.package }}</dd></div>
+                    {% if android_app.sha256 %}<div class="flex flex-col gap-1 pt-1"><dt>SHA-256</dt><dd class="text-gray-300 font-mono text-[10px] break-all leading-relaxed">{{ android_app.sha256 }}</dd></div>{% endif %}
+                </dl>
+                {% if android_app.notes %}
+                <p class="whitespace-pre-wrap text-sm text-gray-400 mt-4 leading-relaxed">{{ android_app.notes }}</p>
+                {% else %}
+                <p class="text-sm text-gray-400 mt-4 leading-relaxed">Live TV on device, ads + points, offline downloads, cinematic home.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

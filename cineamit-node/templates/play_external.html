@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Connecting to secure Live HLS video player. Please wait...">
+    <title>Opening Live HLS Player...</title>
+    <link rel="stylesheet" href="/static/tailwind.min.css?v=3.4.17-r4">
+    <link rel="stylesheet" href="/static/assets/fa/css/all.min.css?v=6.4.0">
+    <style>
+        /* prebuilt tailwind build me ye ek shadow utility nahi hai — fallback */
+        .shadow-\[0_0_60px_rgba\(220\2c 38\2c 38\2c 0\.2\)\] { box-shadow: 0 0 60px rgba(220,38,38,0.2); }
+    </style>
+</head>
+<body class="bg-[#09090b] text-white h-screen flex flex-col items-center justify-center overflow-hidden p-4">
+    <main class="flex flex-col items-center justify-center p-8 bg-[#141519] border border-gray-800 rounded-3xl shadow-[0_0_60px_rgba(220,38,38,0.2)] max-w-sm w-full text-center">
+        <div class="relative w-16 h-16 mb-5" role="status" aria-label="Loading Player">
+            <span class="absolute inset-0 rounded-full border-4 border-gray-800"></span>
+            <span class="absolute inset-0 rounded-full border-4 border-red-600 border-t-transparent animate-spin"></span>
+            <i class="fa-solid fa-satellite-dish absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-red-500 text-lg animate-pulse"></i>
+        </div>
+        <h1 class="text-lg font-black tracking-wide mb-1 text-white">Launching Live HLS Feed</h1>
+        <p class="text-gray-400 text-xs mb-6">Connecting to continuous non-stop stream...</p>
+        <div class="flex flex-col w-full gap-2.5">
+            <button id="mxBtn" onclick="launchApp('mx')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer">
+                <i class="fa-solid fa-mobile-screen"></i> Launch in MX Player
+            </button>
+            <button id="vlcBtn" onclick="launchApp('vlc')" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer">
+                <i class="fa-solid fa-cone"></i> Launch in VLC Player
+            </button>
+        </div>
+    </main>
+
+    <!-- Sponsored slot: env.php me ADSTERRA_* set hone par hi render hota hai -->
+    <div id="peAdWrap" class="w-full max-w-sm mt-4 hidden flex-col items-center gap-3">
+        <span class="text-[10px] text-gray-500 uppercase tracking-widest">Sponsored</span>
+        <div id="peAdSlot" class="w-full flex items-center justify-center min-h-[100px] bg-[#141519] border border-gray-800 rounded-xl overflow-hidden"></div>
+    </div>
+
+<script>
+    (function () {
+        var adsEnabled   = {{ (ads_enabled is defined and ads_enabled is same as(false)) ? 'false' : 'true' }};
+        var popunder     = {{ (adsterra_popunder | default('')) | json_encode(constant('JSON_HEX_TAG')) | raw }};
+        var banner728    = {{ (adsterra_banner_728 | default('')) | json_encode(constant('JSON_HEX_TAG')) | raw }};
+        var banner468    = {{ (adsterra_banner_468 | default('')) | json_encode(constant('JSON_HEX_TAG')) | raw }};
+        var banner300    = {{ (adsterra_banner_300 | default('')) | json_encode(constant('JSON_HEX_TAG')) | raw }};
+        if (!adsEnabled) return;
+        function buildBanner(input, w, h) {
+            var t = (input || '').trim();
+            if (!t) return '';
+            if (/^[a-f0-9]{32}$/i.test(t)) {
+                return '<scr' + 'ipt type="text/javascript">atOptions={"key":"' + t + '","format":"iframe","height":' + h + ',"width":' + w + ',"params":{}};</scr' + 'ipt>' +
+                       '<scr' + 'ipt type="text/javascript" src="https://www.highperformanceformat.com/' + t + '/invoke.js"></scr' + 'ipt>';
+            }
+            if (/^https?:\/\//i.test(t) && t.indexOf('<') === -1) {
+                return '<scr' + 'ipt type="text/javascript" src="' + t.replace(/"/g, '&quot;') + '"></scr' + 'ipt>';
+            }
+            return t;
+        }
+        function writeIframe(slot, html, w, h) {
+            var ifr = document.createElement('iframe');
+            ifr.title = 'Sponsored Advertisement';
+            ifr.width = String(w); ifr.height = String(h);
+            ifr.setAttribute('scrolling', 'no'); ifr.setAttribute('frameborder', '0');
+            ifr.style.cssText = 'border:0;width:' + w + 'px;height:' + h + 'px;overflow:hidden;background:transparent;display:block;';
+            slot.appendChild(ifr);
+            var doc = '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;width:' + w + 'px;height:' + h + 'px;background:transparent;overflow:hidden;display:flex;justify-content:center;align-items:center;">' + html + '</body></html>';
+            try {
+                var idoc = ifr.contentWindow && ifr.contentWindow.document;
+                if (idoc) { idoc.open(); idoc.write(doc); idoc.close(); return; }
+            } catch (_) {}
+            ifr.srcdoc = doc;
+        }
+        function mountPlacements() {
+            var vw = window.innerWidth;
+            var chosen = vw < 520 && banner300.trim() ? { raw: banner300.trim(), w: 300, h: 250 }
+                       : (vw < 728 && banner468.trim() ? { raw: banner468.trim(), w: 468, h: 60 }
+                       : (banner728.trim() ? { raw: banner728.trim(), w: 728, h: 90 } : null));
+            var wrap = document.getElementById('peAdWrap');
+            var slot = document.getElementById('peAdSlot');
+            if (chosen && wrap && slot && !slot.querySelector('iframe')) {
+                wrap.classList.remove('hidden');
+                wrap.classList.add('flex');
+                writeIframe(slot, buildBanner(chosen.raw, chosen.w, chosen.h), chosen.w, chosen.h);
+            }
+            if (popunder && popunder.trim()) {
+                var target = document.body;
+                if (/^https?:\/\//i.test(popunder.trim()) && popunder.indexOf('<') === -1) {
+                    var sc = document.createElement('script');
+                    sc.src = popunder.trim(); sc.async = true; target.appendChild(sc);
+                } else {
+                    var tmp = document.createElement('div');
+                    tmp.innerHTML = popunder.trim();
+                    Array.prototype.forEach.call(tmp.querySelectorAll('script'), function (node) {
+                        var sc2 = document.createElement('script');
+                        Array.prototype.forEach.call(node.attributes, function (a) { sc2.setAttribute(a.name, a.value); });
+                        if (node.textContent) sc2.textContent = node.textContent;
+                        sc2.async = true; target.appendChild(sc2);
+                    });
+                }
+            }
+        }
+        var fired = false;
+        function once() {
+            if (fired) return; fired = true;
+            setTimeout(mountPlacements, 150);
+        }
+        setTimeout(once, 1500);
+        ['pointerdown', 'touchstart', 'keydown', 'scroll'].forEach(function (ev) {
+            window.addEventListener(ev, once, { passive: true, once: true });
+        });
+    })();
+</script>
+<script>
+    let liveStreamUrl = "";
+    function getParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+    const rawParam = getParam('url');
+    const codeParam = getParam('code');
+    if (rawParam) {
+        liveStreamUrl = decodeURIComponent(rawParam);
+    } else if (codeParam) {
+        try {
+            liveStreamUrl = atob(codeParam);
+        } catch(e) {
+            console.error("Decode error", e);
+        }
+    }
+    try {
+        if (liveStreamUrl) {
+            const parsed = new URL(liveStreamUrl, window.location.origin);
+            if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+                liveStreamUrl = "";
+            } else {
+                liveStreamUrl = parsed.href;
+            }
+        }
+    } catch (e) {
+        liveStreamUrl = "";
+    }
+    if (liveStreamUrl && !liveStreamUrl.includes('.m3u8') && !liveStreamUrl.includes('/api/stream_proxy')) {
+        liveStreamUrl = window.location.origin + '/api/stream_proxy?url=' + encodeURIComponent(liveStreamUrl);
+    }
+    function launchApp(type) {
+        if (!liveStreamUrl) return;
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        if (type === 'mx') {
+            if (isAndroid) {
+                const fallback = encodeURIComponent("https://play.google.com/store/apps/details?id=com.mxtech.videoplayer.ad");
+                window.location.href = `intent:${liveStreamUrl}#Intent;package=com.mxtech.videoplayer.ad;type=application/vnd.apple.mpegurl;S.browser_fallback_url=${fallback};end`;
+            } else {
+                window.location.href = liveStreamUrl;
+            }
+        } else if (type === 'vlc') {
+            if (isAndroid) {
+                const fallback = encodeURIComponent("https://play.google.com/store/apps/details?id=org.videolan.vlc");
+                window.location.href = `intent:${liveStreamUrl}#Intent;package=org.videolan.vlc;type=application/vnd.apple.mpegurl;S.browser_fallback_url=${fallback};end`;
+            } else {
+                window.location.href = `vlc://${liveStreamUrl}`;
+            }
+        }
+    }
+    function copyStreamUrl() {
+        if (!liveStreamUrl) return;
+        navigator.clipboard.writeText(liveStreamUrl).then(() => {
+            alert("Live HLS Stream URL copied to clipboard!");
+        });
+    }
+    if (liveStreamUrl) {
+        setTimeout(() => {
+            const isAndroid = /Android/i.test(navigator.userAgent);
+            launchApp(isAndroid ? 'mx' : 'vlc');
+        }, 500);
+    }
+</script>
+</body>
+</html>

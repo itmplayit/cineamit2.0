@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .animate-fade-in { 
+        animation: fadeIn 0.4s ease-out forwards; 
+        will-change: transform, opacity;
+    }
+</style>
+<div class="min-h-screen bg-[#141519] flex flex-col items-center justify-center animate-fade-in relative z-10 px-4">
+    <h1 class="text-3xl md:text-5xl font-black text-white mb-4 tracking-wider drop-shadow-lg">Who's watching?</h1>
+    {% if is_kids_mode %}<p class="text-amber-300 text-xs mb-8 text-center">To leave Kids Mode, an adult profile must have a PIN set.</p>{% else %}<div class="mb-8"></div>{% endif %}
+    <div class="flex flex-wrap justify-center gap-6 md:gap-10 max-w-4xl" id="profileGrid">
+        {% for prof in profiles %}
+        <div class="flex flex-col items-center group relative">
+            {% if prof.pin %}
+            <button type="button" aria-label="Unlock {{ prof.name }}" data-prof-id="{{ prof.id }}" data-prof-name="{{ prof.name }}" onclick="openPinModal(this)" class="flex flex-col items-center transition-all duration-300 transform hover:scale-110 cursor-pointer bg-transparent border-none p-0 outline-none">
+            {% elseif is_kids_mode and not prof.is_kids %}
+            <button type="button" disabled title="Set a PIN on this adult profile to exit Kids Mode" aria-label="Adult profile {{ prof.name }} needs a PIN" class="flex flex-col items-center opacity-50 cursor-not-allowed bg-transparent border-none p-0 outline-none">
+            {% else %}
+            <form method="POST" action="{{ url_for('routes.set_active_profile', profile_id=prof.id) }}" class="flex flex-col items-center">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" aria-label="Log in as {{ prof.name }}" class="flex flex-col items-center transition-all duration-300 transform hover:scale-110 cursor-pointer bg-transparent border-none p-0 outline-none">
+            {% endif %}
+                <div class="w-24 h-24 md:w-32 md:h-32 rounded-xl {{ prof.avatar_color }} flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.5)] border-4 border-transparent group-hover:border-white transition-all overflow-hidden relative">
+                    {% if prof.avatar_image %}
+                        <img src="{{ prof.avatar_image }}" alt="{{ prof.name }}" width="128" height="128" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
+                        {% if prof.pin %}
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                <i class="fa-solid fa-lock text-3xl text-white/90 drop-shadow-md"></i>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <i class="fa-solid {% if prof.pin %}fa-lock{% else %}fa-face-smile{% endif %} text-5xl md:text-7xl text-white/80 group-hover:text-white transition-colors" aria-hidden="true"></i>
+                    {% endif %}
+                    {% if prof.is_kids %}
+                        <span class="absolute bottom-1 right-1 bg-white text-black text-[10px] font-bold px-1.5 rounded-sm shadow-md">KIDS</span>
+                    {% endif %}
+                </div>
+                <span class="text-gray-400 group-hover:text-white font-bold mt-4 text-sm md:text-base transition-colors tracking-wide">{{ prof.name }}</span>
+            {% if prof.pin or (is_kids_mode and not prof.is_kids) %}</button>{% else %}</button></form>{% endif %}
+            {% if profiles|length > 1 and not is_kids_mode %}
+            <form action="{{ url_for('routes.delete_profile', profile_id=prof.id) }}" method="POST" class="absolute -top-2 -right-2 hidden z-20 manage-profile-btn" onsubmit="return requestProfileDelete(this)">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button aria-label="Delete {{ prof.name }} Profile" type="submit" class="bg-red-600 text-white w-7 h-7 rounded-full flex items-center justify-center hover:bg-red-700 shadow-lg border-2 border-[#141519] cursor-pointer">
+                    <i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i>
+                </button>
+            </form>
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% if profiles|length < 5 and not is_kids_mode %}
+        <button aria-label="Open Add Profile Modal" onclick="document.getElementById('addProfileModal').classList.remove('hidden')" class="flex flex-col items-center group transition-all duration-300 transform hover:scale-110 cursor-pointer bg-transparent border-none p-0 outline-none">
+            <div class="w-24 h-24 md:w-32 md:h-32 rounded-xl bg-[#0a0a0c] flex items-center justify-center border-2 border-gray-700 border-dashed group-hover:border-white group-hover:bg-gray-800 transition-all">
+                <i class="fa-solid fa-plus text-4xl text-gray-500 group-hover:text-white transition-colors" aria-hidden="true"></i>
+            </div>
+            <span class="text-gray-400 group-hover:text-white font-bold mt-4 text-sm md:text-base transition-colors tracking-wide">Add Profile</span>
+        </button>
+        {% endif %}
+    </div>
+    {% if not is_kids_mode %}<button aria-label="Toggle Manage Profiles Mode" onclick="toggleManageMode()" id="manageBtn" class="mt-16 border border-gray-500 text-gray-400 hover:text-white hover:border-white px-6 py-2 uppercase tracking-widest text-xs font-bold transition-all rounded-md cursor-pointer">
+        Manage Profiles
+    </button>{% endif %}
+</div>
+<div id="addProfileModal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center backdrop-blur-sm animate-fade-in px-4">
+    <div class="bg-[#141519] border border-gray-800 rounded-2xl p-8 max-w-md w-full shadow-2xl relative">
+        <button aria-label="Close Add Profile Modal" onclick="document.getElementById('addProfileModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i></button>
+        <h2 class="text-2xl font-bold text-white mb-6">Add Profile</h2>
+        <form action="{{ url_for('routes.add_profile') }}" method="POST">
+            <label class="text-gray-400 text-sm">Account password<input type="password" name="confirm_password" autocomplete="current-password" required class="w-full bg-gray-800 text-white rounded p-3 mb-4"></label>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="mb-6">
+                <label for="profile_name" class="block text-gray-400 text-xs font-bold mb-2 uppercase tracking-wider">Name</label>
+                <input id="profile_name" type="text" name="profile_name" required placeholder="Name" autocomplete="name" class="w-full bg-[#0a0a0c] border border-gray-700 text-white rounded-lg px-4 py-3 outline-none focus:border-red-600 transition-colors">
+            </div>
+            <div class="mb-6 flex items-center gap-3 bg-[#0a0a0c] border border-gray-700 p-3 rounded-lg">
+                <input type="checkbox" name="is_kids" id="is_kids" class="w-5 h-5 accent-red-600 rounded cursor-pointer">
+                <label for="is_kids" class="text-white text-sm font-bold cursor-pointer">Kid's Profile <span class="text-gray-500 text-xs font-normal ml-1">(genre + TMDB rating checks; missing ratings are blocked)</span></label>
+            </div>
+            <div class="mb-8">
+                <p class="block text-gray-400 text-xs font-bold mb-3 uppercase tracking-wider">Choose Color</p>
+                <div class="flex gap-4" role="radiogroup" aria-label="Profile Color">
+                    <label class="cursor-pointer group">
+                        <input aria-label="Red" type="radio" name="avatar_color" value="bg-red-600" class="peer hidden" checked>
+                        <div class="w-10 h-10 rounded-full bg-red-600 ring-2 ring-transparent peer-checked:ring-white peer-checked:scale-110 transition-all"></div>
+                    </label>
+                    <label class="cursor-pointer group">
+                        <input aria-label="Blue" type="radio" name="avatar_color" value="bg-blue-600" class="peer hidden">
+                        <div class="w-10 h-10 rounded-full bg-blue-600 ring-2 ring-transparent peer-checked:ring-white peer-checked:scale-110 transition-all"></div>
+                    </label>
+                    <label class="cursor-pointer group">
+                        <input aria-label="Green" type="radio" name="avatar_color" value="bg-green-600" class="peer hidden">
+                        <div class="w-10 h-10 rounded-full bg-green-600 ring-2 ring-transparent peer-checked:ring-white peer-checked:scale-110 transition-all"></div>
+                    </label>
+                    <label class="cursor-pointer group">
+                        <input aria-label="Purple" type="radio" name="avatar_color" value="bg-purple-600" class="peer hidden">
+                        <div class="w-10 h-10 rounded-full bg-purple-600 ring-2 ring-transparent peer-checked:ring-white peer-checked:scale-110 transition-all"></div>
+                    </label>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <button aria-label="Save New Profile" type="submit" class="flex-1 bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer">Save</button>
+                <button aria-label="Cancel Profile Creation" type="button" onclick="document.getElementById('addProfileModal').classList.add('hidden')" class="flex-1 bg-transparent border border-gray-600 text-white font-bold py-3 rounded-lg hover:border-gray-400 transition-colors cursor-pointer">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div id="pinEntryModal" class="fixed inset-0 bg-black/90 z-[100] hidden flex items-center justify-center backdrop-blur-sm animate-fade-in px-4">
+    <div class="bg-[#141519] border border-gray-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl relative text-center">
+        <button aria-label="Close PIN Modal" onclick="document.getElementById('pinEntryModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i></button>
+        <div class="w-16 h-16 bg-red-600/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border border-red-500/30">
+            <i class="fa-solid fa-lock" aria-hidden="true"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-white mb-2" id="pinModalTitle">Profile Locked</h2>
+        <p class="text-gray-400 text-xs mb-6">Enter your 4-digit PIN to access this profile.</p>
+        <form id="pinAuthForm" method="POST" action="">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input aria-label="Enter 4-digit PIN" type="password" name="pin" id="pinInput" maxlength="4" pattern="\d{4}" required autocomplete="off"
+                   class="w-full bg-gray-900 border border-gray-700 text-white font-mono tracking-[1em] text-center text-2xl rounded-xl px-4 py-4 outline-none focus:border-red-500 transition-colors shadow-inner mb-6">
+            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(220,38,38,0.4)] cursor-pointer">
+                Unlock Profile
+            </button>
+        </form>
+    </div>
+</div>
+<div id="deleteProfileModal" class="hidden fixed inset-0 bg-black/90 z-[110] flex items-center justify-center px-4">
+    <form id="deleteProfileForm" method="POST" class="bg-gray-900 p-8 rounded-2xl max-w-sm w-full">
+        <h2 class="text-xl text-white font-bold mb-4">Delete profile?</h2>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label for="deleteProfilePassword" class="text-gray-300 text-sm">Account password</label>
+        <input id="deleteProfilePassword" type="password" name="confirm_password" autocomplete="current-password" required class="w-full bg-gray-800 text-white rounded p-3 mb-4">
+        <button type="submit" class="bg-red-600 text-white rounded px-4 py-2">Delete profile</button>
+        <button type="button" onclick="document.getElementById('deleteProfileModal').classList.add('hidden')" class="text-gray-300 px-4 py-2">Cancel</button>
+    </form>
+</div>
+<script>
+    function requestProfileDelete(form) {
+        document.getElementById('deleteProfileForm').action = form.action;
+        document.getElementById('deleteProfileModal').classList.remove('hidden');
+        document.getElementById('deleteProfilePassword').value = '';
+        document.getElementById('deleteProfilePassword').focus();
+        return false;
+    }
+    let isManageMode = false;
+    function toggleManageMode() {
+        isManageMode = !isManageMode;
+        const btns = document.querySelectorAll('.manage-profile-btn');
+        const mainBtn = document.getElementById('manageBtn');
+        if(isManageMode) {
+            btns.forEach(btn => btn.classList.remove('hidden'));
+            mainBtn.textContent = 'Done';
+            mainBtn.classList.add('bg-white', 'text-black');
+            mainBtn.classList.remove('bg-transparent', 'text-gray-400');
+        } else {
+            btns.forEach(btn => btn.classList.add('hidden'));
+            mainBtn.textContent = 'Manage Profiles';
+            mainBtn.classList.remove('bg-white', 'text-black');
+            mainBtn.classList.add('bg-transparent', 'text-gray-400');
+        }
+    }
+    function openPinModal(btn) {
+        const profileId = btn.dataset.profId || '';
+        const profileName = btn.dataset.profName || '';
+        document.getElementById('pinModalTitle').innerText = 'Unlock ' + profileName;
+        document.getElementById('pinAuthForm').action = '/profile/select/' + encodeURIComponent(profileId);
+        document.getElementById('pinEntryModal').classList.remove('hidden');
+        setTimeout(() => document.getElementById('pinInput').focus(), 100);
+    }
+</script>
+{% endblock %}

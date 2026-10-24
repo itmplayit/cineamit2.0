@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0A0612"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/cineHeaderTop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp">
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:contentDescription="@string/app_name"
+            android:rotation="180"
+            android:src="@drawable/ic_arrow" />
+
+        <TextView
+            android:id="@+id/dlTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:fontFamily="@font/custom"
+            android:maxLines="1"
+            android:text="Download"
+            android:textColor="#F4F1EA"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/pageProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:indeterminate="false"
+        android:max="100"
+        android:progressTint="#A78BFA" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <WebView
+            android:id="@+id/web"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#0A0612" />
+
+        <LinearLayout
+            android:id="@+id/saveOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#E00A0612"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminateTint="#A78BFA" />
+
+            <TextView
+                android:id="@+id/saveStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Saving file…"
+                android:textColor="#F4F1EA"
+                android:textSize="15sp" />
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

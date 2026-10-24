@@ -1,0 +1,692 @@
+{% extends "base.html" %}
+{% block title %}{{ seo.title }}{% endblock %}
+{% block meta_desc %}{{ seo.description }}{% endblock %}
+{% block og_type %}{{ media_type == 'tv' ? 'video.tv_show' : 'video.movie' }}{% endblock %}
+{% block og_image %}{{ seo.image }}{% endblock %}
+{% block content %}
+
+<style>
+    @supports (-webkit-line-clamp: 2) {
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #3f3f46; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #9333ea; }
+    
+    @keyframes scaleUp { from { transform: scale(0.96); } to { transform: scale(1); } }
+    .animate-scale-up { 
+        animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+    }
+</style>
+
+<div class="relative w-full min-h-[60dvh] lg:min-h-[85dvh] -mt-16 md:-mt-20 bg-[#0f1014] flex flex-col justify-end">
+    <div class="absolute inset-0 z-0 overflow-hidden">
+        {% set backdrop = data.backdrop_path ?: data.poster_path %}
+        {% if backdrop %}
+        <picture>
+            <source media="(min-width: 1024px)" srcset="{{ image_base|default("https://image.tmdb.org/t/p") }}/w1280{{ backdrop }}">
+            <source media="(min-width: 768px)" srcset="{{ image_base|default("https://image.tmdb.org/t/p") }}/w780{{ backdrop }}">
+            <img src="{{ image_base|default("https://image.tmdb.org/t/p") }}/w500{{ backdrop }}" alt="Backdrop of {{ data.title ?: data.name }}" width="1280" height="720" fetchpriority="high" loading="eager" decoding="async" class="w-full h-full object-cover opacity-20 md:opacity-35 scale-105 transition-transform duration-1000">
+        </picture>
+        {% else %}
+        <div class="w-full h-full bg-[#0f1014]" aria-hidden="true"></div>
+        {% endif %}
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0f1014] via-[#0f1014]/70 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-[#0f1014] via-[#0f1014]/50 to-transparent"></div>
+    </div>
+    
+    <div class="relative z-10 flex flex-col md:flex-row items-center md:items-end px-4 sm:px-6 md:px-12 lg:px-16 pb-8 md:pb-12 pt-24 md:pt-28 gap-6 md:gap-8 lg:gap-12 max-w-[1800px] mx-auto w-full">
+        <div class="flex-none w-44 md:w-64 lg:w-72 relative group z-10 shadow-[0_0_30px_rgba(0,0,0,0.8)] rounded-xl overflow-hidden border border-gray-800/80">
+            {% if data.poster_path %}
+            <img src="{{ image_base|default("https://image.tmdb.org/t/p") }}/w500{{ data.poster_path }}" alt="{{ data.title ?: data.name }} Poster" width="500" height="750" fetchpriority="high" loading="eager" decoding="sync" class="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500" id="moviePoster">
+            {% else %}
+            <img src="/static/logo-192.png" alt="{{ data.title ?: data.name }} Poster" width="500" height="750" class="w-full h-auto object-contain bg-[#141519] p-10" id="moviePoster">
+            {% endif %}
+        </div>
+        
+        <div class="w-full md:flex-1 text-center md:text-left z-10 max-w-4xl">
+            {% include "seo_breadcrumbs.html" %}
+            <h1 class="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-4 tracking-tight drop-shadow-md">
+                {{ data.title ?: data.name }}
+            </h1>
+            <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 text-xs md:text-sm text-gray-300 mb-4 font-bold">
+                <span class="flex items-center text-green-500 bg-green-500/10 border border-green-500/20 px-2.5 py-1 rounded-md">
+                    <i class="fa-solid fa-star mr-1 text-xs" aria-hidden="true"></i> {{ data.vote_average | round(1) }} Rating
+                </span>
+                <span class="bg-gray-800/70 border border-gray-700/60 px-2.5 py-1 rounded-md text-white">
+                    {{ ((data.release_date ?: data.first_air_date)) ? ((data.release_date ?: data.first_air_date)[:4]) : ('N/A') }}
+                </span>
+                {% if data.runtime %}
+                <span class="bg-gray-800/70 border border-gray-700/60 px-2.5 py-1 rounded-md text-white">
+                    <i class="fa-regular fa-clock mr-1 text-gray-400" aria-hidden="true"></i>{{ data.runtime }} min
+                </span>
+                {% endif %}
+                {% if data.number_of_seasons %}
+                <span class="bg-red-600/10 border border-red-500/20 text-red-500 px-2.5 py-1 rounded-md">
+                    {{ data.number_of_seasons }} Season{% if data.number_of_seasons > 1 %}s{% endif %}
+                </span>
+                {% endif %}
+                <div class="flex flex-wrap gap-1.5 justify-center md:justify-start">
+                    {% for genre in data.genres[:3] %} 
+                    <span class="text-gray-300 border border-gray-800/80 bg-gray-900/40 px-2.5 py-0.5 rounded-full text-[11px] font-medium uppercase tracking-wider">{{ genre.name }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% if (media_type == 'tv' and data.created_by) or (media_type == 'movie' and data.credits and data.credits.crew) %}
+            <div class="flex flex-wrap justify-center md:justify-start items-center gap-2 mb-5 text-sm text-gray-300">
+                <span class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{{ media_type == 'tv' ? 'Created By:' : 'Directed By:' }}</span>
+                <span class="font-bold text-white drop-shadow">
+                    {% if media_type == 'tv' %}
+                        {% for creator in data.created_by[:2] %}
+                            {{ creator.name }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        {% set dir_count = 0 %}
+                        {% for crew in data.credits.crew %}
+                            {% if crew.job == 'Director' and dir_count < 2 %}
+                                {{ crew.name }}{% if dir_count < 1 and loop.index0 < data.credits.crew|length - 1 %}, {% endif %}
+                                {% set dir_count = dir_count + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </span>
+            </div>
+            {% endif %}
+            <p class="text-gray-400 text-sm md:text-base mb-6 leading-relaxed line-clamp-3 md:line-clamp-none drop-shadow">
+                {{ data.overview }}
+            </p>
+            <div class="flex flex-wrap gap-3 justify-center md:justify-start items-center mb-6">
+                <a aria-label="Watch {{ data.title ?: data.name }} Now" href="{{ watch_url|default('/watch/' ~ media_type ~ '/' ~ tmdb_id) }}" class="bg-red-600 hover:bg-red-700 text-white px-7 py-3 rounded-lg shadow-lg font-black text-sm transition-all flex items-center hover:scale-105 shadow-red-600/20">
+                    <i class="fa-solid fa-play mr-2 text-base" aria-hidden="true"></i> Watch Now
+                </a>
+               {% if current_user.is_authenticated %}
+    {% if in_watchlist %}
+        <form action="{{ url_for('routes.remove_from_watchlist', tmdb_id=data.id, title=data.title ?: data.name, media_type=media_type) }}" method="POST" class="m-0 inline" onsubmit="return confirm('Remove this from your watchlist?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="bg-gray-900/80 border border-red-600/40 hover:bg-red-600/10 text-red-400 px-5 py-3 rounded-lg text-sm font-bold transition-all flex items-center hover:scale-105 cursor-pointer">
+                 <i class="fa-solid fa-check mr-2 text-green-500" aria-hidden="true"></i> Watchlisted
+            </button>
+        </form>
+    {% else %}
+        <form action="{{ url_for('routes.add_to_watchlist', media_type=media_type, tmdb_id=data.id, title=data.title ?: data.name) }}" method="POST" class="m-0 inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="bg-gray-900/60 border border-gray-700 hover:border-white text-white px-5 py-3 rounded-lg text-sm font-bold transition-all flex items-center hover:scale-105 cursor-pointer">
+                <i class="fa-solid fa-plus mr-2" aria-hidden="true"></i> Watchlist
+            </button>
+        </form>
+    {% endif %}
+{% else %}
+    <a aria-label="Add to Watchlist" href="{{ url_for('auth.login') }}" class="bg-gray-900/60 border border-gray-700 hover:border-white text-white px-5 py-3 rounded-lg text-sm font-bold transition-all flex items-center hover:scale-105">
+        <i class="fa-solid fa-plus mr-2" aria-hidden="true"></i> Watchlist
+    </a>
+{% endif %}
+                {% if current_user.is_authenticated %}
+                <button aria-label="Save to Playlist" onclick="document.getElementById('playlistModal').classList.remove('hidden')" class="bg-gray-900/80 border border-gray-700 hover:border-purple-500 text-white px-4 py-3 rounded-lg font-bold text-sm transition-all flex items-center shadow-md cursor-pointer">
+                    <i class="fa-solid fa-folder-plus mr-2 text-purple-400" aria-hidden="true"></i> Save
+                </button>
+                {% endif %}
+                <button aria-label="Share Media" onclick="shareMovie()" class="bg-gray-900/80 border border-gray-700 hover:border-blue-500 text-white px-4 py-3 rounded-lg font-bold text-sm transition-all flex items-center shadow-md cursor-pointer">
+                    <i class="fa-solid fa-share-nodes mr-2 text-blue-400" aria-hidden="true"></i> Share
+                </button>
+            </div>
+            {% set companies = data.networks ?: data.production_companies %}
+            {% if companies %}
+            <div class="flex flex-wrap items-center justify-center md:justify-start gap-4">
+                <span class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Available On / Produced By</span>
+                <div class="flex items-center gap-4 bg-gray-900/40 px-4 py-2 rounded-xl border border-gray-800/50 backdrop-blur-sm">
+                    {% for comp in companies[:3] %}
+                        {% if comp.logo_path %}
+                            <img src="{{ image_base|default("https://image.tmdb.org/t/p") }}/w200{{ comp.logo_path }}" alt="{{ comp.name }} Logo" width="200" height="100" loading="lazy" decoding="async" class="h-5 md:h-6 object-contain filter invert brightness-200 opacity-70 hover:opacity-100 transition-opacity" title="{{ comp.name }}">
+                        {% else %}
+                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-wider">{{ comp.name }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% if current_user.is_authenticated %}
+<div id="playlistModal" class="fixed inset-0 bg-black/85 z-[10000] hidden flex items-center justify-center backdrop-blur-sm px-4">
+    <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl relative animate-scale-up">
+        <button aria-label="Close Playlist Modal" onclick="document.getElementById('playlistModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors cursor-pointer"><i class="fa-solid fa-xmark text-xl" aria-hidden="true"></i></button>
+        <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-folder-plus text-purple-500" aria-hidden="true"></i> Add to Collection</h2>
+        <form action="{{ url_for('routes.add_to_playlist_item') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="tmdb_id" value="{{ data.id }}">
+            <input type="hidden" name="media_type" value="{{ media_type }}">
+            <input type="hidden" name="title" value="{{ data.title ?: data.name }}">
+            <input type="hidden" name="poster_path" value="{{ data.poster_path }}">
+            <div class="mb-5">
+                <select name="playlist_id" aria-label="Select Playlist Dropdown" required class="w-full bg-[#0a0a0c] border border-gray-700 text-white rounded-xl px-4 py-3 outline-none focus:border-purple-500 transition-colors cursor-pointer appearance-none">
+                    <option value="" disabled selected>Select a Collection...</option>
+                    {% for pl in user_playlists %}
+                        <option value="{{ pl.id }}">{{ pl.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button aria-label="Save Changes" type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl transition-colors shadow-lg cursor-pointer">Save Changes</button>
+        </form>
+        <p class="text-center text-xs text-gray-500 mt-4">Or manage <a aria-label="Manage your collections" href="{{ url_for('routes.my_playlists') }}" class="text-purple-400 hover:underline">My Collections</a> directly.</p>
+    </div>
+</div>
+{% endif %}
+<div class="p-4 md:p-8 lg:p-12 max-w-[1800px] mx-auto bg-[#0f1014] flex flex-col gap-12">
+    {% if media_type == 'tv' and data.seasons %}
+    <div id="episodesSection" class="w-full border-t border-gray-800/80 pt-10">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-8 border-b border-gray-800/60 pb-4">
+            <h2 class="text-xl md:text-2xl font-black text-white tracking-tight flex items-center">
+                Episodes
+            </h2>
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <div class="relative w-full sm:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs" aria-hidden="true"></i>
+                    <input aria-label="Search Episode" type="text" id="episodeSearchInput" oninput="filterEpisodesLocal()" placeholder="Search episode by name or number..." class="w-full bg-[#141519] border border-gray-700 text-white text-xs rounded-md pl-9 pr-4 py-2 outline-none focus:border-red-600 transition-all shadow-md">
+                </div>
+                <div class="relative min-w-[140px] md:min-w-[180px]">
+                    <select aria-label="Select Season Filter" id="seasonSelector" onchange="loadEpisodes(this.value)" class="w-full bg-[#141519] border border-gray-700 text-white font-black rounded-md pl-4 pr-10 py-2 text-xs md:text-sm outline-none focus:border-white cursor-pointer appearance-none shadow-md transition-all">
+                        {% for season in data.seasons %}
+                            {% if season.season_number > 0 %}
+                            <option value="{{ season.season_number }}" class="bg-[#141519]">Season {{ season.season_number }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    <i class="fa-solid fa-caret-down absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none text-xs" aria-hidden="true"></i>
+                </div>
+            </div>
+        </div>
+        <div id="episodesList" class="flex flex-col gap-6 md:gap-4 max-h-[75vh] overflow-y-auto custom-scrollbar pr-2">
+            <div class="flex flex-col justify-center items-center py-20 w-full">
+                <i class="fa-solid fa-spinner fa-spin text-3xl text-red-600 mb-3 shadow-[0_0_15px_rgba(220,38,38,0.3)]" aria-hidden="true"></i>
+                <p class="text-gray-500 text-xs font-black uppercase tracking-widest animate-pulse">Assembling Episodes...</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if data.images and data.images.backdrops and data.images.backdrops|length > 0 %}
+    <div class="w-full border-t border-gray-800/80 pt-10">
+        <h2 class="text-lg md:text-xl font-black text-white tracking-tight mb-5 flex items-center gap-2">
+            <i class="fa-regular fa-images text-blue-500" aria-hidden="true"></i> Media Gallery
+        </h2>
+        <div class="relative group/gallery">
+            <button aria-label="Scroll Gallery Left" onclick="slideGallery('left')" class="absolute left-0 top-0 z-20 h-full w-12 bg-gradient-to-r from-[#0f1014] to-transparent text-white hidden md:flex items-center justify-start opacity-0 group-hover/gallery:opacity-100 transition-opacity duration-300 hover:text-red-500 cursor-pointer">
+                <i class="fa-solid fa-chevron-left text-3xl drop-shadow-lg" aria-hidden="true"></i>
+            </button>
+            <div id="gallerySlider" class="flex overflow-x-auto gap-4 pb-4 hide-scrollbar snap-x scroll-smooth">
+                {% for img in data.images.backdrops[:10] %}
+                <a href="{{ image_base|default("https://image.tmdb.org/t/p") }}/original{{ img.file_path }}" target="_blank" class="flex-none w-[75vw] sm:w-[22rem] md:w-[26rem] aspect-video rounded-xl overflow-hidden border border-gray-800 bg-[#141519] snap-start shadow-md group block relative">
+                    <img src="{{ image_base|default("https://image.tmdb.org/t/p") }}/w780{{ img.file_path }}" alt="Gallery Image" width="780" height="439" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform" loading="lazy" decoding="async">
+                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                        <i class="fa-solid fa-expand text-white text-3xl opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" aria-hidden="true"></i>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            <button aria-label="Scroll Gallery Right" onclick="slideGallery('right')" class="absolute right-0 top-0 z-20 h-full w-12 bg-gradient-to-l from-[#0f1014] to-transparent text-white hidden md:flex items-center justify-end opacity-0 group-hover/gallery:opacity-100 transition-opacity duration-300 hover:text-red-500 cursor-pointer">
+                <i class="fa-solid fa-chevron-right text-3xl drop-shadow-lg pr-2" aria-hidden="true"></i>
+            </button>
+        </div>
+    </div>
+    {% endif %}
+    {% if data.videos and data.videos.results %}
+    <div class="w-full border-t border-gray-800/80 pt-10 cv-auto">
+        <h2 class="text-lg md:text-xl font-black text-white tracking-tight mb-5">Trailers & Extra Clips</h2>
+        <div class="flex overflow-x-auto gap-4 pb-4 hide-scrollbar snap-x">
+            {% for video in data.videos.results[:4] %} 
+            <div class="flex-none w-[75vw] sm:w-[24rem] rounded-xl overflow-hidden border border-gray-800 bg-[#141519] snap-start shadow-md flex flex-col">
+                <div class="w-full aspect-video relative bg-black cursor-pointer group js-trailer" data-trailer-key="{{ video.key }}" data-trailer-title="{{ video.name }}">
+                    <img src="https://i.ytimg.com/vi/{{ video.key }}/hqdefault.jpg" alt="{{ video.name }} Trailer Thumbnail" width="480" height="360" loading="lazy" decoding="async" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="w-14 h-10 bg-red-600 group-hover:bg-red-500 rounded-xl flex items-center justify-center shadow-xl transition-transform group-hover:scale-110">
+                            <i class="fa-solid fa-play text-white text-lg ml-0.5" aria-hidden="true"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="p-3 bg-[#141519] flex flex-col gap-0.5">
+                    <p class="text-xs font-bold text-gray-200 truncate">{{ video.name }}</p>
+                    <span class="text-[9px] text-gray-400 uppercase font-black tracking-wider">{{ video.type }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% if data.credits and data.credits.cast %}
+    <div class="w-full border-t border-gray-800/80 pt-10">
+        <h2 class="text-lg md:text-xl font-black text-white tracking-tight mb-5">Cast & Crew</h2>
+        <div class="relative group/slider">
+            <button aria-label="Scroll Cast Left" onclick="slideCast('left')" class="absolute left-0 top-0 z-20 h-full w-10 bg-gradient-to-r from-[#0f1014] to-transparent text-white hidden md:flex items-center justify-start opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 hover:text-red-500 cursor-pointer">
+                <i class="fa-solid fa-chevron-left text-2xl drop-shadow-lg" aria-hidden="true"></i>
+            </button>
+            <div id="castSlider" class="flex overflow-x-auto gap-4 pb-4 hide-scrollbar snap-x scroll-smooth">
+                {% for actor in data.credits.cast[:14] %}
+                {% if actor.profile_path %}
+                <a aria-label="View Info For {{ actor.name }}" href="{{ url_for('routes.actor', person_id=actor.id, name=actor.name) }}" class="flex-none w-24 md:w-32 text-center group snap-start cursor-pointer block">
+                    <div class="overflow-hidden rounded-md mb-2 shadow border border-gray-800/80 group-hover:border-gray-500 transition-colors duration-300 aspect-[2/3]">
+                        <img src="{{ image_base|default("https://image.tmdb.org/t/p") }}/w185{{ actor.profile_path }}" alt="Photo of {{ actor.name }}" width="185" height="278" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 will-change-transform" loading="lazy" decoding="async">
+                    </div>
+                    <p class="text-gray-200 font-bold text-xs truncate group-hover:text-white transition-colors">{{ actor.name }}</p>
+                    <p class="text-gray-500 text-[10px] truncate mt-0.5">{{ actor.character }}</p>
+                </a>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <button aria-label="Scroll Cast Right" onclick="slideCast('right')" class="absolute right-0 top-0 z-20 h-full w-10 bg-gradient-to-l from-[#0f1014] to-transparent text-white hidden md:flex items-center justify-end pr-1 opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 hover:text-red-500 cursor-pointer">
+                <i class="fa-solid fa-chevron-right text-2xl drop-shadow-lg" aria-hidden="true"></i>
+            </button>
+        </div>
+    </div>
+    {% endif %}
+    <div class="w-full border-t border-gray-800/80 pt-8">
+        <h2 class="text-lg md:text-xl font-black text-white tracking-tight mb-5 flex items-center gap-2">
+            Reviews
+        </h2>
+        {% if current_user.is_authenticated %}
+        <div class="bg-[#141519] border border-gray-800 rounded-xl p-4 md:p-6 mb-6 shadow-md">
+            <form action="{{ url_for('routes.add_review') }}" method="POST" class="flex flex-col gap-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="tmdb_id" value="{{ data.id }}">
+                <input type="hidden" name="media_type" value="{{ data.media_type | default(media_type) }}">
+                <div class="w-full sm:w-44">
+                    <select aria-label="Rating Value Menu" name="rating" class="w-full bg-[#0a0a0c] border border-gray-700 text-yellow-500 font-bold rounded-lg px-3 py-2 text-xs outline-none focus:border-gray-500" required>
+                        <option value="" disabled selected>Rate 1-5 ⭐</option>
+                        <option value="5">⭐⭐⭐⭐⭐ (Masterpiece)</option>
+                        <option value="4">⭐⭐⭐⭐ (Great)</option>
+                        <option value="3">⭐⭐⭐ (Good)</option>
+                        <option value="2">⭐⭐ (Okay)</option>
+                        <option value="1">⭐ (Bad)</option>
+                    </select>
+                </div>
+                <textarea aria-label="Review Message Area" name="review_text" rows="2" placeholder="Share your spoiler-free thoughts..." class="w-full bg-[#0a0a0c] border border-gray-700 text-white rounded-lg px-4 py-3 text-sm outline-none focus:border-gray-600 transition-colors resize-none" required></textarea>
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center gap-2 cursor-pointer group select-none">
+                        <input aria-label="Contains Spoilers Checkbox" type="checkbox" name="has_spoilers" class="w-3.5 h-3.5 accent-red-600 rounded cursor-pointer">
+                        <span class="text-[11px] font-bold text-gray-400 group-hover:text-red-400 transition-colors">Contains Spoilers</span>
+                    </label>
+                    <button aria-label="Post This Review" type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full font-bold text-xs shadow transition-colors cursor-pointer">Post Review</button>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div class="bg-[#141519] border border-gray-800 rounded-xl p-4 text-center mb-6">
+            <p class="text-gray-400 text-xs">Want to review? <a aria-label="Login to Review" href="/login" class="text-blue-400 font-bold hover:underline ml-1">Log In Here</a></p>
+        </div>
+        {% endif %}
+        <div class="flex flex-col gap-3">
+            {% for review in reviews %}
+            <div class="bg-[#141519] border border-gray-800/60 p-4 rounded-xl flex gap-3 shadow-sm">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-red-600 to-purple-600 flex items-center justify-center font-black text-white text-xs shrink-0">
+                    {{ review.user.username|first|upper }}
+                </div>
+                <div class="flex-1 overflow-hidden">
+                    <div class="flex justify-between items-center mb-1">
+                        <div>
+                            <p class="text-gray-200 font-bold text-xs">{{ review.user.username }}</p>
+                            <p class="text-[9px] text-gray-500 mt-0.5">{{ review.timestamp|date('F d, Y') }}</p>
+                        </div>
+                        <div class="text-yellow-500 text-[10px]">
+                            {% for i in range(1, review.rating) %} <i class="fa-solid fa-star" aria-hidden="true"></i> {% endfor %}
+                        </div>
+                    </div>
+                    {% if review.has_spoilers %}
+                    <div class="relative group cursor-pointer mt-1">
+                        <p class="text-xs text-gray-400 blur-md group-hover:blur-none transition-all duration-300 select-none">{{ review.review_text }}</p>
+                        <div class="absolute inset-0 flex items-center justify-center group-hover:hidden pointer-events-none">
+                            <span class="bg-red-600/90 text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-red-500">Tap to Reveal Spoiler</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-xs text-gray-300 leading-relaxed mt-1">{{ review.review_text }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-6 border border-dashed border-gray-800/80 rounded-xl">
+                <p class="text-gray-500 font-bold text-xs">No reviews listed yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% if recommendations %}
+    <div class="w-full border-t border-gray-800/80 pt-8">
+        <h2 class="text-lg md:text-xl font-black text-white tracking-tight mb-5">More Like This</h2>
+        <div class="relative group/rec">
+            <button aria-label="Scroll Recommendations Left" onclick="slideRecRow('left')" class="absolute left-0 top-0 z-20 h-full w-10 bg-gradient-to-r from-[#0f1014] to-transparent text-white hidden md:flex items-center justify-start opacity-0 group-hover/rec:opacity-100 transition-opacity duration-300 hover:text-red-500 cursor-pointer">
+                <i class="fa-solid fa-chevron-left text-2xl drop-shadow-lg" aria-hidden="true"></i>
+            </button>
+            <div id="recSlider" class="flex overflow-x-auto gap-4 pb-4 hide-scrollbar snap-x scroll-smooth">
+                {% for item in recommendations[:12] %}
+                {% if item.poster_path %}
+                <a aria-label="View details of {{ item.title ?: item.name }}" href="{{ url_for('routes.details', media_type=(item.media_type ?: media_type), tmdb_id=item.id, title=item.title ?: item.name) }}" 
+                   class="flex-none w-28 md:w-36 lg:w-44 relative group snap-start block transition-transform duration-300 hover:scale-105 will-change-transform">
+                    <img src="{{ image_base|default("https://image.tmdb.org/t/p") }}/w500{{ item.poster_path }}" alt="Poster of {{ item.title ?: item.name }}" width="300" height="450" class="w-full h-auto rounded-md shadow border border-gray-800/80" loading="lazy" decoding="async">
+                    {% if item.vote_average and item.vote_average > 0 %}
+                    <div class="absolute top-1.5 right-1.5 bg-black/80 px-1.5 py-0.5 rounded text-[9px] text-green-400 font-bold border border-green-500/20 backdrop-blur-sm shadow opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <i class="fa-solid fa-star text-[8px] mr-0.5" aria-hidden="true"></i>{{ item.vote_average | round(1) }}
+                    </div>
+                    {% endif %}
+                </a>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <button aria-label="Scroll Recommendations Right" onclick="slideRecRow('right')" class="absolute right-0 top-0 z-20 h-full w-10 bg-gradient-to-l from-[#0f1014] to-transparent text-white hidden md:flex items-center justify-end pr-1 opacity-0 group-hover/rec:opacity-100 transition-opacity duration-300 hover:text-red-500 cursor-pointer">
+                <i class="fa-solid fa-chevron-right text-2xl drop-shadow-lg" aria-hidden="true"></i>
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+<footer class="bg-[#0f1014] border-t border-gray-800/60 pt-16 pb-10 mt-16 relative z-50">
+    {% if ads_enabled and adsterra_native_banner %}
+    <div class="w-full max-w-5xl mx-auto my-4 px-4 adsterra-native-wrap">
+        <div class="bg-[#141519] border border-gray-800 rounded-2xl p-4 relative overflow-hidden">
+            <span class="text-[10px] text-amber-400 font-black uppercase tracking-widest mb-2 block"><i class="fa-solid fa-sparkles mr-1"></i> Sponsored Picks</span>
+            <div class="ad-slot-native w-full min-h-[90px]"></div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="w-full max-w-5xl mx-auto my-6 bg-gray-900 border border-gray-800 rounded-lg flex items-center justify-center min-h-[100px] overflow-hidden relative">
+            <span data-adsterra-smartlink class="text-[10px] text-gray-400 uppercase tracking-widest absolute top-2 right-4">Sponsored</span>
+            <div class="ad-slot-728 text-gray-400 text-sm py-2"></div>
+        </div>
+    <div class="max-w-[1800px] mx-auto px-6 md:px-12">
+        <div class="flex gap-6 mb-8 text-2xl text-gray-400">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-facebook-f" aria-hidden="true"></i></a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-instagram" aria-hidden="true"></i></a>
+            <a href="https://twitter.com/CineAmit" target="_blank" rel="noopener noreferrer" aria-label="Twitter" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-twitter" aria-hidden="true"></i></a>
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube" class="hover:text-white transition-colors duration-300 hover:scale-110"><i class="fa-brands fa-youtube" aria-hidden="true"></i></a>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10 text-sm text-gray-400 font-medium tracking-wide">
+            <div class="flex flex-col gap-3">
+                <a href="/faq" class="hover:underline hover:text-gray-300 transition-colors">FAQ</a>
+                <a href="/about" class="hover:underline hover:text-gray-300 transition-colors">About Us</a>
+                <a href="/livetv" class="hover:underline hover:text-gray-300 transition-colors">Live TV Channels</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <a href="/help" class="hover:underline hover:text-gray-300 transition-colors">Help Center</a>
+                <a href="/movies/popular" class="hover:underline hover:text-gray-300 transition-colors">Popular Movies</a>
+                <a href="/terms" class="hover:underline hover:text-gray-300 transition-colors">Terms of Use</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <a href="/profile" class="hover:underline hover:text-gray-300 transition-colors">Account</a>
+                <a href="/privacy" class="hover:underline hover:text-gray-300 transition-colors">Privacy Policy</a>
+                <a href="/dmca" class="hover:underline hover:text-gray-300 transition-colors">DMCA / Copyright</a>
+            </div>
+            <div class="flex flex-col gap-3">
+                <a href="/blog" class="hover:underline hover:text-gray-300 transition-colors">Media Center & Blog</a>
+                <a href="/contact" class="hover:underline hover:text-gray-300 transition-colors">Contact Us</a>
+                <a href="/legal" class="hover:underline hover:text-gray-300 transition-colors">Legal Notices</a>
+            </div>
+        </div>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <button class="border border-gray-600 text-gray-400 hover:text-white hover:border-white transition-colors px-3 py-1.5 text-xs font-bold tracking-widest uppercase">
+                Service Code
+            </button>
+            <div class="text-gray-500 text-xs text-left md:text-right">
+                <p>&copy; 2026 CINEAMIT. All Rights Reserved.</p>
+                <p class="mt-1">Designed for a premium cinematic experience.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+<script>
+    function shareMovie() {
+        if (navigator.share) {
+            navigator.share({
+                title: '{{ ((data.title ?: data.name) ~ ' - CINEAMIT')|e('js') }}',
+                text: '{{ ('Watch ' ~ (data.title ?: data.name) ~ ' for free in HD!')|e('js') }}',
+                url: window.location.href
+            }).catch(console.error);
+        } else {
+            navigator.clipboard.writeText(window.location.href);
+            alert('Link copied to clipboard!');
+        }
+    }
+    function slideRecRow(direction) {
+        const slider = document.getElementById('recSlider');
+        const scrollAmount = slider.clientWidth * 0.7;
+        slider.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    }
+    function slideCast(direction) {
+        const slider = document.getElementById('castSlider');
+        const scrollAmount = slider.clientWidth * 0.7; 
+        slider.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    }
+    function slideGallery(direction) {
+        const slider = document.getElementById('gallerySlider');
+        const scrollAmount = slider.clientWidth * 0.7; 
+        slider.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    }
+</script>
+<script defer src="/static/assets/vendor/color-thief.umd.js?v=2.6.0"></script>
+<script>
+    window.addEventListener('load', function() {
+        if (typeof ColorThief === 'undefined') return;
+        const colorThief = new ColorThief();
+        const posterImg = document.getElementById('moviePoster');
+        if(posterImg) {
+            if (posterImg.complete) applyAmbientGlow();
+            else posterImg.addEventListener('load', applyAmbientGlow);
+        }
+        function applyAmbientGlow() {
+            try {
+                const heroSection = document.querySelector('.bg-black') || document.querySelector('.min-h-\\[60vh\\]');
+                const color = colorThief.getColor(posterImg);
+                const rgbString = `${color[0]}, ${color[1]}, ${color[2]}`;
+                heroSection.style.background = `radial-gradient(circle at 50% 30%, rgba(${rgbString}, 0.22) 0%, #0f1014 85%)`;
+                if(window.innerWidth > 768) {
+                    heroSection.style.background = `radial-gradient(circle at 15% 50%, rgba(${rgbString}, 0.28) 0%, #0f1014 75%)`;
+                }
+                posterImg.style.boxShadow = `0 10px 40px rgba(${rgbString}, 0.45)`;
+            } catch (e) {}
+        }
+    });
+</script>
+<script>
+    const tmdbId = {{ tmdb_id|default(0) }} || 0;
+    const fallbackImg = "{{ image_base_url|default("https://image.tmdb.org/t/p/w500") }}{{ (data and data.backdrop_path) ? (data.backdrop_path) : ('') }}";
+    
+    const watchBaseUrl = "{{ watch_url|default('/watch/' ~ media_type ~ '/' ~ tmdb_id) }}";
+
+    let currentSeasonEpisodes = []; 
+    
+    let episodesReqId = 0;
+    async function loadEpisodes(seasonNumber) {
+        const list = document.getElementById('episodesList');
+        if(!list || !tmdbId) return;
+        const searchInp = document.getElementById('episodeSearchInput');
+        if(searchInp) searchInp.value = '';
+        const myReq = ++episodesReqId;
+        const epCacheKey = 'cineamit_ep_' + tmdbId + '_' + seasonNumber;
+        try {
+            const cachedRaw = sessionStorage.getItem(epCacheKey);
+            if (cachedRaw) {
+                const cachedArr = JSON.parse(cachedRaw);
+                if (Array.isArray(cachedArr) && cachedArr.length > 0) {
+                    currentSeasonEpisodes = cachedArr;
+                    renderEpisodesList(currentSeasonEpisodes, seasonNumber);
+                    return;
+                }
+            }
+        } catch (_) {}
+        list.innerHTML = `
+            <div class="flex flex-col justify-center items-center py-20 w-full animate-fade-in">
+                <i class="fa-solid fa-spinner fa-spin text-3xl text-red-600 mb-3" aria-hidden="true"></i>
+                <p class="text-gray-500 text-xs font-black uppercase tracking-widest animate-pulse">Assembling Episodes...</p>
+            </div>`;
+        const tryFetch = async (attempt) => {
+            if (myReq !== episodesReqId) return;
+            let ok = false;
+            let failReason = 'network error';
+            const apiPath = `/api/episodes/${tmdbId}/${seasonNumber}`;
+            try {
+                const response = await fetch(apiPath);
+                if (myReq !== episodesReqId) return;
+                if (!response.ok) {
+                    let errKind = 'generic';
+                    try {
+                        const errBody = await response.text();
+                        if (/page not found/i.test(errBody)) errKind = 'app-route';
+                        else if (/not found/i.test(errBody)) errKind = 'web-server';
+                        console.error("Episode sync " + response.status + " body: " + errBody.slice(0, 160).replace(/\s+/g, ' '));
+                    } catch (_) {}
+                    failReason = 'server ' + response.status + ' (' + errKind + ')';
+                    console.error("Episode sync HTTP " + response.status + " for " + apiPath);
+                } else {
+                    let payload = await response.json().catch(() => null);
+                    if (myReq !== episodesReqId) return;
+                    if (payload && !Array.isArray(payload) && Array.isArray(payload.episodes)) payload = payload.episodes;
+                    if (!Array.isArray(payload)) {
+                        failReason = 'bad server response';
+                        console.error("Episode sync returned non-array payload:", typeof payload);
+                    } else {
+                        currentSeasonEpisodes = payload;
+                        if (payload.length > 0) {
+                            try { sessionStorage.setItem(epCacheKey, JSON.stringify(payload)); } catch (_) {}
+                        }
+                        renderEpisodesList(currentSeasonEpisodes, seasonNumber);
+                        ok = true;
+                    }
+                }
+            } catch (e) {
+                console.error("Episode loading crash: ", e);
+            }
+            if (ok || myReq !== episodesReqId) return;
+            if (attempt === 1) { setTimeout(() => tryFetch(2), 2500); return; }
+            list.innerHTML = `
+                <div class="text-center py-10 px-4 border border-dashed border-red-900/70 rounded-xl">
+                    <i class="fa-solid fa-plug-circle-xmark text-3xl text-red-800 mb-2" aria-hidden="true"></i>
+                    <p class="text-red-400 font-bold text-xs mb-1">Episodes could not be loaded.</p>
+                    <p class="text-red-600/80 font-mono text-[10px] mb-3 break-all">diagnosis: ${failReason} · url: ${apiPath}</p>
+                    <button onclick="loadEpisodes(${JSON.stringify(String(seasonNumber))})" class="bg-red-600 hover:bg-red-700 text-white text-xs font-black px-4 py-2 rounded-md transition-colors">
+                        <i class="fa-solid fa-rotate-right mr-1" aria-hidden="true"></i> Retry
+                    </button>
+                </div>`;
+        };
+        tryFetch(1);
+    }
+    
+    function renderEpisodesList(episodes, seasonNumber) {
+        const list = document.getElementById('episodesList');
+        if(!episodes || episodes.length === 0) {
+            list.innerHTML = `
+                <div class="text-center py-12 border border-dashed border-gray-800 rounded-xl">
+                    <i class="fa-solid fa-ghost text-3xl text-gray-700 mb-2" aria-hidden="true"></i>
+                    <p class="text-gray-500 font-bold text-xs">No episodes compiled for this collection yet.</p>
+                </div>`;
+            return;
+        }
+        const escHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const mediaId = "cineamit_resume_" + tmdbId;
+        const savedSeason = localStorage.getItem(mediaId + "_season");
+        const savedEpisode = localStorage.getItem(mediaId + "_episode");
+        let html = '';
+        episodes.forEach((ep, index) => {
+            let imgUrl = fallbackImg;
+            if (ep.still_path && ep.still_path !== 'None' && ep.still_path !== null && ep.still_path !== '') {
+                let cleanPath = ep.still_path.startsWith('/') ? ep.still_path : '/' + ep.still_path;
+                imgUrl = `{{ image_base|default("https://image.tmdb.org/t/p") }}/w500${cleanPath}`;
+            }
+            const epName = escHtml(ep.name || `Episode ${ep.episode_number}`);
+            const overview = escHtml(ep.overview ? ep.overview : 'No extra summary logs compiled for this streaming item.');
+            const runtime = ep.runtime ? `${ep.runtime}m` : '';
+            const rating = ep.vote_average ? `⭐${ep.vote_average.toFixed(1)}` : '';
+            const isLastWatched = (savedSeason && parseInt(savedSeason) === parseInt(seasonNumber) && parseInt(savedEpisode) === ep.episode_number);
+            const borderClass = isLastWatched ? 'border-purple-600/80 shadow-[0_0_15px_rgba(147,51,234,0.15)] ring-1 ring-purple-500/30 bg-[#1a1326]/40' : 'border-gray-800/40 hover:bg-[#141519]/90';
+            const numberColor = isLastWatched ? 'text-purple-500' : 'text-gray-500 group-hover:text-white';
+            const titleColor = isLastWatched ? 'text-purple-400 font-black' : 'text-white group-hover:text-red-500';
+            
+            html += `
+            <div class="flex flex-col md:flex-row items-start md:items-center gap-4 border p-4 rounded-xl transition-all duration-300 group relative ${borderClass}">
+                <div class="hidden md:block w-8 text-center text-lg font-black transition-colors shrink-0 ${numberColor}">
+                    ${isLastWatched ? '<i class="fa-solid fa-history animate-pulse" aria-hidden="true"></i>' : (index + 1)}
+                </div>
+                <div class="relative w-full md:w-52 aspect-video rounded-md overflow-hidden shrink-0 bg-[#0a0a0c] shadow border border-gray-800/80">
+                    <img src="${escHtml(imgUrl)}" alt="${epName}" width="500" height="281" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300" onerror="this.onerror=null; this.src='${escHtml(fallbackImg)}';" loading="lazy" decoding="async">
+                    <a aria-label="Play Episode ${ep.episode_number}" href="${watchBaseUrl}?s=${seasonNumber}&e=${ep.episode_number}" class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                        <div class="w-10 h-10 rounded-full bg-black/60 border border-white/40 flex items-center justify-center hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-play text-white text-xs ml-0.5" aria-hidden="true"></i>
+                        </div>
+                    </a>
+                    <span class="absolute bottom-2 left-2 bg-black/80 px-1.5 py-0.5 rounded text-[9px] font-black text-white border border-gray-800 md:hidden z-20">
+                        EP ${ep.episode_number} ${isLastWatched ? '• RESUME' : ''}
+                    </span>
+                </div>
+                <div class="flex-1 min-w-0 flex flex-col gap-1 w-full">
+                    <div class="flex items-center justify-between gap-4 w-full">
+                        <h3 class="text-sm md:text-base transition-colors truncate ${titleColor}">
+                            <span class="md:hidden mr-1">${ep.episode_number}.</span>${epName}
+                            ${isLastWatched ? '<span class="ml-2 text-[10px] bg-purple-500/20 text-purple-400 font-bold px-2 py-0.5 rounded border border-purple-500/20 uppercase tracking-wider hidden sm:inline-block">Last Watched</span>' : ''}
+                        </h3>
+                        <div class="flex items-center gap-2 shrink-0 text-[10px] font-black tracking-wider text-gray-500">
+                            ${rating ? `<span class="text-yellow-600/90">${rating}</span>` : ''}
+                            ${runtime ? `<span>${runtime}</span>` : ''}
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-xs leading-relaxed line-clamp-2 md:line-clamp-3 pr-2 font-medium">
+                        ${overview}
+                    </p>
+                </div>
+            </div>
+            `;
+        });
+        list.innerHTML = html;
+    }
+    
+    function filterEpisodesLocal() {
+        const query = document.getElementById('episodeSearchInput').value.toLowerCase().trim();
+        const activeSeason = document.getElementById('seasonSelector').value;
+        if(!query) {
+            renderEpisodesList(currentSeasonEpisodes, activeSeason);
+            return;
+        }
+        const filtered = currentSeasonEpisodes.filter(ep => {
+            const matchesName = (ep.name || '').toLowerCase().includes(query);
+            const matchesNumber = ep.episode_number.toString() === query;
+            const matchesOverview = (ep.overview || '').toLowerCase().includes(query);
+            return matchesName || matchesNumber || matchesOverview;
+        });
+        renderEpisodesList(filtered, activeSeason);
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const selector = document.getElementById('seasonSelector');
+        const mediaId = "cineamit_resume_" + tmdbId;
+        const savedSeason = localStorage.getItem(mediaId + "_season");
+        if (selector) {
+            if (savedSeason && selector.querySelector(`option[value="${savedSeason}"]`)) {
+                selector.value = savedSeason;
+            }
+            if (selector.value) {
+                loadEpisodes(selector.value);
+            }
+        }
+    });
+</script>
+
+
+
+
+<script>
+document.addEventListener('click', function (e) {
+    const card = e.target.closest('.js-trailer');
+    if (!card || card.dataset.trailerLoaded === '1') return;
+    card.dataset.trailerLoaded = '1';
+    const key = card.dataset.trailerKey || '';
+    const title = card.dataset.trailerTitle || 'Trailer';
+    if (!/^[A-Za-z0-9_-]{5,20}$/.test(key)) return;
+    const frame = document.createElement('iframe');
+    frame.src = 'https://www.youtube.com/embed/' + encodeURIComponent(key) + '?autoplay=1';
+    frame.title = title + ' Trailer';
+    frame.className = 'w-full h-full border-0';
+    frame.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture');
+    frame.setAttribute('allowfullscreen', 'true');
+    frame.setAttribute('loading', 'lazy');
+    card.innerHTML = '';
+    card.appendChild(frame);
+});
+</script>
+{% endblock %}

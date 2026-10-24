@@ -1,0 +1,9 @@
+{% if seo.breadcrumbs|length > 1 %}
+<nav aria-label="Breadcrumb" class="text-xs text-gray-400 mb-4">
+  <ol class="flex flex-wrap items-center gap-2">
+    {% for crumb in seo.breadcrumbs %}
+    <li>{% if not loop.first %}<span aria-hidden="true" class="mr-2">/</span>{% endif %}{% if not loop.last %}<a href="{{ crumb.url }}" class="hover:text-white">{{ crumb.name }}</a>{% else %}<span aria-current="page">{{ crumb.name }}</span>{% endif %}</li>
+    {% endfor %}
+  </ol>
+</nav>
+{% endif %}

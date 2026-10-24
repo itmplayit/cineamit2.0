@@ -1,0 +1,292 @@
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ seo.title }}">
+    <meta name="twitter:description" content="{{ seo.description }}">
+    <meta name="twitter:image" content="{{ seo.image }}">
+    <meta name="google-site-verification" content="{{ seo.google_verification }}">
+    {% if seo.bing_verification %}<meta name="msvalidate.01" content="{{ seo.bing_verification }}">{% endif %}
+    
+    <script type="application/ld+json">{{ seo.graph|json_encode|raw }}</script>
+
+    <link rel="stylesheet" href="/static/tailwind.min.css?v=3.4.17-r4" onerror="var s=document.createElement('script');s.src='https://cdn.tailwindcss.com';document.head.appendChild(s);">
+    <link rel="stylesheet" href="/static/cine-motion.css?v=1">
+
+    <style>
+        :root {
+            --color-primary: #0a0b0f;
+            --color-on-primary: #FFFFFF;
+            --color-secondary: #1e212b;
+            --color-accent: #fe1a63;
+            --color-on-accent: #FFFFFF;
+            --color-background: #0a0b0f;
+            --color-foreground: #F4F4F4;
+            --color-card: #1e212b;
+            --color-muted: #222530;
+            --color-muted-foreground: #9c9c9c;
+            --color-border: rgba(255, 255, 255, 0.08);
+            --ca-grad: linear-gradient(90deg, #fe8706, #fe0476);
+            --blur-amount: 16px;
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-2xl: 48px;
+            --space-3xl: 64px;
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        html {
+            scroll-padding-top: 80px;
+        }
+        html, body {
+            width: 100%;
+            position: relative;
+            overflow-x: hidden !important; 
+            margin: 0 !important;
+            padding: 0 !important;
+            overscroll-behavior-x: none !important; 
+            background-color: #0a0b0f;
+            color: #ffffff;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            scroll-behavior: smooth;
+        }
+        a, button, input, select, textarea, [role="button"] {
+            touch-action: manipulation;
+        }
+        a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+            outline: 2px solid #fe1a63 !important;
+            outline-offset: 2px !important;
+        }
+        .bg-red-600, .bg-red-700, .hover\:bg-red-700:hover, .hover\:bg-red-600:hover {
+            background-image: var(--ca-grad) !important;
+            background-color: #fe1a63 !important;
+        }
+        .text-red-500, .text-red-400, .text-red-600, .hover\:text-red-500:hover, .hover\:text-red-400:hover {
+            color: #fe1a63 !important;
+        }
+        .border-red-600, .border-red-500, .border-red-500\/25 {
+            border-color: #fe1a63 !important;
+        }
+        .bg-\[\#09090b\], .bg-zinc-950, .bg-black {
+            background-color: #0a0b0f;
+        }
+        .shadow-\[0_0_15px_rgba\(220\,38\,38\,0\.45\)\] {
+            box-shadow: 0 0 15px rgba(254, 26, 99, 0.45) !important;
+        }
+        #cineProgressBar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 2.5px;
+            width: 0%;
+            z-index: 10005;
+            background: linear-gradient(90deg, #fe8706, #fe1a63, #fe0476);
+            box-shadow: 0 0 14px rgba(254, 26, 99, 0.85);
+            opacity: 0;
+            pointer-events: none;
+            transition: width 350ms var(--ease-out-expo), opacity 250ms ease;
+        }
+        /* Explicit CSS: the checked-in utility build lacks z-[10020]. */
+        #cineFlashStack {
+            position: fixed;
+            top: calc(64px + env(safe-area-inset-top, 0px));
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10040;
+            width: 100%;
+            max-width: 28rem;
+            max-height: calc(100dvh - 100px);
+            padding: 0 16px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            pointer-events: none;
+        }
+        #cineFlashStack:empty { display: none; }
+        .cine-flash {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 16px;
+            border: 1px solid #60a5fa;
+            border-radius: 12px;
+            background: #172554;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.4;
+            box-shadow: 0 12px 32px rgba(0,0,0,.55);
+            pointer-events: auto;
+        }
+        .cine-flash--success { background: #064e3b; border-color: #34d399; }
+        .cine-flash--error { background: #7f1d1d; border-color: #f87171; }
+        .cine-flash-message { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+        .cine-flash-close {
+            flex-shrink: 0;
+            min-width: 36px;
+            height: 36px;
+            border: 0;
+            border-radius: 8px;
+            background: rgba(255,255,255,.12);
+            color: #fff;
+            font-size: 24px;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .cine-flash-close:hover { background: rgba(255,255,255,.22); }
+        @media (min-width: 768px) {
+            #cineFlashStack { top: calc(76px + env(safe-area-inset-top, 0px)); }
+        }
+        @media (min-width: 1024px) {
+            #cineFlashStack { top: calc(82px + env(safe-area-inset-top, 0px)); }
+        }
+        .header-scrolled {
+            background: rgba(7, 8, 12, 0.96) !important;
+            border-bottom-color: rgba(225, 29, 72, 0.24) !important;
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.88) !important;
+        }
+        .hdr-ico {
+            width: 36px;
+            height: 36px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #d1d5db;
+            transition: background 160ms ease, color 160ms ease, border-color 160ms ease, transform 160ms ease;
+        }
+        .hdr-ico:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(254,26,99,0.35); }
+        .hdr-ico.is-on { color: #fff; border-color: rgba(254,26,99,0.45); background: rgba(254,26,99,0.12); }
+        .hdr-menu {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 10px);
+            width: 272px;
+            border-radius: 18px;
+            background: rgba(14,15,20,0.97);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 24px 50px rgba(0,0,0,0.88);
+            backdrop-filter: blur(20px);
+            z-index: 999;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+        /* This rule must override .hdr-menu's flex display and cached utility CSS. */
+        .hdr-menu.hidden, .hdr-menu[hidden] { display: none !important; }
+        .hdr-menu a { min-height: 40px; }
+        .movie-preview-card > a {
+            transition: transform 340ms var(--ease-out-expo), box-shadow 340ms var(--ease-out-expo), border-color 280ms ease !important;
+            will-change: transform;
+        }
+        .movie-preview-card > a::after {
+            content: "";
+            position: absolute;
+             inset: 0;
+            background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.16) 48%, transparent 75%);
+            transform: translateX(-130%);
+            transition: transform 620ms var(--ease-out-expo);
+            pointer-events: none;
+            z-index: 15;
+        }
+        @media (hover: hover) {
+            .movie-preview-card:hover > a {
+                transform: translateY(-6px) scale(1.035) !important;
+                box-shadow: 0 18px 36px -8px rgba(225, 29, 72, 0.35), 0 10px 20px -6px rgba(0, 0, 0, 0.88) !important;
+                border-color: rgba(225, 29, 72, 0.5) !important;
+            }
+            .movie-preview-card:hover > a::after {
+                transform: translateX(130%);
+            }
+        }
+        .cine-reveal-init {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 520ms var(--ease-out-expo), transform 520ms var(--ease-out-expo);
+        }
+        .cine-reveal-init.cine-revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .cine-stagger-init {
+            opacity: 0;
+            transform: translateY(16px) scale(0.95);
+            transition: opacity 440ms var(--ease-out-expo), transform 440ms var(--ease-out-back);
+            transition-delay: calc(var(--stagger-idx, 0) * 45ms);
+        }
+        .cine-stagger-init.cine-stagger-in {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        img.cine-img-fade {
+            animation: cineImgReveal 360ms var(--ease-smooth) forwards;
+        }
+        @keyframes cineImgReveal {
+            from { opacity: 0.15; transform: scale(1.025); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes dropdownPop {
+            from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .live-search-results {
+            animation: dropdownPop 220ms var(--ease-out-expo) forwards;
+            transform-origin: top center;
+        }
+        h1.border-red-600, h2.border-red-600 {
+            position: relative;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, ::before, ::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            .cine-reveal-init, .cine-stagger-init {
+                opacity: 1 !important;
+                transform: none !important;
+            }
+        }
+        .text-gray-500 { color: #9ca3af !important; }
+        .text-gray-600 { color: #94a3b8 !important; }
+        .bg-amber-600 { background-color: #b45309 !important; }
+        .bg-green-600 { background-color: #15803d !important; }
+        .cv-auto { content-visibility: auto; contain-intrinsic-size: 1px 360px; }
+        @media (max-width: 768px) {
+            .popout-card {
+                transform: scale(0.75) translate(-65%, -65%) !important; 
+                max-width: 85vw !important; 
+                box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8) !important;
+            }
+            body { padding-bottom: calc(70px + env(safe-area-inset-bottom, 16px)); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes slideDown { 
+            from { opacity: 0; transform: translateY(-20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .animate-slide-down { animation: slideDown 0.3s ease-out forwards; }
+        .glass { background: rgba(25, 26, 32, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .search-scroll::-webkit-scrollbar { width: 6px; }
+        .search-scroll::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+        .fa-solid, .fa-brands, .fa-regular { display: inline-block; min-width: 1em; text-align: center; font-style: normal; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0c; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #dc2626; }
+    </style>
+
+    <noscript><link rel="stylesheet" href="/static/assets/fa/css/all.min.css?v=6.4.0"></noscript>
+

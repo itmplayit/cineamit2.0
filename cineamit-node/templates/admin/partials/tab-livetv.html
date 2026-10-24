@@ -1,0 +1,222 @@
+        <div id="tab-livetv" class="tab-content hidden animate-fade-in flex flex-col gap-6">
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl shadow-xl overflow-hidden p-6 relative">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-gray-800 pb-4">
+                    <div>
+                        <h2 class="text-xl font-black text-white flex items-center gap-2">
+                            <i class="fa-solid fa-satellite-dish text-red-500"></i> Stalker Portal & MAG Setup
+                        </h2>
+                        <p class="text-gray-400 text-xs mt-1">Connect your IPTV provider using Stalker Middleware Portal URL and MAC Address.</p>
+                    </div>
+                    <form action="/admin/clear_livetv_cache" method="POST" class="m-0">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button type="submit" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/40 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-md">
+                            <i class="fa-solid fa-rotate mr-1"></i> Force Refresh Live TV Cache
+                        </button>
+                    </form>
+                </div>
+                     <!-- hi "value" dikhta tha — ab sirf saved value, aur default sirf placeholder me -->
+                <form action="/admin/update_m3u" method="POST" class="grid grid-cols-1 md:grid-cols-12 gap-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="md:col-span-6 flex flex-col gap-1.5">
+                        <label class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Stalker Portal URL (P➛)</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-globe absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                            <input aria-label="Portal URL Input" type="text" name="stalker_portal" value="{{ current_stalker_portal }}" {% if not can_manage_sources %}readonly{% endif %} required placeholder="{{ m3u_default_portal }} (default)" pattern="https?://.*" class="w-full bg-[#0a0a0c] border border-gray-700 text-white text-sm rounded-xl pl-10 pr-4 py-3 outline-none focus:border-red-500 transition-colors shadow-inner">
+                        </div>
+                    </div>
+                    <div class="md:col-span-4 flex flex-col gap-1.5">
+                        <label class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Device MAC Address (Mᴀᴄ➛)</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-network-wired absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                            <input aria-label="MAC Address Input" type="text" name="stalker_mac" value="{{ current_stalker_mac }}" {% if not can_manage_sources %}readonly{% endif %} required placeholder="{{ m3u_default_mac }} (default)" pattern="([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}" title="Format: AA:BB:CC:DD:EE:FF" class="w-full bg-[#0a0a0c] border border-gray-700 text-white text-sm rounded-xl pl-10 pr-4 py-3 outline-none focus:border-red-500 transition-colors shadow-inner font-mono">
+                        </div>
+                    </div>
+                    <div class="md:col-span-2 flex items-end">
+                        <button aria-label="Save Stalker Portal" type="submit" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-[0_0_15px_rgba(220,38,38,0.4)] whitespace-nowrap cursor-pointer flex items-center justify-center gap-2 text-sm">
+                            <i class="fa-solid fa-floppy-disk"></i> Save Portal
+                        </button>
+                    </div>
+                    <div class="md:col-span-12">
+                        {% if m3u_is_custom %}
+                        <span class="text-[10px] bg-green-500/10 text-green-400 px-2.5 py-1 rounded-full border border-green-500/20 font-bold"><i class="fa-solid fa-circle-check mr-1"></i>Custom portal saved in database</span>
+                        {% else %}
+                        <span class="text-[10px] bg-yellow-500/10 text-yellow-400 px-2.5 py-1 rounded-full border border-yellow-500/20 font-bold"><i class="fa-solid fa-circle-info mr-1"></i>Using Config defaults (not saved yet — Save Portal to make it permanent)</span>
+                        {% endif %}
+                    </div>
+                </form>
+                <div class="mt-4 p-3 bg-[#0a0a0c] border border-gray-800 rounded-xl flex items-center justify-between text-xs text-gray-400">
+                    <span class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        <strong class="text-white">Active Link:</strong> 
+                        <span class="font-mono text-gray-300 truncate max-w-xs md:max-w-md">{{ current_m3u }}</span>
+                    </span>
+                    <span class="text-[10px] bg-red-500/10 text-red-400 px-2.5 py-1 rounded-full border border-red-500/20 font-bold">Stalker & M3U Compatible</span>
+                </div>
+            </div>
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl shadow-xl overflow-hidden p-6">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2 mb-2"><i class="fa-solid fa-list-ol text-blue-500"></i> Master M3U / Combined Playlist Link</h2>
+                <p class="text-gray-500 text-xs mb-4">Direct M3U URL, comma-separated URLs, or combined Stalker format (<code class="text-gray-300">portal_url|mac_address</code>).</p>
+                <form action="/admin/update_m3u" method="POST" class="flex flex-col md:flex-row gap-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input aria-label="M3U Link Input" type="text" name="m3u_link" value="{{ current_m3u }}" required placeholder="http://mag.senpay25.com:80/c/|00:1A:79:00:00:01" class="w-full bg-[#141519] border border-gray-700 text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition-colors shadow-inner font-mono">
+                    <button aria-label="Update Channels" type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(37,99,235,0.4)] whitespace-nowrap cursor-pointer flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-rotate"></i> Update Link
+                    </button>
+                </form>
+                <div class="bg-gray-900 border border-gray-800 rounded-xl shadow-xl overflow-hidden p-5 mt-6">
+                    <h2 class="text-base font-bold text-white flex items-center gap-2 mb-1"><i class="fa-solid fa-power-off text-green-500"></i> Native Web Player Engine</h2>
+                    <p class="text-gray-500 text-xs mb-4">If streams fail due to CORS, disable Web Player to guide users directly to MX Player / VLC.</p>
+                    <form action="/admin/update_web_player" method="POST" class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-[#141519] p-4 rounded-xl border border-gray-800 shadow-inner">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <div class="mb-3 sm:mb-0">
+                            <p class="text-white font-bold text-sm">Allow playing inside website?</p>
+                            <p class="text-xs mt-0.5">Current Status: <span class="{% if web_player_enabled == 'true' %}text-green-500{% else %}text-red-500{% endif %} font-black tracking-widest uppercase">{{ (web_player_enabled == 'true') ? ('ACTIVE') : ('DISABLED') }}</span></p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input aria-label="Toggle Web Player" type="checkbox" name="web_player_enabled" class="sr-only peer" {% if web_player_enabled == 'true' %}checked{% endif %} onchange="this.form.submit()">
+                            <div class="w-14 h-7 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-green-500 shadow-md"></div>
+                        </label>
+                    </form>
+                </div>
+            </div>
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl shadow-xl overflow-hidden p-6">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-satellite-dish text-purple-500"></i> Xtream Codes Accounts <span class="text-[10px] bg-purple-600/15 text-purple-300 border border-purple-600/30 px-2 py-0.5 rounded-full uppercase tracking-wider">Multiple</span></h2>
+                    <span class="text-[10px] bg-green-500/10 text-green-400 px-2.5 py-1 rounded-full border border-green-500/20 font-bold">{{ xtream_servers|length }} Registered · Auto-Merged in Live TV</span>
+                </div>
+                <p class="text-gray-500 text-xs mb-4">Add as many Xtream Codes accounts as you want — their live channels merge automatically on the <code class="text-gray-300">/livetv</code> page. The channel list is cached for 6 hours. Username/password are stored encrypted in the DB; an HTTPS server endpoint is required.</p>
+                <form action="/admin/add_xtream" method="POST" class="bg-[#0a0a0c] border border-gray-800 p-5 rounded-xl shadow-inner mb-6">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                        <div class="flex flex-col gap-1.5">
+                            <label for="xtream_name" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Display Name <span class="text-red-400">*</span></label>
+                            <input id="xtream_name" type="text" name="xtream_name" required minlength="2" maxlength="60" placeholder="e.g. IPTV India #1" class="w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm outline-none focus:border-purple-500">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label for="xtream_host" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Server (host:port) <span class="text-red-400">*</span></label>
+                            <input id="xtream_host" type="text" name="xtream_host" required placeholder="https://xtream.example.com:8443" class="w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm outline-none focus:border-purple-500 font-mono">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label for="xtream_username" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Username <span class="text-red-400">*</span></label>
+                            <input id="xtream_username" type="text" name="xtream_username" required maxlength="120" placeholder="xtream username" class="w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm outline-none focus:border-purple-500">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label for="xtream_password" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Password <span class="text-red-400">*</span></label>
+                            <input id="xtream_password" type="password" name="xtream_password" required minlength="4" maxlength="255" placeholder="xtream password" autocomplete="new-password" class="w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm outline-none focus:border-purple-500">
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center justify-between gap-3 mt-4">
+                        <span class="text-[10px] text-gray-500"><i class="fa-solid fa-circle-info text-purple-400 mr-1"></i>Host me <code class="bg-black px-1 rounded">http://</code> skip kar sakte ho (default http). Local/IP internal addresses block (SSRF guard).</span>
+                        <button aria-label="Add Xtream Account" type="submit" class="bg-purple-600 hover:bg-purple-500 text-white font-black py-2.5 px-6 rounded-lg text-sm transition-all shadow-[0_0_15px_rgba(147,51,234,0.3)] cursor-pointer"><i class="fa-solid fa-plus mr-1.5"></i>Add Xtream Account</button>
+                    </div>
+                </form>
+                <div class="overflow-x-auto border border-gray-800 rounded-xl bg-[#0a0a0c]">
+                    <div class="p-3 border-b border-gray-800 bg-gray-900/40 flex items-center gap-3">
+                        <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Ping account (player_api.php) — status + expiry dikhega</span>
+                        <button type="button" id="testAllXtream" class="ml-auto bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm whitespace-nowrap cursor-pointer"><i class="fa-solid fa-heart-pulse mr-1.5"></i>Test All</button>
+                    </div>
+                    <table class="w-full text-left text-xs text-gray-400 min-w-[750px]">
+                        <thead class="bg-gray-900/60 text-gray-300 uppercase font-bold text-[10px] tracking-wider border-b border-gray-800">
+                            <tr>
+                                <th scope="col" class="px-4 py-3">Account</th>
+                                <th scope="col" class="px-4 py-3">Server</th>
+                                <th scope="col" class="px-4 py-3">Username</th>
+                                <th scope="col" class="px-4 py-3">Status</th>
+                                <th scope="col" class="px-4 py-3">Health</th>
+                                <th scope="col" class="px-4 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800/60">
+                            {% for xs in xtream_servers %}
+                            <tr class="hover:bg-gray-800/40 transition-colors {% if xs.is_active == 0 %}opacity-50{% endif %}" data-xtream-id="{{ xs.id }}">
+                                <td class="px-4 py-3 font-bold text-white whitespace-nowrap"><i class="fa-solid fa-satellite-dish {% if xs.is_active == 0 %}text-gray-600{% else %}text-purple-400{% endif %} mr-2 text-[10px]"></i>{{ xs.name }}</td>
+                                <td class="px-4 py-3 font-mono text-[10px] max-w-[220px] truncate" title="{{ xs.host }}">{{ xs.host }}</td>
+                                <td class="px-4 py-3 font-mono text-[10px]">{{ xs.username }}</td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    {% if xs.is_active == 0 %}
+                                    <span class="bg-gray-800 text-gray-300 px-2 py-0.5 rounded text-[9px] uppercase border border-gray-600 font-bold">Off</span>
+                                    {% else %}
+                                    <span class="bg-green-600/15 text-green-400 px-2 py-0.5 rounded text-[9px] uppercase border border-green-700/40 font-bold">Active</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="xtream-health inline-flex items-center gap-1 text-[10px] font-bold text-gray-500"><i class="fa-solid fa-minus"></i> Untested</span>
+                                    <button type="button" data-test-xtream="{{ xs.id }}" class="ml-2 text-purple-300 hover:text-purple-200 bg-purple-500/10 hover:bg-purple-500/20 px-2.5 py-1 rounded-md text-[10px] font-bold border border-purple-500/20 cursor-pointer" title="Ping this Xtream account"><i class="fa-solid fa-heart-pulse mr-1"></i>Test</button>
+                                </td>
+                                <td class="px-4 py-3 text-right flex items-center justify-end gap-1">
+                                    <form action="/admin/reorder_xtream/{{ xs.id }}/up" method="POST" class="m-0 inline"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button aria-label="Move Up" type="submit" class="text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-800 border border-transparent hover:border-gray-600 cursor-pointer" title="Move Up"><i class="fa-solid fa-arrow-up"></i></button></form>
+                                    <form action="/admin/reorder_xtream/{{ xs.id }}/down" method="POST" class="m-0 inline"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button aria-label="Move Down" type="submit" class="text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-800 border border-transparent hover:border-gray-600 cursor-pointer" title="Move Down"><i class="fa-solid fa-arrow-down"></i></button></form>
+                                    <form action="/admin/toggle_xtream/{{ xs.id }}" method="POST" class="m-0 inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        {% if xs.is_active == 0 %}
+                                        <button aria-label="Enable Xtream" type="submit" class="text-green-500 hover:text-green-400 bg-green-500/10 hover:bg-green-500/20 px-2.5 py-1 rounded-md text-[10px] font-bold border border-green-500/20 cursor-pointer" title="Enable"><i class="fa-solid fa-play"></i></button>
+                                        {% else %}
+                                        <button aria-label="Disable Xtream" type="submit" class="text-yellow-500 hover:text-yellow-400 bg-yellow-500/10 hover:bg-yellow-500/20 px-2.5 py-1 rounded-md text-[10px] font-bold border border-yellow-500/20 cursor-pointer" title="Disable"><i class="fa-solid fa-pause"></i></button>
+                                        {% endif %}
+                                    </form>
+                                    <form action="/admin/delete_xtream/{{ xs.id }}" method="POST" class="m-0 inline" data-confirm-msg="Delete Xtream account &quot;{{ xs.name }}&quot;? Its channels will leave Live TV." onsubmit="return confirm(this.dataset.confirmMsg);">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button aria-label="Delete Xtream" type="submit" class="text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 px-2.5 py-1 rounded-md text-[10px] font-bold border border-red-500/20 cursor-pointer" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="6" class="px-4 py-6 text-center text-gray-500 text-xs italic">No Xtream account — add one above. (Or use the Master M3U link above.)</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 shadow-xl relative">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
+                    <h3 class="text-xl font-black text-white flex items-center gap-2">
+                        <i class="fa-solid fa-network-wired text-red-500"></i> Cloudflare Proxy Pool & Load Balancer
+                    </h3>
+                    <span class="text-[10px] bg-green-500/10 text-green-400 px-3 py-1 rounded-full border border-green-500/20 font-bold">
+                        Auto-Failover Active ({{ proxies|length }} Nodes)
+                    </span>
+                </div>
+                <p class="text-gray-400 text-xs mb-4">Add single or multiple Cloudflare Worker proxies (one per line or comma-separated). The player automatically cycles and failovers between nodes if a stream freezes or drops.</p>
+                <form action="/admin/add_proxy" method="POST" class="flex flex-col gap-3 mb-6">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="relative">
+                        <textarea aria-label="Proxy Node URLs" name="proxy_url" rows="2" placeholder="https://proxy1.yourname.workers.dev/?url=&#10;https://proxy2.yourname.workers.dev/?url=" required class="w-full bg-[#0a0a0c] border border-gray-700 text-white rounded-xl p-3 text-xs outline-none focus:border-red-500 transition-colors shadow-inner font-mono resize-none"></textarea>
+                    </div>
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <span class="text-[11px] text-gray-500">💡 Tip: You can paste multiple Worker URLs at once. If <code>?url=</code> is omitted, it will be added automatically.</span>
+                        <button aria-label="Add Proxies" type="submit" class="bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-2.5 rounded-xl shadow-[0_0_15px_rgba(220,38,38,0.3)] transition-all flex justify-center items-center gap-2 whitespace-nowrap cursor-pointer text-xs">
+                            <i class="fa-solid fa-plus"></i> Add Proxy Nodes to Pool
+                        </button>
+                    </div>
+                </form>
+                <div class="overflow-x-auto border border-gray-800 rounded-xl bg-[#0a0a0c] render-optimize">
+                    <table class="w-full text-left text-sm text-gray-400 min-w-[500px]">
+                        <thead class="bg-gray-900/60 text-gray-300 uppercase font-bold text-[10px] tracking-wider border-b border-gray-800">
+                            <tr>
+                                <th scope="col" class="px-4 py-3">Proxy Node URL</th>
+                                <th scope="col" class="px-4 py-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800/60">
+                            {% for proxy in proxies %}
+                            <tr class="hover:bg-gray-800/40 transition-colors">
+                                <td class="px-4 py-3 font-medium text-gray-200 text-xs">{{ proxy.url }}</td>
+                                <td class="px-4 py-3 text-right">
+                                    <form action="/admin/delete_proxy/{{ proxy.id }}" method="POST" class="m-0 inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button aria-label="Remove Proxy" type="submit" class="text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded-md transition-colors text-xs font-bold border border-red-500/20 shadow-sm cursor-pointer">
+                                            <i class="fa-solid fa-trash-can"></i> Remove
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="2" class="px-4 py-6 text-center text-gray-500 italic text-sm">No proxies bound to the cluster yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    @keyframes fadeIn {
+        from { transform: translateY(10px); }
+        to { transform: translateY(0); }
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.35s ease-out forwards;
+    }
+</style>
+<div class="p-4 sm:p-6 md:p-8 min-h-screen bg-[#0f1014]">
+    <div class="mb-8 border-b border-gray-800 pb-4 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-white flex items-center">
+                <i class="fa-solid fa-bookmark mr-3 text-red-600" aria-hidden="true"></i>
+                My Watchlist
+            </h1>
+            <p class="text-gray-400 mt-2">Movies and TV shows you have saved to watch later.</p>
+        </div>
+    </div>
+    {% if watchlist and watchlist|length > 0 %}
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+        {% for item in watchlist %}
+            <div class="relative group transition-all duration-300 hover:scale-105 hover:z-10 animate-fade-in" style="animation-delay: {{ loop.index0 * 50 }}ms;">
+                <a aria-label="Watch {{ item.title }}" href="{{ url_for('routes.details', media_type=item.media_type, tmdb_id=item.tmdb_id, title=item.title, media_type=item.media_type) }}" class="block">
+                    {% if item.poster_path %}
+                    <img src="{{ image_base_url|default("https://image.tmdb.org/t/p/w500") }}{{ item.poster_path }}" 
+                         alt="Poster for {{ item.title }}" 
+                         width="300" height="450"
+                         {% if loop.index0 < 6 %}
+                            fetchpriority="high" loading="eager"
+                         {% else %}
+                            loading="lazy" decoding="async"
+                         {% endif %}
+                         class="w-full h-auto aspect-[2/3] object-cover rounded-lg shadow-lg border border-gray-800 will-change-transform">
+                    {% else %}
+                    <div class="w-full aspect-[2/3] bg-gray-900 rounded-lg flex items-center justify-center border border-gray-800 text-center p-4">
+                        <span class="text-gray-500 font-bold">{{ item.title }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="absolute top-2 left-2 bg-red-600/90 px-2 py-1 rounded text-[10px] text-white font-bold backdrop-blur-md shadow-lg uppercase tracking-wider">
+                        {{ item.media_type }}
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 rounded-lg flex flex-col justify-end p-4 text-left border-2 border-transparent group-hover:border-gray-500/50">
+                        <i class="fa-solid fa-play text-white text-4xl mb-auto self-center mt-auto text-red-600 shadow-xl drop-shadow-[0_0_15px_rgba(220,38,38,0.8)]" aria-hidden="true"></i>
+                        <p class="text-white font-bold text-sm line-clamp-2 w-full leading-tight">{{ item.title }}</p>
+                    </div>
+                </a>
+                <form action="{{ url_for('routes.remove_from_watchlist', tmdb_id=item.tmdb_id, title=item.title, media_type=item.media_type) }}" method="POST"
+                      class="absolute -top-3 -right-3 m-0 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20"
+                      onsubmit="return confirm('Remove this from your watchlist?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" aria-label="Remove {{ item.title }} from Watchlist" title="Remove from Watchlist"
+                            class="bg-gray-900 hover:bg-red-600 text-gray-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-full shadow-lg cursor-pointer border border-gray-700 hover:border-red-600">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="flex flex-col items-center justify-center h-[50vh] text-center max-w-md mx-auto">
+        <div class="w-24 h-24 bg-gray-900 rounded-full flex items-center justify-center mb-6 border border-gray-800 shadow-2xl">
+            <i class="fa-regular fa-bookmark text-4xl text-gray-600" aria-hidden="true"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-white mb-2">Your watchlist is empty</h2>
+        <p class="text-gray-400 mb-8 leading-relaxed">Save movies and shows here so you don't forget what to watch next!</p>
+        <a aria-label="Discover Content" href="{{ url_for('routes.home') }}" class="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-bold transition-colors shadow-lg shadow-red-600/20 flex items-center hover:scale-105 duration-300">
+            <i class="fa-solid fa-magnifying-glass mr-2" aria-hidden="true"></i> Discover Content
+        </a>
+    </div>
+    {% endif %}
+</div>
+<div class="w-full max-w-5xl mx-auto my-6 bg-gray-900 border border-gray-800 rounded-lg flex items-center justify-center min-h-[100px] overflow-hidden relative">
+    <span data-adsterra-smartlink class="text-[10px] text-gray-400 uppercase tracking-widest absolute top-2 right-4">Sponsored</span>
+    <div class="ad-slot-728 text-gray-400 text-sm py-2"></div>
+</div>
+{% endblock %}

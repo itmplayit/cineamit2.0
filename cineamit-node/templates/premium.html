@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Premium Plans — CINEAMIT Android App{% endblock %}
+{% block meta_desc %}CINEAMIT Premium: Monthly and Yearly plans unlock in the Android app with ad-points — no rupees, no Play Store billing. Live TV, no ads, VIP playback.{% endblock %}
+{% block og_title %}CINEAMIT Premium — unlock in the app{% endblock %}
+{% block og_desc %}Monthly / Yearly with points. No rupees. Official Android APK.{% endblock %}
+{% block content %}
+<div class="relative overflow-hidden">
+    <div class="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[820px] h-[820px] rounded-full bg-amber-500/10 blur-[130px]"></div>
+    <div class="pointer-events-none absolute top-60 right-0 w-80 h-80 rounded-full bg-red-600/10 blur-[100px]"></div>
+    <div class="max-w-6xl mx-auto px-5 md:px-8 py-12 md:py-20 relative">
+        <div class="text-center max-w-3xl mx-auto mb-12 md:mb-16">
+            <p class="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-amber-400 mb-4">
+                <i class="fa-solid fa-crown" aria-hidden="true"></i> Plans
+            </p>
+            <h1 class="text-4xl md:text-6xl font-black tracking-tight text-white leading-[1.08] mb-4">
+                Choose your <span class="italic text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-red-500">Premium</span>
+            </h1>
+            <p class="text-gray-400 text-base md:text-lg leading-relaxed">
+                Watch is free on the website. <b class="text-white">Remove ads, Live TV, VIP playback</b> — unlock in the Android app with points.
+                No Card / UPI / Play Store.
+            </p>
+            {% if economy.trial_enabled %}
+            <p class="mt-5 inline-flex items-center gap-2 text-sm font-bold text-amber-200 bg-amber-500/10 border border-amber-400/30 rounded-full px-4 py-2">
+                <i class="fa-solid fa-gift" aria-hidden="true"></i>
+                In-app {{ economy.trial_days }}-day free trial — 0 pts, once per account
+            </p>
+            {% endif %}
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-5 md:gap-6 items-stretch mb-14">
+            <article class="flex flex-col bg-[#141519] border border-white/10 rounded-3xl p-6 md:p-7">
+                <p class="text-[11px] font-black uppercase tracking-widest text-gray-500 mb-2">Browser</p>
+                <h2 class="text-2xl font-black text-white mb-1">Free</h2>
+                <p class="text-4xl font-black text-white mb-1">0 <span class="text-lg text-gray-500 font-bold">pts</span></p>
+                <p class="text-xs text-gray-500 mb-6">Website + app, with ads</p>
+                <ul class="space-y-2.5 text-sm text-gray-300 flex-1 mb-7">
+                    <li class="flex gap-2"><i class="fa-solid fa-check text-emerald-400 mt-0.5 w-4 shrink-0"></i> Movies, series, anime</li>
+                    <li class="flex gap-2"><i class="fa-solid fa-check text-emerald-400 mt-0.5 w-4 shrink-0"></i> Watch Party, watchlist</li>
+                    <li class="flex gap-2"><i class="fa-solid fa-xmark text-gray-600 mt-0.5 w-4 shrink-0"></i> <span class="text-gray-500">App ads / banners</span></li>
+                    <li class="flex gap-2"><i class="fa-solid fa-xmark text-gray-600 mt-0.5 w-4 shrink-0"></i> <span class="text-gray-500">Live TV on device</span></li>
+                    <li class="flex gap-2"><i class="fa-solid fa-xmark text-gray-600 mt-0.5 w-4 shrink-0"></i> <span class="text-gray-500">VIP / ad-free watch</span></li>
+                </ul>
+                <a href="/home" class="mt-auto inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl font-black text-sm bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-colors">
+                    Watch on web
+                </a>
+            </article>
+
+            <article class="flex flex-col bg-[#141519] border border-amber-400/40 rounded-3xl p-6 md:p-7 shadow-[0_0_50px_rgba(245,158,11,0.12)] relative md:-translate-y-2">
+                <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">Most popular</span>
+                <p class="text-[11px] font-black uppercase tracking-widest text-amber-400 mb-2">App · {{ economy.days_monthly|default(30) }} days</p>
+                <h2 class="text-2xl font-black text-white mb-1">Monthly</h2>
+                <p class="text-4xl font-black text-white mb-1">{{ economy.cost_monthly }} <span class="text-lg text-amber-300/80 font-bold">pts</span></p>
+                <p class="text-xs text-gray-500 mb-6">≈ {{ ads_monthly }} rewarded ads · {{ economy.ad_points }} pts / ad</p>
+                <ul class="space-y-2.5 text-sm text-gray-300 flex-1 mb-7">
+                    <li class="flex gap-2"><i class="fa-solid fa-check text-amber-400 mt-0.5 w-4 shrink-0"></i> No ads in the app</li>
+                    <li class="flex gap-2"><i class="fa-solid fa-check text-amber-400 mt-0.5 w-4 shrink-0"></i> Live TV · VLC on device</li>
+                    <li class="flex gap-2"><i class="fa-solid fa-check text-amber-400 mt-0.5 w-4 shrink-0"></i> VIP / ad-free servers</li>
+                    <li class="flex gap-2"><i class="fa-solid fa-check text-amber-400 mt-0.5 w-4 shrink-0"></i> Offline downloads</li>
+                    <li class="flex gap-2"><i class="fa-solid fa-check text-amber-400 mt-0.5 w-4 shrink-0"></i> Same website login</li>
+                </ul>
+                <a href="/app" class="mt-auto inline-flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-black text-sm bg-gradient-to-r from-amber-400 to-orange-500 text-black hover:from-amber-300 hover:to-orange-400 transition-colors shadow-[0_8px_24px_rgba(245,158,11,0.35)]">
+                    <i class="fa-brands fa-android" aria-hidden="true"></i> Get App · Unlock
+                </a>
+            </article>
+
+            <article class="flex flex-col bg-[#141519] border border-white/10 rounded-3xl p-6 md:p-7">
+                <p class="text-[11px] font-black uppercase tracking-widest text-purple-300 mb-2">App · {{ economy.days_yearly|default(365) }} days</p>
+                <h2 class="text-2xl font-black text-white mb-1">Yearly</h2>
+                <p class="text-4xl font-black text-white mb-1">{{ economy.cost_yearly }} <span class="text-lg text-purple-300/80 font-bold">pts</span></p>
+                <p class="text-xs text-gray-500 mb-6">
+                    ≈ {{ ads_yearly }} ads
+                    {% if save_pts %}<span class="text-emerald-400 font-bold"> · save {{ save_pts }} pts vs 12× month</span>{% endif %}
+                </p>
+                <ul class="space-y-2.5 text-sm text-gray-300 flex-1 mb-7">
+                    <li class="flex gap-2"><i class="fa-solid fa-check text-purple-400 mt-0.5 w-4 shrink-0"></i> Everything in Monthly</li>
+                    <li class="flex gap-2"><i class="fa-solid fa-check text-purple-400 mt-0.5 w-4 shrink-0"></i> 12 months, 9-month price</li>
+                    <li class="flex gap-2"><i class="fa-solid fa-check text-purple-400 mt-0.5 w-4 shrink-0"></i> No ads · VIP · Live TV</li>
+                    <li class="flex gap-2"><i class="fa-solid fa-check text-purple-400 mt-0.5 w-4 shrink-0"></i> Best value if you watch daily</li>
+                    <li class="flex gap-2"><i class="fa-solid fa-check text-purple-400 mt-0.5 w-4 shrink-0"></i> Cancel anytime → Free</li>
+                </ul>
+                <a href="/app" class="mt-auto inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl font-black text-sm bg-purple-600 hover:bg-purple-500 text-white transition-colors">
+                    <i class="fa-brands fa-android" aria-hidden="true"></i> Get App · Yearly
+                </a>
+            </article>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-4 mb-14">
+            <div class="rounded-2xl border border-white/8 bg-white/[0.03] p-5">
+                <p class="text-amber-400 font-black text-sm mb-1">1. Download app</p>
+                <p class="text-gray-400 text-sm leading-relaxed">Official APK only from <a href="/app" class="text-white hover:underline">/app</a>. Sign in with the same account.</p>
+            </div>
+            <div class="rounded-2xl border border-white/8 bg-white/[0.03] p-5">
+                <p class="text-amber-400 font-black text-sm mb-1">2. Ads = points</p>
+                <p class="text-gray-400 text-sm leading-relaxed">Finish a rewarded ad = <b class="text-white">{{ economy.ad_points }} pts</b>. No money is charged.</p>
+            </div>
+            <div class="rounded-2xl border border-white/8 bg-white/[0.03] p-5">
+                <p class="text-amber-400 font-black text-sm mb-1">3. Redeem plan</p>
+                <p class="text-gray-400 text-sm leading-relaxed">App → Points &amp; plans. Monthly {{ economy.cost_monthly }} / Yearly {{ economy.cost_yearly }} pts.</p>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="/app" class="inline-flex items-center gap-3 bg-red-600 hover:bg-red-500 text-white font-black px-8 py-3.5 rounded-2xl shadow-[0_0_30px_rgba(254,26,99,0.35)] transition-all">
+                <i class="fa-brands fa-android" aria-hidden="true"></i> Download Android App
+            </a>
+            <p class="text-[11px] text-gray-500 mt-4 max-w-lg mx-auto leading-relaxed">
+                Premium is not billed on the website. Points are earned and spent only in the official Android app. Kids profiles stay ads-free.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

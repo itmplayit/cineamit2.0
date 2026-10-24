@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% block title %}FAQ - CINEAMIT Help Center{% endblock %}
+{% block meta_desc %}CINEAMIT FAQ — answers about free streaming, accounts and 2FA, password reset, buffering fixes, server switching, Watch Party, Live TV, content requests, downloads, privacy and legality.{% endblock %}
+{% block content %}
+<style>
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; will-change: transform, opacity; }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+<div class="max-w-4xl mx-auto px-6 py-16 min-h-screen animate-fade-in">
+    <h1 class="text-3xl md:text-5xl font-black text-white mb-2 border-l-4 border-red-600 pl-4">Frequently Asked Questions</h1>
+    <p class="text-gray-400 mb-12 pl-5">Everything you need to know about CINEAMIT — accounts, playback, Watch Party, Live TV and more.</p>
+
+    <h2 class="text-xl font-black text-white mb-5 mt-2"><i class="fa-solid fa-circle-play text-red-600 mr-2"></i>Getting Started</h2>
+    <div class="space-y-4 mb-14">
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                Is CINEAMIT completely free?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                Yes — CINEAMIT is 100% free. No credit card, no subscription, no hidden fees, no premium tier. You can watch unlimited movies, TV shows and Live TV without paying anything.
+            </div>
+        </details>
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                Do I need to create an account to watch?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                No — you can start watching immediately without registering. A free account unlocks: watch history, watchlists, custom playlists, collections, content requests, reviews and Watch Party chat.
+            </div>
+        </details>
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                How do I find a specific movie or show?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                Use the <b>search bar</b> at the top of any page and type the title (it works for movies, shows and even actors). You can also browse by category — Popular, Top Rated, Trending, Genres, and dedicated sections for Bollywood, South Indian (Hindi dubbed), Anime and Live TV. The "Top 10" row on the home page shows what's trending right now.
+            </div>
+        </details>
+    </div>
+
+    <h2 class="text-xl font-black text-white mb-5 mt-2"><i class="fa-solid fa-user-shield text-red-600 mr-2"></i>Account &amp; Security</h2>
+    <div class="space-y-4 mb-14">
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                I forgot my password — what do I do?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                On the login page click <b>"Forgot Password?"</b> and enter your registered email. We send a one-time 6-digit verification code (valid for 10 minutes). Enter the code and set a new password. If you don't receive the email, check spam and make sure you typed the same email you registered with.
+            </div>
+        </details>
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                What is 2FA and should I enable it?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                Two-Factor Authentication (2FA) adds a second step to login: after your password, you enter a 6-digit code from an authenticator app (Google Authenticator, Authy, Microsoft Authenticator). Go to <b>Profile → Privacy &amp; Security → Enable 2FA</b>, add the secret to your app, and confirm with the code. We strongly recommend it — it's the single best way to keep your account safe. Admin accounts are required to have 2FA enabled.
+            </div>
+        </details>
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                Can I have multiple profiles? Is there a Kids mode?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                Yes. After logging in, go to the <b>Profiles</b> page and add profiles for family members — each with its own avatar, theme, watch history and PIN lock. The built-in <b>Kids profile</b> filters for family/children genres and checks TMDB age certifications before opening details or playback; titles with missing or unsupported ratings are blocked. Rating data can still be incomplete, so please supervise children.
+            </div>
+        </details>
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                How do I delete my account?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                Go to <b>Profile → Delete Account</b> and confirm with your password. This permanently removes your account and everything attached to it — history, watchlists, playlists, reviews and linked social logins. This action cannot be undone.
+            </div>
+        </details>
+    </div>
+
+    <h2 class="text-xl font-black text-white mb-5 mt-2"><i class="fa-solid fa-play text-red-600 mr-2"></i>Watching &amp; Playback</h2>
+    <div class="space-y-4 mb-14">
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors" open>
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                Why is my video buffering or not playing?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                If a video is buffering or fails to load, that particular server may be under heavy load. On the player page, look for the <b>"Select Server"</b> buttons just above the video — try Server 2 or Server 3. If all servers fail for one title, the source links may be down; try again later or pick an alternative title. A slow internet connection can also cause buffering — check your speed or try a lower quality option if available.
+            </div>
+        </details>
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                What quality does CINEAMIT play in?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                Quality depends on the source file and the server you're using — from 480p up to 1080p (FHD) for most popular titles. You can switch servers to find a better-quality stream, and some players show a quality menu inside the player controls.
+            </div>
+        </details>
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                Can I watch on my phone, tablet or Smart TV?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                Yes — CINEAMIT is fully responsive. On phones and tablets, just open the site in your browser (Chrome, Safari, Samsung Internet, etc.). On Smart TVs, use the TV's built-in browser, or cast from your phone using Chrome Cast / AirPlay. For the best TV experience, open the site on a laptop and cast, since some TV browsers are limited.
+            </div>
+        </details>
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                Which browsers are supported?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                All modern browsers: Chrome, Edge, Firefox, Safari and Samsung Internet. Keep your browser up to date — very old versions may fail to play some streams. If a stream is blocked by a browser extension (adblockers sometimes over-block players), try a private window or temporarily disabling the extension for our domain.
+            </div>
+        </details>
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                Is there an Android app?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                Yes — the official CINEAMIT Android app is on <a href="/app" class="text-red-400 hover:underline font-bold">cineamit.qzz.io/app</a>. Download the APK, allow install from Chrome, then open. Live TV, offline downloads and ad-points premium run on your phone. Only install from this official page.
+            </div>
+        </details>
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                Are there download links?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                For some titles, a download section is shown on the detail page with direct links provided by third parties. Availability varies by title and changes over time. Downloaded content is your responsibility — make sure you have the right to save that content in your region.
+            </div>
+        </details>
+    </div>
+
+    <h2 class="text-xl font-black text-white mb-5 mt-2"><i class="fa-solid fa-users text-red-600 mr-2"></i>Watch Party</h2>
+    <div class="space-y-4 mb-14">
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                How does the Watch Party feature work?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                When you open a movie or episode, you'll see <b>"Join"</b> and <b>"Invite"</b> buttons at the top. Click "Invite" to copy a unique room link and send it to your friends. When they open it, everyone lands in the same room — you watch together with a synced stream and a real-time chat panel.
+            </div>
+        </details>
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                My friends can't join the Watch Party — what should we check?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                Check three things: (1) the room link is complete — it must be copied in full; (2) your friends are using a modern browser without an aggressive adblocker; (3) the room hasn't been closed by the host. If it still fails, create a fresh room and share the new link.
+            </div>
+        </details>
+    </div>
+
+    <h2 class="text-xl font-black text-white mb-5 mt-2"><i class="fa-solid fa-satellite-dish text-red-600 mr-2"></i>Live TV</h2>
+    <div class="space-y-4 mb-14">
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                How do I use the Live TV section?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                Open the <b>Live TV</b> page from the main menu. Channels are grouped by category (News, Entertainment, Sports, Kids, Music). Click any channel to start the live stream, and use the EPG guide to see what's on now and next. You can pin your favorite channels to the top for quick access.
+            </div>
+        </details>
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                A Live TV channel is black-screen or not loading — what do I do?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                First, try refreshing the channel — live streams sometimes restart after a few seconds. If it persists, the source for that channel may be down (happens with free streams); try another channel from the same group, or check back in a few hours. You can also report broken channels through the Contact page so we can rotate the sources.
+            </div>
+        </details>
+    </div>
+
+    <h2 class="text-xl font-black text-white mb-5 mt-2"><i class="fa-solid fa-clapperboard text-red-600 mr-2"></i>Content &amp; Requests</h2>
+    <div class="space-y-4 mb-14">
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                Can I request a movie or TV show?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                Absolutely. Log in, go to your <b>Profile</b> page and use the <b>"Submit Request"</b> section — enter the title (movie/show/Live channel) and any details. Our admins review requests regularly and add the most-requested titles first. You can also request via the Contact page.
+            </div>
+        </details>
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                Why can't I find a specific movie on the site?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                Our catalog is built from publicly available sources, so brand-new releases and very niche titles can take time to appear (or may not appear at all). Try searching with alternate names (Hindi dubbed titles often have different names), check the genre pages, or submit a request — if enough people ask, it gets priority.
+            </div>
+        </details>
+    </div>
+
+    <h2 class="text-xl font-black text-white mb-5 mt-2"><i class="fa-solid fa-scale-balanced text-red-600 mr-2"></i>Legal &amp; Safety</h2>
+    <div class="space-y-4 mb-16">
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                Is CINEAMIT safe to use?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                The platform itself is safe: you can watch in the browser with no install. The official Android APK is only at <a href="/app" class="text-red-400 hover:underline">/app</a> — ignore any other “CineAmit APK” site. Use a modern browser with an adblocker, never enter your password off this domain, and enable 2FA. Streams are provided by third parties, so quality can vary.
+            </div>
+        </details>
+        <details class="group bg-[#141519] border border-gray-800 rounded-xl cursor-pointer hover:border-gray-700 transition-colors">
+            <summary class="flex items-center justify-between p-6 font-bold text-white text-lg outline-none select-none">
+                Does CINEAMIT host or own the movies?
+                <i class="fa-solid fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform" aria-hidden="true"></i>
+            </summary>
+            <div class="px-6 pb-6 text-gray-400 text-sm leading-relaxed">
+                No. CINEAMIT is an index and interface — like a directory — and does not host any video files. All media is hosted by third-party services, and all copyrights remain with their respective owners. If you're a rights holder, see our <a href="/dmca" class="text-red-500 hover:underline font-bold">DMCA Policy</a>. For full details read the <a href="/legal" class="text-red-500 hover:underline font-bold">Legal Notices</a>, <a href="/terms" class="text-red-500 hover:underline font-bold">Terms</a> and <a href="/privacy" class="text-red-500 hover:underline font-bold">Privacy Policy</a>.
+            </div>
+        </details>
+    </div>
+
+    <div class="bg-gradient-to-br from-red-900/20 to-black border border-red-900/30 rounded-3xl p-8 text-center shadow-2xl">
+        <h2 class="text-2xl font-black text-white mb-3">Still need help?</h2>
+        <p class="text-gray-400 mb-6">Our Help Center has step-by-step articles, and our team reads every message.</p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="/help" class="inline-block bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:scale-105 cursor-pointer">
+                Visit Help Center
+            </a>
+            <a href="/contact" class="inline-block bg-white/10 hover:bg-white/20 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 border border-white/20 cursor-pointer">
+                Contact Us
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

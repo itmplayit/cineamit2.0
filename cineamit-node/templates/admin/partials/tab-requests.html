@@ -1,0 +1,60 @@
+        <div id="tab-requests" class="tab-content hidden animate-fade-in">
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl shadow-xl overflow-hidden render-optimize">
+                <div class="p-5 border-b border-gray-800">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2"><i class="fa-solid fa-clipboard-list text-yellow-500"></i> Pending Requests & Bugs</h2>
+                        <form method="GET" action="/cineamit-admin" class="flex flex-wrap items-center gap-2 m-0">
+                            <select aria-label="Filter requests by type" name="req_type" onchange="this.form.submit()" class="bg-[#141519] border border-gray-700 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-yellow-500 cursor-pointer">
+                                <option value="all" {% if req_filter == 'all' %}selected{% endif %}>All Types</option>
+                                <option value="movie" {% if req_filter == 'movie' %}selected{% endif %}>Movies</option>
+                                <option value="show" {% if req_filter == 'show' %}selected{% endif %}>Shows</option>
+                                <option value="bug" {% if req_filter == 'bug' %}selected{% endif %}>Bugs</option>
+                                <option value="contact" {% if req_filter == 'contact' %}selected{% endif %}>Contact Messages</option>
+                            </select>
+                            <input type="text" name="req_search" value="{{ req_search }}" placeholder="Search title / message / user..." class="w-full sm:w-56 bg-[#141519] border border-gray-700 text-white text-xs rounded-lg px-3 py-2 outline-none focus:border-yellow-500">
+                            <button type="submit" class="bg-yellow-600/10 border border-yellow-600/30 text-yellow-400 hover:bg-yellow-600 hover:text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors cursor-pointer">Filter</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="overflow-x-auto max-h-[600px] custom-scrollbar">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 bg-gray-900 shadow-sm z-10">
+                            <tr class="text-gray-400 text-xs font-bold uppercase border-b border-gray-800">
+                                <th scope="col" class="py-3 px-4">Request Details</th>
+                                <th scope="col" class="py-3 px-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-gray-300 divide-y divide-gray-800">
+                            {% for req in requests %}
+                            <tr class="hover:bg-gray-800/50 transition-colors">
+                                <td class="py-4 px-4">
+                                    <div class="font-bold text-white text-base mb-1">
+                                             <!-- ab har type ka apna icon/label (contact/dmca/bug/movie/show) -->
+                                        {% if req.request_type == 'bug' %}<span class="text-red-500 mr-2"><i class="fa-solid fa-bug"></i> Bug</span>
+                                        {% elseif req.request_type == 'movie' %}<span class="text-green-400 mr-2"><i class="fa-solid fa-film"></i> Movie</span>
+                                        {% elseif req.request_type == 'contact' %}<span class="text-yellow-400 mr-2"><i class="fa-solid fa-envelope"></i> Contact</span>
+                                        {% elseif req.request_type == 'dmca' %}<span class="text-red-400 mr-2"><i class="fa-solid fa-gavel"></i> DMCA</span>
+                                        {% elseif req.request_type == 'show' %}<span class="text-blue-400 mr-2"><i class="fa-solid fa-tv"></i> Show</span>
+                                        {% else %}<span class="text-gray-400 mr-2"><i class="fa-solid fa-circle-question"></i> {{ req.request_type }}</span>{% endif %}
+                                        | {{ req.title }}
+                                    </div>
+                                    {% if req.message %}<div class="text-xs text-gray-400 mb-2 p-2 bg-[#0a0a0c] rounded border border-gray-800/50">{{ req.message }}</div>{% endif %}
+                                    <div class="text-[10px] text-gray-500 font-bold tracking-widest uppercase">By: {{ req.req_username|default('Guest') }} (ID: {{ req.user_id }})</div>
+                                </td>
+                                <td class="py-4 px-4 text-right align-top">
+                                    {% if current_user.role in ['owner', 'super_admin', 'editor'] %}
+                                    <form action="/admin/delete_request/{{ req.id }}" method="POST" class="inline" onsubmit="return confirm('Mark this request as solved and delete it?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button aria-label="Mark Request Solved" type="submit" class="text-green-500 hover:text-green-400 bg-green-500/10 hover:bg-green-500/20 px-4 py-2 rounded-lg text-xs font-bold transition-colors inline-block whitespace-nowrap shadow-sm border border-green-500/20 cursor-pointer"><i class="fa-solid fa-check mr-1.5"></i> Mark Solved</button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="2" class="py-12 text-center text-gray-500 text-sm font-medium"><i class="fa-solid fa-mug-hot text-2xl mb-2 block"></i> No pending requests. You are all caught up!</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>

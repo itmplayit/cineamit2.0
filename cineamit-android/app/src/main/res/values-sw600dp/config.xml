@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="movieColumn">4</integer>
+    <integer name="showColumn">3</integer>
+    <dimen name="slider">400dp</dimen>
+    <item name="movieItemPerPage" format="float" type="dimen">4.35</item>
+    <item name="showItemPerPage" format="float" type="dimen">3.20</item>
+</resources>

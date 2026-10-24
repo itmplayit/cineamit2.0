@@ -1,0 +1,113 @@
+        <div id="tab-servers" class="tab-content hidden animate-fade-in">
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl p-6 shadow-2xl relative">
+                <div class="absolute top-0 left-6 md:left-10 transform -translate-y-1/2 bg-purple-600 text-white text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-md">
+                    Master Streaming Clusters
+                </div>
+                <h2 class="text-xl font-black text-white mb-2 flex items-center gap-2 mt-2">
+                    <i class="fa-solid fa-circle-play text-purple-500"></i> Video Servers Configuration
+                </h2>
+                <p class="text-gray-400 text-xs mb-6">Manage global video players. Append new APIs or wipe out dead servers instantly without code redeployment.</p>
+                <form action="/admin/add_server" method="POST" class="bg-[#0a0a0c] border border-gray-800 p-5 rounded-xl flex flex-col gap-5 mb-8 shadow-inner">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div class="flex flex-col gap-1.5">
+                            <label for="add_server_name" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Server Display Name</label>
+                            <input id="add_server_name" type="text" name="server_name" placeholder="e.g. VIP Server 1 (Hindi)" required class="w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm outline-none focus:border-purple-500 transition-colors shadow-sm">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label for="add_movie_pattern" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Movie Format Pattern</label>
+                            <input id="add_movie_pattern" type="text" name="movie_pattern" placeholder="Link with {tmdb_id} or {imdb_id}" required class="w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm outline-none focus:border-purple-500 transition-colors shadow-sm">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label for="add_tv_pattern" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">TV Format Pattern</label>
+                            <input id="add_tv_pattern" type="text" name="tv_pattern" placeholder="Link with {tmdb_id}, {s}, {e}" required class="w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm outline-none focus:border-purple-500 transition-colors shadow-sm">
+                        </div>
+                    </div>
+                    <div class="text-[10px] text-gray-500 font-medium flex items-center gap-1.5"><i class="fa-solid fa-circle-info text-purple-400"></i><b>Note:</b> Use exact brackets like <code class="bg-black px-1 rounded text-purple-300">{tmdb_id}</code>, <code class="bg-black px-1 rounded text-purple-300">{imdb_id}</code> safely.</div>
+                    <button aria-label="Insert Core Server" type="submit" class="bg-purple-600 hover:bg-purple-500 text-white font-black py-3 rounded-lg text-sm transition-all shadow-[0_0_15px_rgba(147,51,234,0.3)] md:self-end md:px-8 mt-2 cursor-pointer">
+                        <i class="fa-solid fa-plus mr-1.5"></i> Insert Core Server
+                    </button>
+                </form>
+                <div class="overflow-x-auto border border-gray-800 rounded-xl bg-[#0a0a0c] render-optimize">
+                    <div class="p-3 border-b border-gray-800 bg-gray-900/40 flex items-center gap-3">
+                        <input type="text" id="serverSearchInput" placeholder="Filter servers by name..." class="w-full sm:w-64 bg-[#141519] border border-gray-700 text-white rounded-lg px-3 py-1.5 text-xs outline-none focus:border-purple-500 transition-colors">
+                        <button type="button" id="testAllServers" class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm whitespace-nowrap cursor-pointer">
+                            <i class="fa-solid fa-heart-pulse mr-1.5"></i>Test All
+                        </button>
+                    </div>
+                    <table class="w-full text-left text-xs text-gray-400 min-w-[700px]">
+                        <thead class="bg-gray-900/60 text-gray-300 uppercase font-black text-[10px] tracking-wider border-b border-gray-800">
+                            <tr>
+                                <th scope="col" class="px-4 py-3">Server Node</th>
+                                <th scope="col" class="px-4 py-3">Movie Token Map</th>
+                                <th scope="col" class="px-4 py-3">Series Token Map</th>
+                                <th scope="col" class="px-4 py-3">Health</th>
+                                <th scope="col" class="px-4 py-3 text-right">Cluster Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800/60">
+                            {% for srv in database_servers %}
+                            <tr class="server-row hover:bg-gray-800/40 transition-all duration-300 {% if srv.is_active is defined and srv.is_active == 0 %}opacity-50 grayscale{% endif %}">
+                                <td class="px-4 py-3 font-bold text-white whitespace-nowrap search-server-name">
+                                    <i class="fa-solid fa-server {% if srv.is_active is defined and srv.is_active == 0 %}text-gray-500{% else %}text-purple-400{% endif %} mr-2 text-[10px]"></i>
+                                    {{ srv.name }}
+                                    {% if srv.is_active is defined and srv.is_active == 0 %}
+                                    <span class="ml-2 bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded text-[9px] uppercase border border-gray-600">Off</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 font-mono text-gray-400 text-[10px] max-w-[200px] truncate" title="{{ srv.movie_pattern }}">{{ srv.movie_pattern }}</td>
+                                <td class="px-4 py-3 font-mono text-gray-400 text-[10px] max-w-[200px] truncate" title="{{ srv.tv_pattern }}">{{ srv.tv_pattern }}</td>
+                                <td class="px-4 py-3 whitespace-nowrap" data-srv-id="{{ srv.id }}">
+                                    <span class="srv-health inline-flex items-center gap-1 text-[10px] font-bold text-gray-500"><i class="fa-solid fa-minus"></i> Untested</span>
+                                    <button type="button" data-test-server="{{ srv.id }}" class="ml-2 text-purple-300 hover:text-purple-200 bg-purple-500/10 hover:bg-purple-500/20 px-2.5 py-1 rounded-md text-[10px] font-bold border border-purple-500/20 cursor-pointer" title="Ping this server pattern">
+                                        <i class="fa-solid fa-heart-pulse mr-1"></i>Test
+                                    </button>
+                                </td>
+                                <td class="px-4 py-3 text-right flex items-center justify-end gap-1">
+                                    <form action="/admin/toggle_server/{{ srv.id }}" method="POST" class="m-0 inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        {% if srv.is_active is defined and srv.is_active == 0 %}
+                                        <button aria-label="Enable Server" type="submit" class="text-green-500 hover:text-green-400 bg-green-500/10 hover:bg-green-500/20 px-3 py-1.5 rounded-md transition-all font-bold text-[10px] border border-green-500/20 shadow-sm cursor-pointer" title="Enable">
+                                            <i class="fa-solid fa-play"></i>
+                                        </button>
+                                        {% else %}
+                                        <button aria-label="Disable Server" type="submit" class="text-yellow-500 hover:text-yellow-400 bg-yellow-500/10 hover:bg-yellow-500/20 px-3 py-1.5 rounded-md transition-all font-bold text-[10px] border border-yellow-500/20 shadow-sm cursor-pointer" title="Disable">
+                                            <i class="fa-solid fa-pause"></i>
+                                        </button>
+                                        {% endif %}
+                                    </form>
+                                    <form action="/admin/reorder_server/{{ srv.id }}/up" method="POST" class="m-0 inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button aria-label="Move Server Up" type="submit" class="text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-800 transition shadow-sm border border-transparent hover:border-gray-600 cursor-pointer" title="Move Up"><i class="fa-solid fa-arrow-up"></i></button>
+                                    </form>
+                                    <form action="/admin/reorder_server/{{ srv.id }}/down" method="POST" class="m-0 inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button aria-label="Move Server Down" type="submit" class="text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-800 transition shadow-sm border border-transparent hover:border-gray-600 cursor-pointer" title="Move Down"><i class="fa-solid fa-arrow-down"></i></button>
+                                    </form>
+                                    <button aria-label="Edit Server" 
+                                            data-action="open-edit-modal"
+                                            data-id="{{ srv.id }}" 
+                                            data-name="{{ srv.name }}" 
+                                            data-movie="{{ srv.movie_pattern }}" 
+                                            data-tv="{{ srv.tv_pattern }}"
+                                            class="text-blue-500 hover:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-md transition-all font-bold text-[10px] border border-blue-500/20 shadow-sm ml-1 cursor-pointer">
+                                        <i class="fa-solid fa-pen w-5 text-center"></i>
+                                    </button>
+                                    <form action="/admin/delete_server/{{ srv.id }}" method="POST" class="m-0 inline" onsubmit="return confirm('Delete this custom source link?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button aria-label="Delete Server" type="submit" class="text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded-md transition-all font-bold text-[10px] border border-red-500/20 shadow-sm cursor-pointer">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="px-4 py-8 text-center text-gray-500 italic font-medium">No custom server overrides added. Backend fallback array is currently handling players.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>

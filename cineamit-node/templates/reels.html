@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Cine Reels - Discover{% endblock %}
+{% block meta_desc %}Swipe through trending movie and anime trailers in our new Reels section.{% endblock %}
+{% block content %}
+<style>
+    .reels-wrapper {
+        height: 100dvh;
+        width: 100%;
+        overflow-y: scroll;
+        scroll-snap-type: y mandatory;
+        scroll-behavior: smooth;
+        background-color: #000;
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+    }
+    .reel-item {
+        height: 100dvh;
+        width: 100%;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #0f1014;
+    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+<div class="fixed top-16 md:top-20 left-4 z-[9998]">
+    <a aria-label="Back to Home" href="/" class="w-10 h-10 bg-black/50 backdrop-blur-md text-white rounded-full flex items-center justify-center border border-gray-700 hover:bg-black transition-colors">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+    </a>
+</div>
+<h1 class="sr-only">Cine Reels</h1>
+<div class="reels-wrapper hide-scrollbar" id="reelsContainer">
+    {% for item in items %}
+    <div class="reel-item group" data-id="{{ item.id }}" data-type="{{ item.media_type }}" data-poster="{{ item.poster_path }}">
+        <div class="absolute inset-0 w-full h-full video-container bg-black flex items-center justify-center">
+            <img src="{{ image_base_url|default("https://image.tmdb.org/t/p/w500") }}{{ item.poster_path }}" 
+                 width="500" height="750"
+                 class="w-full h-full object-cover opacity-60" 
+                 alt="{{ item.title ?: item.name }}">
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/90 pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-full p-6 pb-20 md:pb-12 z-20 flex justify-between items-end pointer-events-none">
+            <div class="w-3/4 pointer-events-auto">
+                <span class="bg-red-600 text-white text-[9px] font-black px-2 py-1 rounded uppercase tracking-widest mb-3 inline-block shadow-md">
+                    {{ item.media_type }}
+                </span>
+                <h2 class="text-2xl md:text-4xl font-black text-white mb-2 leading-tight drop-shadow-lg">
+                    {{ item.title ?: item.name }}
+                </h2>
+                <div class="flex items-center gap-3 text-xs font-bold text-gray-300 mb-2">
+                    <span class="text-green-400"><i class="fa-solid fa-star mr-1" aria-hidden="true"></i>{{ item.vote_average|round(1) }}</span>
+                    <span>{{ ((item.release_date ?: item.first_air_date))[:4] }}</span>
+                </div>
+                <p class="text-xs md:text-sm text-gray-300 line-clamp-2 md:line-clamp-3 drop-shadow-md">
+                    {{ item.overview }}
+                </p>
+            </div>
+            <div class="flex flex-col gap-5 items-center pointer-events-auto mb-2 pr-2">
+                <a aria-label="Play {{ item.title ?: item.name }}" href="{{ url_for('player.watch', media_type=item.media_type, tmdb_id=item.id, title=item.title ?: item.name) }}" 
+                   class="w-12 h-12 md:w-14 md:h-14 bg-white text-black rounded-full flex flex-col items-center justify-center hover:scale-110 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.4)]">
+                    <i class="fa-solid fa-play text-xl md:text-2xl ml-1" aria-hidden="true"></i>
+                </a>
+                <a aria-label="Details for {{ item.title ?: item.name }}" href="{{ url_for('routes.details', media_type=item.media_type, tmdb_id=item.id, title=item.title ?: item.name) }}" 
+                   class="w-10 h-10 md:w-12 md:h-12 bg-gray-800/80 text-white rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors backdrop-blur-sm border border-gray-600 flex-col gap-1">
+                    <i class="fa-solid fa-info text-lg" aria-hidden="true"></i>
+                </a>
+                <form action="{{ url_for('routes.add_to_watchlist', media_type=item.media_type, tmdb_id=item.id) }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button aria-label="Add {{ item.title ?: item.name }} to Watchlist" type="submit" class="w-10 h-10 md:w-12 md:h-12 bg-gray-800/80 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors backdrop-blur-sm border border-gray-600 cursor-pointer">
+                        <i class="fa-solid fa-plus text-lg" aria-hidden="true"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const observerOptions = {
+            root: document.getElementById('reelsContainer'),
+            rootMargin: '0px',
+            threshold: 0.6
+        };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const reel = entry.target;
+                const videoContainer = reel.querySelector('.video-container');
+                const tmdbId = reel.getAttribute('data-id');
+                const mediaType = reel.getAttribute('data-type');
+                if (entry.isIntersecting) {
+
+                    if (!reel.hasAttribute('data-loaded')) {
+                        reel.setAttribute('data-loaded', 'true');
+
+                        fetch(`/api/trailer/${mediaType}/${tmdbId}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.key) {
+
+                                    videoContainer.innerHTML = `
+                                        <iframe class="w-full h-full scale-[1.35] md:scale-[1.1] pointer-events-none opacity-0 transition-opacity duration-1000" 
+                                                onload="this.classList.remove('opacity-0'); this.classList.add('opacity-100');"
+                                                src="https://www.youtube.com/embed/${data.key}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&loop=1&playlist=${data.key}&playsinline=1" 
+                                                frameborder="0" allow="autoplay; encrypted-media">
+                                        </iframe>
+                                    `;
+                                }
+                            })
+                            .catch(err => console.error("Trailer fetch error:", err));
+                    }
+                } else {
+
+                    if (reel.hasAttribute('data-loaded')) {
+                        reel.removeAttribute('data-loaded');
+                        const posterPath = reel.getAttribute('data-poster') || '';
+                        videoContainer.innerHTML = `
+                            <img src="{{ image_base_url|default("https://image.tmdb.org/t/p/w500") }}${posterPath}" 
+                                 width="500" height="750"
+                                 class="w-full h-full object-cover opacity-60" alt="Fallback">
+                        `;
+                    }
+                }
+            });
+        }, observerOptions);
+        document.querySelectorAll('.reel-item').forEach(reel => {
+            observer.observe(reel);
+        });
+    });
+</script>
+{% endblock %}

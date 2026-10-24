@@ -1,0 +1,792 @@
+<script>
+    document.querySelectorAll('.cine-flash').forEach(function (el) {
+        setTimeout(function () { if (el && el.remove) el.remove(); }, 8000);
+    });
+    let pwaDeferredPrompt = null;
+    const pwaIsStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
+    const pwaIsDismissed = localStorage.getItem('pwa_dismissed') === 'true';
+
+    if (!pwaIsStandalone && !pwaIsDismissed) {
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); 
+            pwaDeferredPrompt = e; 
+            const pwaBanner = document.getElementById('pwaInstallBanner');
+            if (pwaBanner) {
+                pwaBanner.classList.remove('hidden');
+                pwaBanner.style.setProperty('display', 'block', 'important');
+            }
+        });
+    }
+
+    window.addEventListener('appinstalled', () => {
+        const pwaBanner = document.getElementById('pwaInstallBanner');
+        if (pwaBanner) pwaBanner.style.setProperty('display', 'none', 'important');
+        localStorage.setItem('pwa_dismissed', 'true'); 
+        pwaDeferredPrompt = null;
+    });
+
+    function initLazyImages() {
+        const lazyImgs = document.querySelectorAll('img[data-src]:not([data-lazy-bound])');
+        if (!lazyImgs.length) return;
+        if ('IntersectionObserver' in window) {
+            const imgIo = new IntersectionObserver((entries, obs) => {
+                for (let i = 0; i < entries.length; i++) {
+                    if (entries[i].isIntersecting) {
+                        const img = entries[i].target;
+                        const s = img.getAttribute('data-src');
+                        if (s) {
+                            img.onload = function() { img.classList.add('cine-img-fade'); };
+                            img.setAttribute('src', s);
+                            img.removeAttribute('data-src');
+                        }
+                        obs.unobserve(img);
+                    }
+                }
+            }, { rootMargin: '120px 120px' });
+            lazyImgs.forEach(img => {
+                if (img.closest('.popout-card')) return;
+                img.setAttribute('data-lazy-bound', '1');
+                imgIo.observe(img);
+            });
+        } else {
+            lazyImgs.forEach(img => {
+                if (img.closest('.popout-card')) return;
+                const s = img.getAttribute('data-src');
+                if (s) { img.setAttribute('src', s); img.removeAttribute('data-src'); }
+            });
+        }
+    }
+
+    function initCinemaMotion() {
+        const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        const desktopNav = document.querySelector('body > nav');
+        let scrollTicking = false;
+        const syncHeaderScroll = () => {
+            const scrolled = window.scrollY > 20;
+            if (desktopNav) desktopNav.classList.toggle('header-scrolled', scrolled);
+            scrollTicking = false;
+        };
+        window.addEventListener('scroll', () => {
+            if (!scrollTicking) {
+                window.requestAnimationFrame(syncHeaderScroll);
+                scrollTicking = true;
+            }
+        }, { passive: true });
+        syncHeaderScroll();
+
+        const progBar = document.getElementById('cineProgressBar');
+        if (progBar) {
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('a[href]');
+                if (!link || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                const href = link.getAttribute('href') || '';
+                if (!href || href.startsWith('#') || href.startsWith('javascript:') || link.target === '_blank' || link.hasAttribute('download')) return;
+                try {
+                    const u = new URL(href, window.location.origin);
+                    if (u.origin !== window.location.origin) return;
+                    if (u.pathname === window.location.pathname && u.search === window.location.search) return;
+                    progBar.style.opacity = '1';
+                    progBar.style.width = '72%';
+                } catch (_) {}
+            }, { passive: true });
+            window.addEventListener('pageshow', () => {
+                progBar.style.width = '100%';
+                setTimeout(() => { progBar.style.opacity = '0'; progBar.style.width = '0%'; }, 220);
+            });
+        }
+
+        if (reducedMotion || !('IntersectionObserver' in window)) return;
+
+        const sections = document.querySelectorAll('.cv-auto');
+        if (sections.length) {
+            const revealIo = new IntersectionObserver((entries, obs) => {
+                for (let i = 0; i < entries.length; i++) {
+                    if (entries[i].isIntersecting) {
+                        const sec = entries[i].target;
+                        sec.classList.add('cine-revealed');
+                        const cards = sec.querySelectorAll('.cine-stagger-init');
+                        for (let j = 0; j < cards.length; j++) {
+                            cards[j].classList.add('cine-stagger-in');
+                        }
+                        obs.unobserve(sec);
+                    }
+                }
+            }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
+
+            const vh = window.innerHeight || 800;
+            sections.forEach((sec) => {
+                const rect = sec.getBoundingClientRect();
+                if (rect.top < vh * 0.92) return;
+                sec.classList.add('cine-reveal-init');
+                const cards = sec.querySelectorAll('.movie-preview-card');
+                const cap = Math.min(cards.length, 8);
+                for (let k = 0; k < cap; k++) {
+                    cards[k].style.setProperty('--stagger-idx', k);
+                    cards[k].classList.add('cine-stagger-init');
+                }
+                revealIo.observe(sec);
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initLazyImages();
+        setTimeout(initCinemaMotion, 60);
+
+        setTimeout(() => {
+            const pwaBanner = document.getElementById('pwaInstallBanner');
+            const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+            const pwaCloseBtn = document.getElementById('pwaCloseBtn');
+
+            if (pwaInstallBtn) {
+                pwaInstallBtn.onclick = async function(e) {
+                    e.preventDefault(); 
+                    e.stopPropagation(); 
+                    if (pwaDeferredPrompt) {
+                        pwaDeferredPrompt.prompt();
+                        const { outcome } = await pwaDeferredPrompt.userChoice;
+                        if (outcome === 'accepted') {
+                            pwaBanner.style.setProperty('display', 'none', 'important');
+                            localStorage.setItem('pwa_dismissed', 'true');
+                        }
+                        pwaDeferredPrompt = null;
+                    } else {
+                        alert("🤖 Android/PC Users: Tap 3-dots (⋮) -> 'Install App' / 'Add to Home screen'.\n\n🍏 iPhone Users: Tap 'Share' icon -> 'Add to Home Screen'.");
+                        pwaBanner.style.setProperty('display', 'none', 'important');
+                        localStorage.setItem('pwa_dismissed', 'true');
+                    }
+                };
+            }
+
+            if (pwaCloseBtn) {
+                pwaCloseBtn.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    pwaBanner.style.setProperty('display', 'none', 'important');
+                    localStorage.setItem('pwa_dismissed', 'true'); 
+                };
+            }
+
+            const desktopBtn = document.getElementById('desktopProfileBtn');
+            const desktopMenu = document.getElementById('desktopDropdown');
+            const desktopContainer = document.getElementById('desktopDropdownContainer');
+            
+            if (desktopBtn && desktopMenu) {
+                desktopBtn.addEventListener('click', (e) => {
+                    const isHidden = desktopMenu.classList.contains('hidden');
+                    desktopMenu.classList.toggle('hidden');
+                    desktopBtn.setAttribute('aria-expanded', !isHidden);
+                    e.stopPropagation(); 
+                });
+            }
+
+            const mobileBtn = document.getElementById('mobileProfileBtn');
+            const mobileMenu = document.getElementById('mobileDropdown');
+            const mobileContainer = document.getElementById('mobileDropdownContainer');
+            
+            if (mobileBtn && mobileMenu) {
+                mobileBtn.addEventListener('click', (e) => {
+                    const isHidden = mobileMenu.classList.contains('hidden');
+                    mobileMenu.classList.toggle('hidden');
+                    mobileBtn.setAttribute('aria-expanded', !isHidden);
+                    e.stopPropagation(); 
+                });
+            }
+
+            const mobileMoreBtn = document.getElementById('mobileMoreBtn');
+            const mobileMoreMenu = document.getElementById('mobileMoreMenu');
+            const mobileMoreContainer = document.getElementById('mobileMoreContainer');
+
+            if (mobileMoreBtn && mobileMoreMenu) {
+                mobileMoreBtn.addEventListener('click', (e) => {
+                    const isHidden = mobileMoreMenu.classList.contains('hidden');
+                    mobileMoreMenu.classList.toggle('hidden');
+                    mobileMoreBtn.setAttribute('aria-expanded', !isHidden);
+                    e.stopPropagation();
+                });
+            }
+
+            function bindMenu(btnId, menuId, boxId) {
+                const btn = document.getElementById(btnId);
+                const menu = document.getElementById(menuId);
+                const box = document.getElementById(boxId);
+                if (!btn || !menu || !box) return;
+                function setOpen(open) {
+                    menu.hidden = !open;
+                    menu.classList.toggle('hidden', !open);
+                    btn.setAttribute('aria-expanded', String(open));
+                }
+                setOpen(false);
+                btn.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const open = btn.getAttribute('aria-expanded') !== 'true';
+                    setOpen(open);
+                });
+                // Capture also handles clicks on controls that stop propagation.
+                document.addEventListener('click', (event) => {
+                    if (!box.contains(event.target)) setOpen(false);
+                }, { capture: true, passive: true });
+                menu.addEventListener('click', (event) => {
+                    if (event.target.closest('a')) setOpen(false);
+                });
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true') {
+                        setOpen(false);
+                        btn.focus();
+                    }
+                });
+                // Iframe clicks do not bubble into the parent document.
+                window.addEventListener('blur', () => setOpen(false));
+                window.addEventListener('resize', () => setOpen(false), { passive: true });
+                window.addEventListener('scroll', () => setOpen(false), { passive: true });
+            }
+            bindMenu('desktopDomainBtn', 'desktopDomainMenu', 'desktopDomainBox');
+            bindMenu('mobileDomainBtn', 'mobileDomainMenu', 'mobileDomainBox');
+
+            document.addEventListener('click', (event) => {
+                if (desktopMenu && desktopContainer && !desktopMenu.classList.contains('hidden') && !desktopContainer.contains(event.target)) {
+                    desktopMenu.classList.add('hidden');
+                    if(desktopBtn) desktopBtn.setAttribute('aria-expanded', 'false');
+                }
+                if (mobileMenu && mobileContainer && !mobileMenu.classList.contains('hidden') && !mobileContainer.contains(event.target)) {
+                    mobileMenu.classList.add('hidden');
+                    if(mobileBtn) mobileBtn.setAttribute('aria-expanded', 'false');
+                }
+                if (mobileMoreMenu && mobileMoreContainer && !mobileMoreMenu.classList.contains('hidden') && !mobileMoreContainer.contains(event.target)) {
+                    mobileMoreMenu.classList.add('hidden');
+                    if(mobileMoreBtn) mobileMoreBtn.setAttribute('aria-expanded', 'false');
+                }
+            }, { passive: true });
+        }, 0);
+
+        setTimeout(() => {
+            let hoverTimeout;
+            let activeCard = null;
+            const escAttr = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+            function ensurePopoutCard(card) {
+                let popout = card.querySelector('.popout-card');
+                if (popout) {
+                    const lazyImg = popout.querySelector('img[data-src]');
+                    if (lazyImg && !lazyImg.getAttribute('src')) {
+                        lazyImg.setAttribute('src', lazyImg.getAttribute('data-src'));
+                    }
+                    return popout;
+                }
+                const title = card.getAttribute('data-title') || '';
+                if (!title) return null;
+                const backdrop = card.getAttribute('data-backdrop') || '';
+                const watchUrl = card.getAttribute('data-watch') || '#';
+                const rating = card.getAttribute('data-rating') || 'NR';
+                const year = card.getAttribute('data-year') || 'N/A';
+                const mType = card.getAttribute('data-type') || 'movie';
+                popout = document.createElement('div');
+                popout.className = 'popout-card absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] bg-[#141519] rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-gray-700 opacity-0 invisible transition-all duration-300 scale-95 overflow-hidden z-[100] flex flex-col pointer-events-none';
+                popout.innerHTML = `
+                    <div class="relative w-full aspect-video bg-black video-preview-container overflow-hidden">
+                        <img src="${escAttr(backdrop)}" alt="${escAttr(title)}" width="320" height="180" loading="lazy" decoding="async" class="w-full h-full object-cover opacity-60">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#141519] via-transparent to-transparent z-10"></div>
+                    </div>
+                    <div class="p-4 bg-[#141519] relative z-20 -mt-2">
+                        <div class="flex items-center gap-2 mb-2">
+                            <a aria-label="Play ${escAttr(title)}" href="${escAttr(watchUrl)}" class="w-8 h-8 bg-white hover:bg-gray-200 text-black rounded-full flex items-center justify-center transition-colors pointer-events-auto shadow-lg shadow-white/20">
+                                <i class="fa-solid fa-play text-xs ml-0.5" aria-hidden="true"></i>
+                            </a>
+                            <h3 class="text-white font-bold text-sm truncate flex-1">${escAttr(title)}</h3>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs font-bold">
+                            <span class="text-green-400">${escAttr(rating)} Rating</span>
+                            <span class="text-gray-400 border border-gray-600 px-1 rounded">${escAttr(year)}</span>
+                            <span class="text-amber-400 uppercase tracking-widest text-[9px]">${escAttr(mType)}</span>
+                        </div>
+                    </div>`;
+                card.appendChild(popout);
+                return popout;
+            }
+
+            document.addEventListener('mouseover', (e) => {
+                if (window.innerWidth <= 768) return;
+                const card = e.target.closest('.movie-preview-card');
+                if (!card || activeCard === card) return;
+                activeCard = card;
+                card.style.zIndex = "50";
+                card.style.position = "relative";
+                const parentRow = card.closest('.mb-12') || card.closest('.mb-10') || card.closest('.relative') || card.parentElement;
+                if (parentRow) { parentRow.style.zIndex = "40"; parentRow.style.position = "relative"; }
+                const tmdbId = card.getAttribute('data-id');
+                const mediaTypeVal = card.getAttribute('data-type');
+                
+                hoverTimeout = setTimeout(async () => {
+                    if (activeCard !== card) return; 
+                    const popoutCard = ensurePopoutCard(card);
+                    const videoContainer = popoutCard ? popoutCard.querySelector('.video-preview-container') : null;
+                    if (popoutCard) {
+                        popoutCard.classList.remove('opacity-0', 'invisible', 'scale-95');
+                        popoutCard.classList.add('opacity-100', 'visible', 'scale-110');
+                        popoutCard.style.pointerEvents = 'auto'; 
+                    }
+                    try {
+                        const trCacheKey = `tr_${mediaTypeVal}_${tmdbId}`;
+                        let videoKey = sessionStorage.getItem(trCacheKey);
+                        if (videoKey === null) {
+                            const response = await fetch(`/api/trailer/${mediaTypeVal}/${tmdbId}`);
+                            const data = await response.json();
+                            videoKey = (data && (data.key || data.video_key)) ? (data.key || data.video_key) : '';
+                            try { sessionStorage.setItem(trCacheKey, videoKey); } catch (_) {}
+                        }
+                        if (videoKey && activeCard === card && videoContainer && !videoContainer.querySelector('iframe')) {
+                            const iframeHtml = `
+                                <iframe class="absolute top-1/2 left-1/2 w-full h-full -translate-x-1/2 -translate-y-1/2 scale-[1.15] pointer-events-none z-0" 
+                                        src="https://www.youtube.com/embed/${videoKey}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&showinfo=0&loop=1&playlist=${videoKey}&playsinline=1&iv_load_policy=3" 
+                                        title="Video Player" frameborder="0" allow="autoplay; encrypted-media">
+                                </iframe>`;
+                            videoContainer.insertAdjacentHTML('beforeend', iframeHtml);
+                        }
+                    } catch (err) {}
+                }, 1200); 
+            }, { passive: true });
+            
+            document.addEventListener('mouseout', (e) => {
+                const card = e.target.closest('.movie-preview-card');
+                if (!card || card.contains(e.relatedTarget)) return;
+                if (activeCard === card) {
+                    card.style.zIndex = ""; card.style.position = "";
+                    const parentRow = card.closest('.mb-12') || card.closest('.mb-10') || card.closest('.relative') || card.parentElement;
+                    if (parentRow) { parentRow.style.zIndex = ""; parentRow.style.position = ""; }
+                    activeCard = null;
+                    clearTimeout(hoverTimeout); 
+                    const popoutCard = card.querySelector('.popout-card');
+                    const videoContainer = card.querySelector('.video-preview-container');
+                    if (popoutCard) {
+                        popoutCard.classList.remove('opacity-100', 'visible', 'scale-110');
+                        popoutCard.classList.add('opacity-0', 'invisible', 'scale-95');
+                        popoutCard.style.pointerEvents = 'none';
+                    }
+                    if (videoContainer) {
+                        const iframe = videoContainer.querySelector('iframe');
+                        if(iframe) iframe.remove();
+                    }
+                }
+            }, { passive: true });
+
+            const imageBaseUrl = "{{ image_base_url|default("https://image.tmdb.org/t/p/w500") }}";
+            const currentContext = "{{ content_type | default('multi') }}";
+            let searchFilterType = currentContext === 'movies' ? 'movie' : (currentContext === 'series' || currentContext === 'anime' ? 'tv' : 'multi');
+            
+            document.querySelectorAll('.search-container').forEach(container => {
+                const searchInput = container.querySelector('.live-search-input');
+                const searchResults = container.querySelector('.live-search-results');
+                const resultsList = container.querySelector('.search-results-list');
+                const searchSpinner = container.querySelector('.search-spinner');
+                const viewAllBtn = container.querySelector('.view-all-results-btn');
+                let debounceTimer;
+                let searchRequestId = 0;
+                let activeSearchController = null;
+                if (!searchInput) return;
+                
+                if (viewAllBtn) {
+                    viewAllBtn.addEventListener('click', () => { 
+                        window.location.href = `/search?q=${encodeURIComponent(searchInput.value.trim())}&type=${searchFilterType}`; 
+                    });
+                }
+                
+                searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') { 
+                        e.preventDefault(); 
+                        window.location.href = `/search?q=${encodeURIComponent(searchInput.value.trim())}&type=${searchFilterType}`; 
+                    }
+                });
+                
+                searchInput.addEventListener('input', (e) => {
+                    const query = e.target.value.trim();
+                    const requestId = ++searchRequestId;
+                    clearTimeout(debounceTimer);
+                    if (activeSearchController) { activeSearchController.abort(); activeSearchController = null; }
+                    if (query.length < 2) {
+                        searchResults.style.display = 'none';
+                        searchSpinner.style.display = 'none';
+                        resultsList.innerHTML = '';
+                        return;
+                    }
+                    searchResults.style.display = 'flex';
+                    searchResults.classList.remove('hidden', 'opacity-0');
+                    searchResults.classList.add('opacity-100');
+                    searchSpinner.style.display = 'block';
+                    searchSpinner.classList.remove('hidden'); 
+                    resultsList.innerHTML = ''; 
+                    if (viewAllBtn) viewAllBtn.style.display = 'none';
+                    
+                    debounceTimer = setTimeout(async () => {
+                        const controller = new AbortController();
+                        activeSearchController = controller;
+                        try {
+                            const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&type=${searchFilterType}`, { signal: controller.signal });
+                            if (!response.ok) throw new Error(`Search failed: ${response.status}`);
+                            const rawData = await response.json();
+                            if (requestId !== searchRequestId) return;
+                            const data = Array.isArray(rawData) ? rawData : [];
+                            searchSpinner.style.display = 'none';
+                            resultsList.innerHTML = '';
+                            if (data.length === 0) {
+                                resultsList.innerHTML = '<div class="p-4 text-center text-sm font-bold text-gray-500">No results found.</div>';
+                            } else {
+                                data.forEach(item => {
+                                    const badgeColor = item.media_type === 'movie' ? 'bg-red-600' : (item.media_type === 'person' ? 'bg-amber-600' : 'bg-blue-600');
+                                    const html = `<a href="${escAttr(item.details_url)}" class="flex items-center gap-4 p-3 hover:bg-gray-800 transition-colors border-b border-gray-800/50 last:border-0"><img src="${escAttr(imageBaseUrl + (item.poster_path || ''))}" alt="${escAttr(item.title)}" width="40" height="56" loading="lazy" decoding="async" class="w-10 h-14 object-cover rounded shadow border border-gray-700"><div class="flex-1 overflow-hidden"><p class="text-white text-sm font-bold truncate">${escAttr(item.title)}</p><div class="flex items-center gap-2 mt-1"><span class="text-[9px] font-bold text-white uppercase px-1.5 py-0.5 rounded ${badgeColor}">${escAttr(item.media_type)}</span><span class="text-xs text-gray-400">${escAttr(item.year)}</span></div></div></a>`;
+                                    resultsList.insertAdjacentHTML('beforeend', html);
+                                });
+                                if (viewAllBtn) viewAllBtn.style.display = 'block';
+                            }
+                        } catch (error) {
+                            if (error && error.name === 'AbortError') return;
+                            if (requestId !== searchRequestId) return;
+                            searchSpinner.style.display = 'none';
+                            resultsList.innerHTML = '<div class="p-4 text-center text-sm font-bold text-red-500">Network Error.</div>';
+                        }
+                    }, 500); 
+                });
+                
+                document.addEventListener('click', (event) => {
+                    if (!container.contains(event.target)) searchResults.style.display = 'none';
+                }, { passive: true });
+                
+                searchInput.addEventListener('focus', () => {
+                    if (searchInput.value.trim().length >= 2) { 
+                        searchResults.style.display = 'flex'; 
+                        searchResults.classList.remove('hidden');
+                    }
+                });
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes((document.activeElement && document.activeElement.tagName) || '')) {
+                    const ds = document.getElementById('desktopSearchInput');
+                    if (ds && ds.offsetParent !== null) {
+                        e.preventDefault();
+                        ds.focus();
+                    }
+                }
+            });
+        }, 20);
+
+        let thirdPartyLoaded = false;
+        function loadThirdPartyScripts() {
+            if (thirdPartyLoaded) return;
+            thirdPartyLoaded = true;
+            ['scroll', 'pointerdown', 'touchstart', 'keydown'].forEach(ev => {
+                window.removeEventListener(ev, loadThirdPartyScripts, { passive: true });
+            });
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.php').catch(() => {});
+            }
+            // GA4 ab <head> me static load hota hai (dekho head ka snippet) — yahan sirf ADS load hote hain.
+            setTimeout(() => {
+
+                // Wrapper hide karne ka robust tarika: agar wrapper me sirf "Sponsored" label hai to
+                // poora wrapper chhupao, warna sirf khaali slot box chhupao (blank dabba dikhta na rahe).
+                function hideAdWrap(slot, wrapSelector) {
+                    const wrap = wrapSelector ? slot.closest(wrapSelector) : slot.parentElement;
+                    if (!wrap || wrap.getAttribute('data-ad-hidden') === '1') return;
+                    wrap.setAttribute('data-ad-hidden', '1');
+                    const own = wrap.cloneNode(true);
+                    const cloneSlot = own.querySelector('.ad-slot-728, .ad-slot-native');
+                    if (cloneSlot) cloneSlot.remove();
+                    const txt = (own.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+                    if (txt === '' || txt === 'sponsored' || txt === 'advertisement') {
+                        wrap.style.display = 'none';
+                    } else {
+                        slot.style.display = 'none';
+                    }
+                }
+
+                const adsEnabled         = {{ (ads_enabled is defined and ads_enabled is same as(false)) ? 'false' : 'true' }};
+                const adsterraPopunder   = {{ (adsterra_popunder | default('')) | json_encode(constant('JSON_HEX_TAG')) | raw }};
+                const adsterraBanner728  = {{ (adsterra_banner_728 | default('')) | json_encode(constant('JSON_HEX_TAG')) | raw }};
+                const adsterraBanner300  = {{ (adsterra_banner_300 | default('')) | json_encode(constant('JSON_HEX_TAG')) | raw }};
+                const adsterraBanner320  = {{ (adsterra_banner_320 | default('')) | json_encode(constant('JSON_HEX_TAG')) | raw }};
+                const adsterraBanner468  = {{ (adsterra_banner_468 | default('')) | json_encode(constant('JSON_HEX_TAG')) | raw }};
+                const adsterraBanner160  = {{ (adsterra_banner_160 | default('')) | json_encode(constant('JSON_HEX_TAG')) | raw }};
+                const adsterraNative     = {{ (adsterra_native_banner | default('')) | json_encode(constant('JSON_HEX_TAG')) | raw }};
+                const adsterraSmartlink  = {{ (adsterra_smartlink_url | default('')) | json_encode(constant('JSON_HEX_TAG')) | raw }};
+
+                // document.write() wale ad creatives ko page-load ke baad inject karne pe browser
+                // ignore kar deta hai ("...from an asynchronously-loaded external script was ignored").
+                // Aise codes ko iframe me likhte hain, jahan parser active rehta hai.
+                function writeAdCodeSafe(target, code, w, h) {
+                    if (target === document.body || !target) {
+                        const holder = document.createElement('div');
+                        holder.setAttribute('aria-hidden', 'true');
+                        holder.style.cssText = 'position:absolute;left:-10000px;top:0;width:' + w + 'px;height:' + h + 'px;overflow:hidden;';
+                        const ifr = document.createElement('iframe');
+                        ifr.setAttribute('tabindex', '-1');
+                        ifr.setAttribute('title', 'Sponsored');
+                        ifr.width = String(w); ifr.height = String(h);
+                        ifr.setAttribute('scrolling', 'no'); ifr.setAttribute('frameborder', '0');
+                        ifr.style.cssText = 'border:0;width:' + w + 'px;height:' + h + 'px;';
+                        holder.appendChild(ifr);
+                        document.body.appendChild(holder);
+                        writeBannerIframeIn(ifr, code, w, h);
+                        return;
+                    }
+                    writeBannerIframe(target, code, w, h);
+                }
+
+                function writeBannerIframeIn(ifr, htmlContent, w, h) {
+                    const fullDoc = '<!DOCTYPE html><html><head><meta charset="utf-8"></head>'
+                        + '<body style="margin:0;padding:0;width:' + w + 'px;height:' + h + 'px;background:transparent;overflow:hidden;">'
+                        + htmlContent + '</body></html>';
+                    try {
+                        const idoc = ifr.contentWindow && ifr.contentWindow.document;
+                        if (idoc) { idoc.open(); idoc.write(fullDoc); idoc.close(); return; }
+                    } catch (_) {}
+                    ifr.srcdoc = fullDoc;
+                }
+
+                function mountAdsterraScript(raw, container) {
+                    if (!raw || typeof raw !== 'string') return;
+                    const trimmed = raw.trim();
+                    if (!trimmed) return;
+                    const target = container || document.body;
+                    if (/^https?:\/\//i.test(trimmed) && !trimmed.includes('<')) {
+                        const s = document.createElement('script');
+                        s.src = trimmed;
+                        s.async = true;
+                        target.appendChild(s);
+                        return;
+                    }
+                    if (/document\.write/i.test(trimmed)) {
+                        const w = Math.max(300, Math.min(728, (target.clientWidth || 300)));
+                        writeAdCodeSafe(target, trimmed, w, target === document.body ? 250 : 250);
+                        return;
+                    }
+                    const tmp = document.createElement('div');
+                    tmp.innerHTML = trimmed;
+                    const nodes = Array.from(tmp.childNodes);
+                    nodes.filter(node => !node.nodeName || node.nodeName.toLowerCase() !== 'script').forEach(node => {
+                        target.appendChild(node.cloneNode(true));
+                    });
+                    nodes.filter(node => node.nodeName && node.nodeName.toLowerCase() === 'script').forEach(node => {
+                        const s = document.createElement('script');
+                        Array.from(node.attributes || []).forEach(attr => s.setAttribute(attr.name, attr.value));
+                        if (node.textContent) s.textContent = node.textContent;
+                        s.async = true;
+                        target.appendChild(s);
+                    });
+                }
+
+                function buildAdsterraBannerHtml(input, w, h) {
+                    const trimmed = (input || '').trim();
+                    if (!trimmed) return '';
+                    if (/^[a-f0-9]{32}$/i.test(trimmed)) {
+                        return '<scr' + 'ipt type="text/javascript">atOptions={"key":"' + trimmed + '","format":"iframe","height":' + h + ',"width":' + w + ',"params":{}};</scr' + 'ipt>' +
+                               '<scr' + 'ipt type="text/javascript" src="https://www.highperformanceformat.com/' + trimmed + '/invoke.js"></scr' + 'ipt>';
+                    }
+                    if (/^https?:\/\//i.test(trimmed) && !trimmed.includes('<')) {
+                        return '<scr' + 'ipt type="text/javascript" src="' + trimmed.replace(/"/g, '&quot;') + '"></scr' + 'ipt>';
+                    }
+                    return trimmed;
+                }
+
+                function writeBannerIframe(container, htmlContent, w, h) {
+                    container.style.cssText = 'width:100%;display:flex;justify-content:center;align-items:center;overflow:visible;padding:4px 0;';
+                    const parentBox = container.parentElement;
+                    if (parentBox) {
+                        parentBox.style.overflow = 'visible';
+                        parentBox.style.minHeight = (h + 16) + 'px';
+                    }
+                    const availW = Math.max(280, (parentBox ? parentBox.clientWidth : window.innerWidth) - 16);
+                    const scale = availW < w ? (availW / w) : 1;
+                    const scaleWrap = document.createElement('div');
+                    scaleWrap.style.cssText = 'width:' + Math.floor(w * scale) + 'px;height:' + Math.ceil(h * scale) + 'px;display:flex;justify-content:center;align-items:center;position:relative;overflow:visible;';
+                    const ifr = document.createElement('iframe');
+                    ifr.title = 'Sponsored Advertisement';
+                    ifr.width = String(w);
+                    ifr.height = String(h);
+                    ifr.setAttribute('scrolling', 'no');
+                    ifr.setAttribute('frameborder', '0');
+                    ifr.style.cssText = 'border:0;width:' + w + 'px !important;min-width:' + w + 'px !important;height:' + h + 'px !important;overflow:hidden;background:transparent;display:block;flex-shrink:0;' +
+                        (scale < 1 ? ('transform:scale(' + scale.toFixed(4) + ');transform-origin:center center;') : '');
+                    scaleWrap.appendChild(ifr);
+                    container.appendChild(scaleWrap);
+                    const fullDoc = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:0;width:' + w + 'px;height:' + h + 'px;background:transparent;overflow:hidden;display:flex;justify-content:center;align-items:center;">' + htmlContent + '</body></html>';
+                    try {
+                        const idoc = ifr.contentWindow && ifr.contentWindow.document;
+                        if (idoc) {
+                            idoc.open();
+                            idoc.write(fullDoc);
+                            idoc.close();
+                            return;
+                        }
+                    } catch (_) {}
+                    ifr.srcdoc = fullDoc;
+                }
+
+                if (adsEnabled) {
+                    if (adsterraPopunder && adsterraPopunder.trim()) {
+                        mountAdsterraScript(adsterraPopunder, document.body);
+                    }
+                    if (adsterraSmartlink && /^https?:\/\//i.test(adsterraSmartlink.trim()) && !/\.js(?:[?#]|$)/i.test(adsterraSmartlink.trim())) {
+                        document.querySelectorAll('[data-adsterra-smartlink]').forEach(el => {
+                            const link = document.createElement('a');
+                            link.href = adsterraSmartlink.trim();
+                            link.target = '_blank';
+                            link.rel = 'sponsored noopener noreferrer';
+                            link.className = el.className;
+                            link.innerHTML = el.innerHTML;
+                            el.replaceWith(link);
+                        });
+                    }
+                    if (adsterraBanner320 && adsterraBanner320.trim() && window.innerWidth < 768 && !document.getElementById('adsterraSticky320')) {
+                        const bar = document.createElement('div');
+                        bar.id = 'adsterraSticky320';
+                        bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9980;display:flex;justify-content:center;align-items:center;background:rgba(9,10,15,0.92);border-top:1px solid rgba(255,255,255,0.1);padding:4px 0;';
+                        const positionBannerAboveNav = () => {
+                            const nav = document.getElementById('mobileBottomNav');
+                            const navVisible = nav && window.getComputedStyle(nav).display !== 'none';
+                            const navHeight = navVisible ? Math.ceil(nav.getBoundingClientRect().height) : 0;
+                            bar.style.bottom = (navHeight + 8) + 'px';
+                        };
+                        positionBannerAboveNav();
+                        window.addEventListener('resize', positionBannerAboveNav, { passive: true });
+                        const closeB = document.createElement('button');
+                        closeB.type = 'button';
+                        closeB.innerHTML = '&times;';
+                        closeB.style.cssText = 'position:absolute;top:-18px;right:8px;width:20px;height:20px;border-radius:999px;background:#111;color:#fff;border:1px solid rgba(255,255,255,0.2);font-size:12px;line-height:1;';
+                        closeB.onclick = () => bar.remove();
+                        const mountDiv = document.createElement('div');
+                        bar.appendChild(closeB);
+                        bar.appendChild(mountDiv);
+                        document.body.appendChild(bar);
+                        writeBannerIframe(mountDiv, buildAdsterraBannerHtml(adsterraBanner320.trim(), 320, 50), 320, 50);
+                    }
+                }
+
+                const vw = window.innerWidth;
+                document.querySelectorAll('.ad-slot-728').forEach(slot => {
+                    const slotKey = (slot.getAttribute('data-ad-key') || '').trim();
+                    let chosenRaw = '';
+                    let w = 728, h = 90;
+                    if (vw < 520 && adsterraBanner300 && adsterraBanner300.trim()) {
+                        chosenRaw = adsterraBanner300.trim(); w = 300; h = 250;
+                    } else if (vw < 728 && adsterraBanner468 && adsterraBanner468.trim()) {
+                        chosenRaw = adsterraBanner468.trim(); w = 468; h = 60;
+                    } else if (adsterraBanner728 && adsterraBanner728.trim()) {
+                        chosenRaw = adsterraBanner728.trim(); w = 728; h = 90;
+                    } else if (slotKey) {
+                        chosenRaw = slotKey; w = 728; h = 90;
+                    } else if (adsterraBanner468 && adsterraBanner468.trim()) {
+                        chosenRaw = adsterraBanner468.trim(); w = 468; h = 60;
+                    } else if (adsterraBanner300 && adsterraBanner300.trim()) {
+                        chosenRaw = adsterraBanner300.trim(); w = 300; h = 250;
+                    } else if (adsterraBanner160 && adsterraBanner160.trim()) {
+                        chosenRaw = adsterraBanner160.trim(); w = 160; h = 300;
+                    }
+                    if (!adsEnabled || !chosenRaw) {
+                        hideAdWrap(slot);
+                        return;
+                    }
+                    if (slot.querySelector('iframe') || slot.getAttribute('data-ast-loaded')) return;
+                    slot.setAttribute('data-ast-loaded', '1');
+                    writeBannerIframe(slot, buildAdsterraBannerHtml(chosenRaw, w, h), w, h);
+                });
+
+                document.querySelectorAll('.ad-slot-native').forEach(slot => {
+                    if (!adsEnabled || !adsterraNative || !adsterraNative.trim()) {
+                        hideAdWrap(slot, '.adsterra-native-wrap');
+                        return;
+                    }
+                    if (slot.getAttribute('data-ast-native-loaded')) return;
+                    slot.setAttribute('data-ast-native-loaded', '1');
+                    mountAdsterraScript(adsterraNative.trim(), slot);
+                });
+            }, 300);
+        }
+        setTimeout(loadThirdPartyScripts, 800);
+        ['scroll', 'pointerdown', 'touchstart', 'keydown'].forEach(ev => {
+            window.addEventListener(ev, loadThirdPartyScripts, { passive: true, once: true });
+        });
+
+        // GA4 load hua ya nahi — isse pata chalega ki kitne users ad-blocker laga ke aate hain.
+        // Admin panel -> Security Log me "ga_blocked" events dikhenge.
+        // (GA jaan-boojhkar off ho to ye beacon bhi nahi chalta, warna har pageview fake 'ga_blocked' ban jata.)
+        if ({{ ga_measurement_id ? 'true' : 'false' }}) setTimeout(function () {
+            var gaLoaded = (typeof window.gtag === 'function')
+                && !!document.querySelector('script[src*="googletagmanager.com/gtag/js"]');
+            if (gaLoaded) return;
+            try {
+                var body = JSON.stringify({ p: (location.pathname || '/').slice(0, 180), r: document.referrer || '' });
+                if (navigator.sendBeacon) {
+                    navigator.sendBeacon('/api/ga_blocked', new Blob([body], { type: 'application/json' }));
+                }
+            } catch (e) {}
+        }, 4000);
+    });
+</script>
+<script>
+(function () {
+    var loggedin = {% if current_user.is_authenticated %}true{% else %}false{% endif %};
+    if (!loggedin) return;
+    function pulseTitle() {
+        var m = document.querySelector('meta[name="pulse-title"]');
+        if (m && m.content) return m.content;
+        var t = (document.title || '').replace(/\s*[-|]\s*CINEAMIT.*$/i, '').trim();
+        return t.substring(0, 180);
+    }
+    function ping() {
+        if (document.visibilityState !== 'visible') return;
+        try {
+            var now = Date.now();
+            var last = parseInt(sessionStorage.getItem('cine_last_ping') || '0', 10);
+            if (now - last < 300000) return;
+            sessionStorage.setItem('cine_last_ping', String(now));
+            var metaTok = document.querySelector('meta[name="csrf-token"]');
+            var csrfVal = (metaTok && metaTok.content) ? metaTok.content : '';
+            fetch('/api/ping', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfVal
+                },
+                body: JSON.stringify({ page: location.pathname, title: pulseTitle() }),
+                keepalive: true
+            }).catch(function () {});
+        } catch (e) {}
+    }
+    ping();
+    // HIT-LIMIT FIX: 5 min -> 15 min (ek user ka din bhar ka ping 288 -> 96 requests).
+    // live_presence ka "online" window 90 second ka hai, par presence sirf admin pulse ke liye hai —
+    // 15 min se zyada purana hone par bhi user tab visible hone par turant ping ho jata hai.
+    setInterval(ping, 900000);
+})();
+function dismissAnnouncement(id) {
+    var modal = document.getElementById('announcementModal');
+    var banner = document.getElementById('announcementBanner');
+    if (modal) modal.remove();
+    if (banner) banner.remove();
+    try {
+        var metaTok = document.querySelector('meta[name="csrf-token"]');
+        var inpTok = document.querySelector('input[name="csrf_token"]');
+        var csrfVal = (metaTok && metaTok.content) ? metaTok.content : (inpTok ? inpTok.value : '');
+        var fd = new FormData();
+        fd.append('csrf_token', csrfVal);
+        fetch('/announcements/dismiss/' + id, {
+            method: 'POST',
+            headers: { 'X-CSRF-Token': csrfVal },
+            body: fd,
+            keepalive: true
+        }).catch(function () {});
+    } catch (e) {}
+}
+</script>
+{% set socialBarCode = adsterra_social_bar|default('')|trim %}
+{% if not (ads_enabled is defined and ads_enabled is same as(false)) and socialBarCode %}
+    {% if socialBarCode|slice(0, 8) == 'https://' or socialBarCode|slice(0, 7) == 'http://' or socialBarCode|slice(0, 2) == '//' %}
+<script type="text/javascript" async src="{{ socialBarCode|e('html_attr') }}"></script>
+    {% elseif '<script' in socialBarCode|lower %}
+{{ socialBarCode|raw }}
+    {% endif %}
+{% endif %}
+<script src="/static/cine-motion.js?v=1" defer></script>
+</body>
+</html>

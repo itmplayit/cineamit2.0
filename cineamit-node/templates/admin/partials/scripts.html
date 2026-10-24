@@ -1,0 +1,355 @@
+<script>
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+    document.getElementById(tabId)?.classList.remove('hidden');
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-red-600/10', 'text-red-500', 'border-red-500/30');
+        btn.classList.add('text-gray-400', 'border-transparent');
+    });
+    const activeBtn = document.getElementById('btn-' + tabId);
+    if(activeBtn) {
+        activeBtn.classList.remove('text-gray-400', 'border-transparent');
+        activeBtn.classList.add('bg-red-600/10', 'text-red-500', 'border-red-500/30');
+    }
+    localStorage.setItem('adminActiveTab', tabId);
+}
+function adminRoleConfirm(sel) {
+    if (confirm("Change " + sel.form.dataset.username + "'s role to " + sel.value.toUpperCase() + "?")) {
+        sel.form.submit();
+        return true;
+    }
+    sel.value = sel.form.dataset.origRole || 'user';
+    return false;
+}
+function adminNotifConfirm(form) {
+    const target = form.querySelector('select[name="target_user"]');
+    if (target && target.value === 'all') {
+        return confirm('This alert will be sent to ALL registered users. Continue?');
+    }
+    return true;
+}
+function cineUploadApk(ev) {
+    ev.preventDefault();
+    const input = document.getElementById('apkFile');
+    const status = document.getElementById('apkUploadStatus');
+    const btn = document.getElementById('apkUploadBtn');
+    if (!input || !input.files || !input.files[0]) return false;
+    const file = input.files[0];
+    if (!/\.apk$/i.test(file.name)) {
+        if (status) status.textContent = 'Only .apk files.';
+        return false;
+    }
+    const fd = new FormData();
+    fd.append('apk', file, file.name);
+    const metaTok = document.querySelector('meta[name="csrf-token"]');
+    const csrfVal = (metaTok && metaTok.content) ? metaTok.content : '{{ csrf_token }}';
+    if (btn) { btn.disabled = true; btn.classList.add('opacity-60'); }
+    if (status) status.textContent = 'Uploading ' + (file.size / 1048576).toFixed(1) + ' MB…';
+    fetch('/admin/upload_apk', {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': csrfVal },
+        body: fd,
+        credentials: 'same-origin'
+    }).then(function () {
+        location.href = '/cineamit-admin#tab-economy';
+        location.reload();
+    }).catch(function () {
+        if (status) status.textContent = 'Upload failed. Check the network.';
+        if (btn) { btn.disabled = false; btn.classList.remove('opacity-60'); }
+    });
+    return false;
+}
+document.addEventListener('DOMContentLoaded', () => {
+    if (location.hash === '#tab-economy') switchTab('tab-economy');
+    if (location.hash === '#tab-settings') switchTab('tab-settings');
+    document.body.addEventListener('click', (e) => {
+        const tabBtn = e.target.closest('.tab-btn');
+        if (tabBtn && tabBtn.dataset.target) {
+            switchTab(tabBtn.dataset.target);
+        }
+        const editBtn = e.target.closest('[data-action="open-edit-modal"]');
+        if (editBtn) {
+            document.getElementById('editServerForm').action = '/admin/edit_server/' + editBtn.dataset.id;
+            document.getElementById('edit_server_name').value = editBtn.dataset.name;
+            document.getElementById('edit_movie_pattern').value = editBtn.dataset.movie;
+            document.getElementById('edit_tv_pattern').value = editBtn.dataset.tv;
+            document.getElementById('editServerModal').classList.remove('hidden');
+        }
+        if (e.target.closest('[data-action="close-edit-modal"]')) {
+            document.getElementById('editServerModal').classList.add('hidden');
+        }
+    });
+    function filterWallets() {
+        const q = (document.getElementById('walletSearchInput')?.value || '').toLowerCase().trim();
+        const active = document.querySelector('.wallet-plan-btn.active');
+        const plan = (active && active.dataset.plan) ? active.dataset.plan : 'all';
+        let n = 0;
+        document.querySelectorAll('.wallet-row').forEach(row => {
+            const name = (row.querySelector('.search-name')?.textContent || '').toLowerCase();
+            const email = (row.querySelector('.search-email')?.textContent || '').toLowerCase();
+            const uid = String(row.dataset.uid || '');
+            const p = row.dataset.plan || 'free';
+            const matchQ = !q || name.includes(q) || email.includes(q) || uid === q || ('#' + uid) === q || uid.includes(q);
+            const matchP = plan === 'all' || p === plan;
+            const show = matchQ && matchP;
+            row.style.display = show ? '' : 'none';
+            if (show) n++;
+        });
+        const count = document.getElementById('walletMatchCount');
+        if (count) count.textContent = n + ' members';
+        const empty = document.getElementById('walletEmpty');
+        if (empty) empty.classList.toggle('hidden', n > 0 || document.querySelectorAll('.wallet-row').length === 0);
+    }
+    const walletSearchInput = document.getElementById('walletSearchInput');
+    if (walletSearchInput) walletSearchInput.addEventListener('input', filterWallets);
+    document.querySelectorAll('.wallet-plan-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.wallet-plan-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterWallets();
+        });
+    });
+    const userSearchInput = document.getElementById('userSearchInput');
+    if (userSearchInput) {
+        userSearchInput.addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            document.querySelectorAll('.user-row').forEach(row => {
+                const name = row.querySelector('.search-name').textContent.toLowerCase();
+                const email = row.querySelector('.search-email').textContent.toLowerCase();
+                if (name.includes(query) || email.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+    const serverSearchInput = document.getElementById('serverSearchInput');
+    if (serverSearchInput) {
+        serverSearchInput.addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            document.querySelectorAll('.server-row').forEach(row => {
+                const name = row.querySelector('.search-server-name').textContent.toLowerCase();
+                if (name.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+    function runServerTest(srvId) {
+        const cell = document.querySelector(`td[data-srv-id="${srvId}"]`);
+        if (!cell) return;
+        const badge = cell.querySelector('.srv-health');
+        badge.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Testing...';
+        badge.className = 'srv-health inline-flex items-center gap-1 text-[10px] font-bold text-gray-400';
+        fetch('/admin/test_server/' + srvId, { headers: { 'Accept': 'application/json' } })
+            .then(r => r.json())
+            .then(res => {
+                if (res.ok) {
+                    badge.innerHTML = `<i class="fa-solid fa-circle-check text-green-400"></i> <span class="text-green-400">OK ${adminEsc(res.status)} · ${adminEsc(res.ms)}ms</span>`;
+                } else {
+                    badge.innerHTML = `<i class="fa-solid fa-circle-xmark text-red-400"></i> <span class="text-red-400">${adminEsc(res.error || 'Failed')}</span>`;
+                    badge.title = adminEsc(res.error || 'Failed');
+                }
+            })
+            .catch(() => {
+                badge.innerHTML = '<i class="fa-solid fa-circle-xmark text-red-400"></i> <span class="text-red-400">Request error</span>';
+            });
+    }
+    document.querySelectorAll('[data-test-server]').forEach(btn => {
+        btn.addEventListener('click', () => runServerTest(btn.getAttribute('data-test-server')));
+    });
+    function runXtreamTest(xsId) {
+        const row = document.querySelector(`tr[data-xtream-id="${xsId}"]`);
+        if (!row) return;
+        const badge = row.querySelector('.xtream-health');
+        badge.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Pinging...';
+        badge.className = 'xtream-health inline-flex items-center gap-1 text-[10px] font-bold text-gray-400';
+        fetch('/admin/test_xtream/' + xsId, { headers: { 'Accept': 'application/json' } })
+            .then(r => r.json())
+            .then(res => {
+                if (res.ok) {
+                    badge.innerHTML = `<i class="fa-solid fa-circle-check text-green-400"></i> <span class="text-green-400">OK · ${adminEsc(res.ms)}ms · ${adminEsc(res.account)} · Exp: ${adminEsc(res.exp_date)}</span>`;
+                    badge.title = 'Connections: ' + adminEsc(res.connections || '?') + (res.server_name ? ' | ' + adminEsc(res.server_name) : '');
+                } else {
+                    badge.innerHTML = `<i class="fa-solid fa-circle-xmark text-red-400"></i> <span class="text-red-400">${adminEsc(res.error || 'Failed')}</span>`;
+                    badge.title = adminEsc(res.error || 'Failed');
+                }
+            })
+            .catch(() => {
+                badge.innerHTML = '<i class="fa-solid fa-circle-xmark text-red-400"></i> <span class="text-red-400">Request error</span>';
+            });
+    }
+    document.querySelectorAll('[data-test-xtream]').forEach(btn => {
+        btn.addEventListener('click', () => runXtreamTest(btn.getAttribute('data-test-xtream')));
+    });
+    const testAllXtreamBtn = document.getElementById('testAllXtream');
+    if (testAllXtreamBtn) {
+        testAllXtreamBtn.addEventListener('click', function() {
+            const ids = Array.from(document.querySelectorAll('[data-test-xtream]')).map(b => b.getAttribute('data-test-xtream'));
+            let i = 0;
+            testAllXtreamBtn.disabled = true;
+            const next = () => {
+                if (i >= ids.length) { testAllXtreamBtn.disabled = false; return; }
+                runXtreamTest(ids[i]);
+                i++;
+                setTimeout(next, 700);
+            };
+            next();
+        });
+    }
+
+    const testAllBtn = document.getElementById('testAllServers');
+    if (testAllBtn) {
+        testAllBtn.addEventListener('click', function() {
+            const ids = Array.from(document.querySelectorAll('[data-test-server]')).map(b => b.getAttribute('data-test-server'));
+            let i = 0;
+            testAllBtn.disabled = true;
+            const next = () => {
+                if (i >= ids.length) { testAllBtn.disabled = false; return; }
+                runServerTest(ids[i]);
+                i++;
+                setTimeout(next, 700);
+            };
+            next();
+        });
+    }
+
+    const bulkForm = document.getElementById('bulkUsersForm');
+    if (bulkForm) {
+        const checks = Array.from(document.querySelectorAll('.bulk-user-check'));
+        const countEl = document.getElementById('bulkCount');
+        const updateCount = () => {
+            const n = checks.filter(c => c.checked).length;
+            countEl.textContent = n + ' selected';
+        };
+        checks.forEach(c => c.addEventListener('change', updateCount));
+        const selAll = document.getElementById('checkAllUsers');
+        if (selAll) selAll.addEventListener('change', () => { checks.forEach(c => c.checked = selAll.checked); updateCount(); });
+        const selAllBtn = document.getElementById('selectAllUsers');
+        if (selAllBtn) selAllBtn.addEventListener('click', () => {
+            const anyUnchecked = checks.some(c => !c.checked);
+            checks.forEach(c => c.checked = anyUnchecked);
+            if (selAll) selAll.checked = anyUnchecked;
+            updateCount();
+        });
+        bulkForm.addEventListener('submit', function(e) {
+            const btn = e.submitter;
+            if (!btn || !btn.dataset.bulk) return;
+            const n = checks.filter(c => c.checked).length;
+            if (n === 0) { e.preventDefault(); alert('Select at least one user (checkbox) first.'); return; }
+            if (n > 50) { e.preventDefault(); alert('Max 50 users ek saath.'); return; }
+            const labels = { suspend: 'SUSPEND (login block)', unsuspend: 'UNSUSPEND', kill: 'KILL all sessions (force logout)', delete: 'PERMANENTLY DELETE' };
+            const ok = confirm(`Confirm: apply "${labels[btn.dataset.bulk]}" to ${n} users?` + (btn.dataset.bulk === 'delete' ? '\n\n⚠️ This cannot be undone!' : ''));
+            if (!ok) { e.preventDefault(); return; }
+            document.getElementById('bulkAction').value = btn.dataset.bulk;
+        });
+    }
+
+    document.querySelectorAll('.last-active[data-ts]').forEach(el => {
+        const raw = el.getAttribute('data-ts');
+        if (!raw) return;
+        const t = new Date(raw.replace(' ', 'T') + (raw.includes('+') ? '' : 'Z')).getTime();
+        if (isNaN(t)) return;
+        const diff = Math.floor((Date.now() - t) / 1000);
+        let label;
+        if (diff < 60) label = 'just now';
+        else if (diff < 3600) label = Math.floor(diff / 60) + 'm ago';
+        else if (diff < 86400) label = Math.floor(diff / 3600) + 'h ago';
+        else if (diff < 86400 * 30) label = Math.floor(diff / 86400) + 'd ago';
+        else label = 'bahut purana';
+        el.title = el.textContent + ' (UTC+5:30 se lagbhag)';
+        el.insertAdjacentHTML('afterend', `<span class="text-[9px] text-gray-600 ml-1">(${label})</span>`);
+    });
+
+    const savedTab = localStorage.getItem('adminActiveTab');
+    switchTab(savedTab && document.getElementById(savedTab) ? savedTab : 'tab-dashboard');
+});
+</script>
+<script>
+// SECURITY: remote Xtream/server API ke strings (account, exp_date, server_name, error) escape kiye
+// bina innerHTML me jaate the -> malicious/compromised remote server admin panel me JS inject kar sakta tha.
+function adminEsc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+}
+function pulseTimeAgo(secs) {
+    if (secs < 10) return 'just now';
+    if (secs < 60) return secs + 's ago';
+    return Math.floor(secs / 60) + 'm ago';
+}
+function renderPulse(data) {
+    const c1 = document.getElementById('pulseOnlineCount');
+    const c2 = document.getElementById('pulseCount2');
+    if (c1) c1.textContent = data.online;
+    if (c2) c2.textContent = data.online;
+    const up = document.getElementById('pulseUpdatedAt');
+    if (up) up.textContent = 'updated ' + new Date().toLocaleTimeString();
+    const list = document.getElementById('pulseList');
+    if (!list) return;
+    if (!data.users.length) {
+        list.innerHTML = '<p class="text-gray-500 text-sm py-4 text-center">No users online right now (no heartbeat in 90s).</p>';
+        return;
+    }
+    const rows = data.users.map(function (u) {
+        const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+        const content = esc(u.content_title) || '—';
+        const prof = u.profile_name ? '<span class="text-[9px] font-bold text-teal-500 bg-teal-500/10 border border-teal-500/30 rounded px-1.5 py-0.5 ml-1">' + esc(u.profile_name) + '</span>' : '';
+        const where = esc(u.current_page) === '/' ? 'Homepage' : esc(u.current_page);
+        return '<div class="py-2.5 flex items-center justify-between gap-3">' +
+            '<div class="min-w-0 flex items-center gap-2">' +
+            '<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-none"></span>' +
+            '<div class="min-w-0"><p class="text-sm font-bold text-white truncate">' + esc(u.username) + prof +
+            '<span class="text-gray-600 font-normal text-xs"> · ' + where + '</span></p>' +
+            '<p class="text-[11px] text-teal-400/80 truncate"><i class="fa-solid fa-circle-play mr-1"></i>' + content + '</p></div>' +
+            '</div>' +
+            '<span class="text-[10px] font-bold text-gray-500 flex-none">' + pulseTimeAgo(parseInt(u.secs, 10) || 0) + '</span>' +
+            '</div>';
+    });
+    list.innerHTML = rows.join('');
+}
+function pulseTick() {
+    if (document.visibilityState !== 'visible') return;
+    if (document.querySelector('#tab-dashboard') === null) return;
+    fetch('/api/admin/pulse', { headers: { 'Accept': 'application/json' }, cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) { if (data) renderPulse(data); })
+        .catch(function () {});
+}
+pulseTick();
+// HIT-LIMIT FIX: 60s -> 180s, aur admin tab hidden ho to request hi nahi jaati
+// (admin panel khula chhod dena pehle din me ~1400 hits kha jata tha).
+setInterval(function () { if (!document.hidden) pulseTick(); }, 180000);
+document.addEventListener('visibilitychange', function () { if (!document.hidden) pulseTick(); });
+
+function runSourceHealth() {
+    const btn = document.getElementById('healthCheckBtn');
+    if (!btn) return;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Checking… (har server ~8s cap)';
+    fetch('/admin/sources/health-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'csrf_token=' + encodeURIComponent(document.querySelector('input[name="csrf_token"]') ? document.querySelector('input[name="csrf_token"]').value : '')
+    })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data && data.ok) {
+                alert(data.results.map(function (r) { return (r.ok ? '✅' : '❌') + ' ' + r.name + (r.ok ? ' — ' + r.ms + 'ms' : ' — ' + r.note); }).join('\n') || 'All servers checked.');
+                setTimeout(function () { location.reload(); }, 900);
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-rotate mr-1"></i>Check Now';
+            }
+        })
+        .catch(function () {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-rotate mr-1"></i>Check Now';
+        });
+}
+</script>

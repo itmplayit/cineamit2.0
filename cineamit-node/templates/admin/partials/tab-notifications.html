@@ -1,0 +1,36 @@
+        <div id="tab-notifications" class="tab-content hidden animate-fade-in">
+            <div class="bg-[#141519] border border-gray-800 rounded-2xl shadow-2xl overflow-hidden p-6 relative">
+                <div class="absolute top-0 right-6 transform -translate-y-1/2 bg-yellow-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-md">
+                    Global Blast
+                </div>
+                <h2 class="text-xl font-black text-white mb-2 flex items-center gap-2 mt-2">
+                    <i class="fa-solid fa-bullhorn text-yellow-500"></i> Send Push Notifications
+                </h2>
+                <p class="text-gray-400 text-xs mb-8">Send alerts, announcements, or custom messages directly to users' notification bells.</p>
+                <form action="/admin/send_notification" method="POST" class="bg-[#0a0a0c] border border-gray-800 p-6 rounded-xl flex flex-col gap-5 shadow-inner max-w-3xl" onsubmit="return adminNotifConfirm(this);">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="flex flex-col gap-2">
+                        <label for="notif_title" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Announcement Title <span class="text-red-500">*</span></label>
+                        <input id="notif_title" type="text" name="notif_title" required placeholder="e.g., Server Maintenance! or New Marvel Movie Added 🔥" class="w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-3 text-sm outline-none focus:border-yellow-500 transition-colors shadow-sm">
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label for="notif_message" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Message Content <span class="text-red-500">*</span></label>
+                        <textarea id="notif_message" name="notif_message" required rows="4" placeholder="Write your full message here. It will be shown in their notification dropdown..." class="w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-3 text-sm outline-none focus:border-yellow-500 transition-colors shadow-sm resize-none"></textarea>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label for="target_user" class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Target Audience</label>
+                        <select id="target_user" name="target_user" class="w-full bg-[#141519] border border-gray-700 text-white rounded-lg px-4 py-3 text-sm outline-none focus:border-yellow-500 transition-colors cursor-pointer appearance-none">
+                            <option value="all" class="font-bold text-yellow-500">🌐 Blast to ALL Users (Global) — {{ all_users|length }} recipients</option>
+                            <optgroup label="Or send to specific user:">
+                                {% for u in all_users %}
+                                <option value="{{ u.id }}">{{ u.username }} ({{ u.email }})</option>
+                                {% endfor %}
+                            </optgroup>
+                        </select>
+                    </div>
+                    <button aria-label="Send Push Alert" type="submit" class="bg-yellow-600 hover:bg-yellow-500 text-white font-black py-3.5 px-8 rounded-lg text-sm transition-all shadow-[0_0_20px_rgba(202,138,4,0.3)] md:self-end mt-2 cursor-pointer flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane w-5 text-center"></i> Send Alert Now
+                    </button>
+                </form>
+            </div>
+        </div>

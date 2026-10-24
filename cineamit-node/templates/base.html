@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>{% block title %}{{ seo.title }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_desc %}{{ seo.description }}{% endblock %}">
+{% include 'partials/head-meta.html' %}
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{{ seo.canonical }}">
+    <meta property="og:site_name" content="CINEAMIT">
+    <meta property="og:title" content="{% block og_title %}{{ seo.title }}{% endblock %}">
+    <meta property="og:description" content="{% block og_desc %}{{ seo.description }}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ seo.image }}{% endblock %}">
+{% include 'partials/head-style.html' %}
+{% include 'partials/head-ads.html' %}
+</head>
+<body class="flex flex-col min-h-screen overflow-x-hidden w-full max-w-[100vw]">
+{% include 'partials/body-boot.html' %}
+{% include 'partials/header.html' %}
+
+<main id="main-content" class="flex-1 w-full relative flex flex-col bg-[#0f1014] pt-16 md:pt-20">
+    {% if announcement %}
+    {% if announcement.display_type == 'modal' %}
+    <div id="announcementModal" class="fixed inset-0 z-[10001] bg-black/80 backdrop-blur-sm flex items-center justify-center px-4" role="dialog" aria-modal="true">
+        <div class="bg-[#141519] border border-red-600/40 rounded-2xl p-8 max-w-lg w-full shadow-2xl relative">
+            <button aria-label="Close Announcement" onclick="dismissAnnouncement({{ announcement.id }})" class="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div class="w-14 h-14 bg-red-600/15 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border border-red-500/30"><i class="fa-solid fa-bullhorn"></i></div>
+            <h2 class="text-2xl font-black text-white text-center mb-3">{{ announcement.title }}</h2>
+            <p class="text-gray-300 text-sm leading-relaxed text-center whitespace-pre-line">{{ announcement.message }}</p>
+            <button type="button" onclick="dismissAnnouncement({{ announcement.id }})" class="mt-6 w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-colors cursor-pointer">Got it</button>
+        </div>
+    </div>
+    {% else %}
+    <div id="announcementBanner" class="fixed bottom-20 md:bottom-4 left-1/2 transform -translate-x-1/2 z-[10000] w-full max-w-2xl px-4 pointer-events-none">
+        <div class="pointer-events-auto bg-[#141519]/97 border border-amber-600/50 rounded-xl p-4 shadow-2xl flex items-start gap-3 animate-slide-down">
+            <div class="w-9 h-9 shrink-0 bg-amber-500/15 text-amber-400 rounded-lg flex items-center justify-center text-sm border border-amber-500/30"><i class="fa-solid fa-bullhorn"></i></div>
+            <div class="flex-1 min-w-0">
+                <p class="text-white font-bold text-sm leading-snug">{{ announcement.title }}</p>
+                <p class="text-gray-400 text-xs leading-relaxed mt-1 whitespace-pre-line">{{ announcement.message }}</p>
+            </div>
+            <button aria-label="Dismiss Announcement" onclick="dismissAnnouncement({{ announcement.id }})" class="text-gray-500 hover:text-white shrink-0 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <div class="flex-1 pb-24 md:pb-0">
+        {% block content %}{% endblock %}
+    </div>
+</main>
+
+{% include 'partials/footer.html' %}
